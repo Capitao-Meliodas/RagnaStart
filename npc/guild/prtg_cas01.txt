@@ -1,0 +1,111 @@
+// Bandeiras da guilda (castelo exterior)
+//============================================================
+-	script	Kriemhild#1::OutsideFlagsPR1	722,{
+
+	set .@GID, GetCastleData("prtg_cas01",1);
+
+	if (.@GID == 0) {
+		mes " [ Decreto do Reino de Midgard ]";
+		mes " ";
+		mes "1. Conforme o pacto do Reino de Midgard e o Feudo de Luina, declaro que este Castelo não possui um Senhor.";
+		mes " ";
+		mes "2. Aquele que superar terríveis desafios e destruir o Emperium, receberá a posse do castelo com o apoio do nosso rei.";
+		close;
+	}
+	if (getcharid(2) == .@GID) {
+		mes "[ Echoing Voice ]";
+		mes "Bravo guerreiro...";
+		mes "Você deseja retornar ao seu lugar de honra?";
+		next;
+		if(select("Retornar para o castelo do Clã.:Sair.") == 1) {
+			close2;
+			if (getcharid(2) == GetCastleData("prtg_cas01",1)) {
+				warp "prtg_cas01",96,173;
+				end;
+			}
+			end;
+		}
+		close;
+	}
+	mes "[ Decreto do Reino de Midgard ]";
+	mes " ";
+	mes "1. Seguindo o decreto do Reino de Midgard.";
+	mes "Nós declaramos que esse castelo pertence ao clã ^ff0000"+GetGuildName(.@GID)+"^000000.";
+	mes " ";
+	mes "2. O líder do clã ^ff0000"+GetGuildName(.@GID)+"^000000 se chama";
+	mes "^ff0000"+GetGuildMaster(.@GID)+"^000000";
+  	mes "Se alguém se opõe a esse decreto, que prove sua força e honra com uma espada em suas mãos.";
+	close;
+
+OnRecvCastlePt01:
+	FlagEmblem GetCastleData("prtg_cas01",1);
+	end;
+}
+
+prt_gld,131,60,6	duplicate(OutsideFlagsPR1)	Kriemhild#1-2	722
+prt_gld,138,68,6	duplicate(OutsideFlagsPR1)	Kriemhild#2	722
+prt_gld,138,60,6	duplicate(OutsideFlagsPR1)	Kriemhild#3	722
+prt_gld,135,60,6	duplicate(OutsideFlagsPR1)	Kriemhild#4	722
+
+// Guild Flags (Inside Castle)
+//============================================================
+-	script	Kriemhild#5::InsideFlagsPR1	722,{
+	end;
+
+OnRecvCastlePt01:
+	FlagEmblem GetCastleData("prtg_cas01",1);
+	end;
+}
+
+prtg_cas01,58,56,4	duplicate(InsideFlagsPR1)	Kriemhild#5-2	722
+prtg_cas01,64,56,4	duplicate(InsideFlagsPR1)	Kriemhild#6	722
+prtg_cas01,76,32,4	duplicate(InsideFlagsPR1)	Kriemhild#7	722
+prtg_cas01,84,32,4	duplicate(InsideFlagsPR1)	Kriemhild#8	722
+prtg_cas01,94,39,4	duplicate(InsideFlagsPR1)	Kriemhild#9	722
+prtg_cas01,94,24,4	duplicate(InsideFlagsPR1)	Kriemhild#10	722
+prtg_cas01,73,14,4	duplicate(InsideFlagsPR1)	Kriemhild#11	722
+prtg_cas01,73,6,4	duplicate(InsideFlagsPR1)	Kriemhild#12	722
+prtg_cas01,55,46,4	duplicate(InsideFlagsPR1)	Kriemhild#13	722
+prtg_cas01,45,46,4	duplicate(InsideFlagsPR1)	Kriemhild#14	722
+
+// Bandeira da guilda (cidade)
+//============================================================
+prontera,148,223,4	duplicate(InsideFlagsPR1)	Kriemhild#15	722
+
+// Funcionaria Kafra
+//============================================================
+prtg_cas01,96,173,0	duplicate(guildkafra)	Funcionaria Kafra#prtg_cas01	117
+
+// Mordomo
+//============================================================
+prtg_cas01,112,181,0	duplicate(cm)	Ahvray#prtg_cas01	55
+
+// Saída do quarto do tesouro
+//============================================================
+prtg_cas01,15,208,0	script	#Lever_PR01	111,{
+	mes " ";
+	mes "Há uma pequena alavanca. Você vai puxar";
+	next;
+	if(select("Sim.:Não.") == 1) {
+		close2;
+		warp "prtg_cas01",112,183;
+		end;
+	}
+	close;
+}
+
+// Calabouço da Guilda
+//============================================================
+prtg_cas01,94,200,0	duplicate(gdlever)	#prtg_cas01	111
+
+// Gerador de baus do Tesouro
+//============================================================
+prtg_cas01,11,208,0	duplicate(Gld_Trea_Spawn)	Tesouro#prtg_cas01	-1
+
+// Gerente de agit
+//============================================================
+prtg_cas01,197,197,0	duplicate(Gld_Agit_Manager)	Agit#prtg_cas01	-1
+
+// Guardiões
+//============================================================
+prtg_cas01,112,181,0	duplicate(Gld_Guard_Template)	Guardian#prtg_cas01	-1

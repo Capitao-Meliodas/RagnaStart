@@ -1,0 +1,171 @@
+//===== Cronus Script =======================================
+//===== By: ==================================================
+//l========================================================================l//
+//l------------------------------------------------------------------------l//
+//l------------------------------------------------------------------------l//
+//l  ______   _______    _________    _______    __     __    ______  ™    l//
+//l l      l  l      l  l         l  l       l  l  l   l  l  l      l      l//
+//l l_    _l  l_    _l  l   ___   l  l  _____l  l  l   l  l  l_    _l      l//
+//l   l  l      l  l    l  l   l  l  l  l       l  l___l  l    l  l        l//
+//l   l  l      l  l    l  l   l  l  l  l       l         l    l  l        l//
+//l   l  l      l  l    l  l___l  l  l  l       l   ___   l    l  l        l//
+//l   l  l      l  l    l         l  l  l       l  l   l  l    l  l        l//
+//l  _l  l_     l  l    l   ___   l  l  l____   l  l   l  l   _l  l_       l//
+//l l      l    l  l    l  l   l  l  l       l  l  l   l  l  l      l      l//
+//l l______l    l__l    l__l   l__l  l_______l  l__l   l__l  l______l      l//
+//l                                                                        l//
+//l             ------>>>>>Um Nome, Um Império!<<<<<------                 l//
+//l------------------------------------------------------------------------l//
+//l------------------------------------------------------------------------l//
+//l________________________________________________________________________l//
+louyang,86,207,4	script	Trocador de Bandeiras	965,{
+
+mes "[Trocador]";
+mes "Olá, Será que você tem ^0000FFBandeiras Nacional^000000?";
+mes "me dê as bandeiras e escolha seus itens.";
+mes "Lembrando: cada item tem seu valor em bandeiras";
+next;
+menu "Asa Bênção de Thor (100 bandeiras)",thor,"Green Buterfly (100 bandeiras)",green,"black butterfly wing (80 bandeiras)",bbu,"white butterfly wing (80 bandeiras)",wbu,"Elmo de Valkyria Branco (90 bandeiras)",meta,"Elmo de Valkyria Rosa (90 bandeiras)",pink,"Elmo de Valkyria Verde (90 bandeiras)",ver;
+next;
+
+thor:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<100)goto l_semitem;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,100;
+getitem 5495,1;
+close;
+
+l_semitem:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+green:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<100)goto l_sembandeira;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,100;
+getitem 24123,1;
+close;
+
+l_sembandeira:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+bbu:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<80)goto l_insu;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,100;
+getitem 18746,1;
+close;
+
+l_insu:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+wbu:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<80)goto l_ins;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,100;
+getitem 18751,1;
+close;
+
+l_ins:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+meta:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<90)goto l_insuf;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,90;
+getitem 20016,1;
+close;
+
+l_insuf:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+pink:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<90)goto l_nem;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,90;
+getitem 20020,1;
+close;
+
+l_nem:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+ver:
+next;
+mes "Deixe-me verificar se você possui todas as bandeiras...";
+next;
+if(countitem(7549)<90)goto l_nban;
+mes "[Trocador]";
+mes "Hmm, me parece que você tem as bandeiras...";
+mes "Você merece !";
+next;
+mes "Leve a recompensa com você !";
+delitem 7549,90;
+getitem 20022,1;
+close;
+
+l_nban:
+mes "[Trocador]";
+mes "Você nao possui bandeiras necessárias! =/";
+mes "Para conseguir Bandeiras Vá para o Evento das Bandeiras!";
+close;
+
+}

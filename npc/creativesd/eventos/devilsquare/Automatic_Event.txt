@@ -1,0 +1,161 @@
+/*.-----------------------------------------------------------------------------.
+  .          ____                          __                                   .
+  .         /\  _`\                       /\ \__  __                            .
+  .         \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __            .
+  .          \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\          .
+  .           \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/          .
+  .            \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\         .
+  .             \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/         .
+  .                                                                             .
+  .                  2014~2015 © Creative Services and Developent               .
+  .                            www.creativesd.com.br                            .
+  .                          www.sbkmod.ragnagreen.com                          .
+  .-----------------------------------------------------------------------------.
+  . Script:                                                                     .
+  .    Devil Square - Evento Automático e suas Explicações.                     .
+  .-----------------------------------------------------------------------------.
+  . Auto: Romulo SM (sbk_)                                         Versão: 1.0  .
+  .                                                                             .
+  . Compatível:	Hercules e Derivações.                              	        .
+  .-----------------------------------------------------------------------------.
+  . Descrição:                                                                  .
+  .    Pré-configuração de Automatização do Evento DevilSquare e Exemplos de    .
+  .    Remodelagem de acordo com horários.                                      .
+  *-----------------------------------------------------------------------------*/
+  
+// Exemplo de Base de Ínicio de Evento
+// ------------------------------------------------------------
+/*
+OnClock<hora><minuto>:
+	if( !$DS_Flag )
+	{	// Caso não esteja acontecendo o Evento
+		{ Configurações Personalizadas }
+		donpcevent "DevilSquare#main::OnStart";
+	}
+	end;
+*/
+
+// Exemplo de Término de Evento por Horário
+// ------------------------------------------------------------
+/*
+OnClock<hora><minuto>:
+	if( $DS_Flag )
+	{	// Caso não esteja acontecendo o Evento
+		donpcevent "DevilSquare#main::OnReset";
+		sleep 3000; // Tempo para os jogadores serem teleportados e verem o anuncio global.
+		donpcevent "DevilSquare#main::OnResetCfg";
+		announce "[Devil Square]: Os participantes não conseguiram conter a horda, os monstros dominaram a Devil Square.", bc_all, "0x00FF00";
+	}
+	end;
+*/
+  
+// Exemplo Alterar Máximo de Rounds em Horários
+// ------------------------------------------------------------
+/*
+OnClock1200:
+	if( !$DS_Flag )
+	{
+		set $DS_Set_Config$, "DevilSquare#clock::OnCfg01"; // Obrigatório a por, pois é o gatilho de Evento caso você use @reloadscript.
+		set $DS_Reset_Config$, ""; //  Obrigatório a para remover as Configurações no fim do Evento caso não seja um novo Round, Arca do Tesouro.
+		donpcevent $DS_Set_Config$;
+		donpcevent "DevilSquare#main::OnStart";
+	}
+	end;
+	
+OnClock1300:
+	if( $DS_Flag )
+	{	// Caso não esteja acontecendo o Evento
+		donpcevent "DevilSquare#main::OnReset";
+		sleep 3000; // Tempo para os jogadores serem teleportados e verem o anuncio global.
+		donpcevent "DevilSquare#main::OnResetCfg";
+		announce "[Devil Square]: Os participantes não conseguiram conter a horda, os monstros dominaram a Devil Square.", bc_all, "0x00FF00";
+	}
+	end;
+	
+OnCfg01:
+	set getvariableofnpc(.MaxRounds, "DevilSquare#main"), 3; // Isto irá configurar o Evento para Máximo de 3 Rounds.
+	end;
+*/
+
+
+// Adicionar um Novo Rounds em um determinado Horário
+// ------------------------------------------------------------
+/*
+OnClock1200:
+	if( !$DS_Flag )
+	{
+		set $DS_Set_Config$, "DevilSquare#clock::OnCfg02"; 		 // Obrigatório a por, pois é o gatilho de Evento caso você use @reloadscript.
+		set $DS_Reset_Config$, "DevilSquare#clock::OnRConfig02"; //  Obrigatório a para remover as Configurações no fim do Evento caso não seja um novo Round, Arca do Tesouro.
+		donpcevent $DS_Set_Config$;
+		donpcevent "DevilSquare#main::OnStart";
+	}
+	end;
+	
+OnClock1300:
+	if( $DS_Flag )
+	{	// Caso não esteja acontecendo o Evento
+		set $DS_Set_Config$, "";
+		donpcevent "DevilSquare#main::OnReset";
+		sleep 3000; // Tempo para os jogadores serem teleportados e verem o anuncio global.
+		donpcevent "DevilSquare#main::OnResetCfg";
+		announce "[Devil Square]: Os participantes não conseguiram conter a horda, os monstros dominaram a Devil Square.", bc_all, "0x00FF00";
+	}
+	end;
+	
+OnCfg02:
+	set getvariableofnpc(.MaxRounds, "DevilSquare#main"), 7; // Isto irá configurar o Evento para Máximo de 3 Rounds.
+	setarray getvariableofnpc(.Mob_Round_7[0],"DevilSquare#main"), <tipo_da_horda>, <ganho_de_exp>, <permitir_drop_de_item_monstros>, <ganho_de_recompensa_mvp>, <mob_id>, <amount>, <pontos> {, <mob_id>, <amount>, <points>, ...};
+	end;
+	
+OnRConfig02:
+	set $DS_Reset_Config$, "";
+	deletearray getvariableofnpc(.Mob_Round_7,"DevilSquare#main");	// Isto irá remover todos valores do Round 7.
+	end;
+*/
+
+// ATENÇÃO: Este documento ainda não está completo, pode ser feito diversas instancias de acordo com configurações.
+
+
+// Horários Pré-Configurados.
+// ------------------------------------------------------------
+-	script	DevilSquare#clock	FAKE_NPC,{
+
+// Evento Configurado para acontecer de 2 em 2 horas.
+OnClock0000:
+OnClock0200:
+OnClock0400:
+OnClock0600:
+OnClock0800:
+OnClock1000:
+OnClock1200:
+OnClock1400:
+OnClock1600:
+OnClock1800:
+OnClock2000:
+OnClock2200:
+	if( !$DS_Flag )
+		donpcevent "DevilSquare#main::OnStart";
+	end;
+	
+// O Evento só acontece durante 1 (uma) hora, após isso ele termina.
+OnClock0100:
+OnClock0300:
+OnClock0500:
+OnClock0700:
+OnClock0900:
+OnClock1100:
+OnClock1300:
+OnClock1500:
+OnClock1700:
+OnClock1900:
+OnClock2100:
+OnClock2300:
+	if( $DS_Flag )
+	{
+		donpcevent "DevilSquare#main::OnReset";
+		sleep 3000;
+		donpcevent "DevilSquare#main::OnResetCfg";
+		announce "[Devil Square]: Os participantes não conseguiram conter a horda, os monstros dominaram a Devil Square.", bc_all, "0x00FF00";
+	}
+	end;
+}

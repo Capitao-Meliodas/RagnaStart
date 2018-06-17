@@ -1,0 +1,81 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Curandeira                                                   .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena e derivações.                                        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Cura o jogador por delay.                                    .
+  *-----------------------------------------------------------------*/
+-	script	Curandeira#healer_01	-1,{
+
+	// ----------------------------------------------------------------
+	// 							Configuracões
+	// ----------------------------------------------------------------
+	
+	// GroupID que será seu tempo reduzido. (Jogadores com o group_id acima do configurado, será tratado como o mesmo)
+	.@groupid_timer = 1;				
+	
+	// Delay do uso do NPC, caso deseja desativar ponha 0.
+	//
+	//	setarray .@cDelay[0],<tempo_normal>,<tempo_reduzido>;
+	setarray .@cDelay[0], 60, 40;
+	
+	// GroupID que será entregue buffs.
+	//
+	//	Caso deseje desativar, ponha 100.
+	.@groupid_buff = 1;
+	
+	// ----------------------------------------------------------------
+	//						Fim das Configurações
+	// ----------------------------------------------------------------
+	
+	set .@Delay, .@cDelay[(getgroupid() >= .@groupid_timer?1:0)];	// Tempo em segundos de restrição de uso após uso.
+	
+	if( healer_delay > gettimetick(2) )
+	{
+		dispbottom "Você deve aguardar " + (healer_delay-gettimetick(2)) + " segundos para utilizar a cura novamente!";
+		end;
+	}
+	
+	//npctalk "Curar " + strcharinfo(0) + ".";
+	percentheal 100, 100;
+	specialeffect2 EF_HEAL2;
+	
+	if( getgroupid() >= .@groupid_buff )
+	{
+		//specialeffect2 EF_INCAGILITY;
+		sc_start SC_INCAGI,240000,10;
+		//specialeffect2 EF_BLESSING;
+		sc_start SC_BLESSING,240000,10;
+		sc_end SC_SLEEP;
+		//specialeffect2 Eff_Sleep;
+		sc_end SC_POISON;
+		//specialeffect2 Eff_Poison;
+		sc_end SC_CURSE;
+		//specialeffect2 Eff_Curse;
+		sc_end SC_SILENCE;
+		//specialeffect2 Eff_Silence;
+		sc_end SC_CONFUSION;
+		//specialeffect2 Eff_Confusion;
+	}
+	
+	set healer_delay, gettimetick(2)+.@Delay;
+	end;
+}
+
+prontera,148,185,5	duplicate(Curandeira#healer_01)	Curandeira#healer_02	4_F_ACOLYTE

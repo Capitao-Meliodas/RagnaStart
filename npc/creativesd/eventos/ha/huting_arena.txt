@@ -1,0 +1,475 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Evento Arena de Caça                                         .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compatível:	eAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Arena no qual jogadores caçam pontos para trocar por itens.  .
+  *-----------------------------------------------------------------*/
+-	script	hunting_arena#main	FAKE_NPC,{
+OnDefaults:
+	// Reset padrão (Não altere aqui)
+	deletearray $@HA_Mobs$;
+	deletearray $@HA_Currency;
+	deletearray $@HA_Shop_Items;
+OnInit:
+	// GroupId para gerenciar o evento.
+	// Ligar/Desligar
+	set $@HA_GroupID, 99;
+	
+	// Mínimo de Jogadores para começar o evento.
+	set $@HA_MinPlayer, 1;
+	
+	// Máximo de Jogadores que podem entrar no evento.
+	set $@HA_MaxPlayer, 30;
+	
+	// Nível mínimo de Base para entrar no evento.
+	set $@HA_BaseLevel, 50;
+	
+	// Máximo de Tempo (em minutos) que os jogadores tem para eliminar os
+	// monstros dentro da Arena.
+	//
+	// 0 (zero) Irá desativar esta opção.
+	set $@HA_MaxTimer, 1;
+	
+	// Tempo de espera para os jogadores entrarem no evento (em minutos).
+	set $@HA_Waiting, 1;
+	
+	// Permitir habilidades dentro da Arena?
+	//	0: Desativar habilidades dentro da Arena.
+	//	1: Permitir habilidades dentro da Arena.
+	set $@HA_Skills, 0;
+	
+	// Permitir queda itens?
+	//	0: Desativa
+	//	1: Apenas Drop Normais
+	//	2: Apenas Drop MvP
+	//	3: Drop Normais e MvPs
+	set $@HA_Drops, 0;
+	
+	// Permitir ganho de ExP?
+	//	0: Desativa
+	//	1: Apenas Exp de Base
+	//	2: Apenas Exp de Classe
+	//	3: Exp de Base e Classe
+	set $@HA_Exp, 0;
+	
+	// Monstros a ser invocados.
+	//	setarray $@HA_Mobs$[0], <mob_id>, <amount>, "<name>", "<event>";
+	setarray $@HA_Mobs$[0],
+		// Alvos de 1 Ponto
+		1002, 40, "Alvo de 1 Ponto", "hunting_arena#mob::OnMobDead01",
+		1229, 40, "Alvo de 1 Ponto", "hunting_arena#mob::OnMobDead01",
+		1324, 2, "Alvo de 1 Ponto", "hunting_arena#mob::OnMobDead01",
+		// Alvos de 10 Pontos
+		1034, 100, "Alvo de 10 Pontos", "hunting_arena#mob::OnMobDead10",
+		1054, 100, "Alvo de 10 Pontos", "hunting_arena#mob::OnMobDead10",
+		1295, 50, "Alvo de 10 Pontos", "hunting_arena#mob::OnMobDead10",
+		// Alvos de 15 Pontos
+		1111, 100, "Alvo de 15 Pontos", "hunting_arena#mob::OnMobDead15",
+		1152, 100, "Alvo de 15 Pontos", "hunting_arena#mob::OnMobDead15",
+		// Alvos de 20 Pontos
+		1177, 100, "Alvo de 15 Pontos", "hunting_arena#mob::OnMobDead20",
+		1499, 100, "Alvo de 15 Pontos", "hunting_arena#mob::OnMobDead20"
+	;
+	
+	// Habilitar a Loja de Caça?
+	set $@HA_Shop_Enable, 0;
+	
+	// Moeda que a loja irá utilizar, e o tipo.
+	// setarray $@HA_Currency$, "<item_id/var>", "<name>", <type>;
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	setarray $@HA_Currency$, "HA_Points", "Ponto(s) de Caça", 1;
+	
+	// Itens que vendem na loja.
+	// linha 466.
+
+	// Não altere apartir desta linha!!
+	mapwarp "ev_harena", "prontera", 156, 191;
+	end;
+	
+OnStart:
+	// The event is happening!
+	if( $@HA_FLAG )
+		end;
+		
+	initnpctimer;
+	set $@HA_FLAG, 1;
+	set .TimerCount, 0;
+	announce "[Arena de Caça]: O Evento está aberto, corram para arena!", bc_all, "0xF4A460";
+	donpcevent "::OnHAOn";
+	
+	// Enable/Disable Mapflags
+	if( $@HA_Skills )
+		removemapflag "ev_harena", mf_noskill;
+	else
+		setmapflag "ev_harena", mf_noskill;
+		
+	if( $@HA_Drops&1 )
+		removemapflag "ev_harena", mf_nomobloot;
+	else
+		setmapflag "ev_harena", mf_nomobloot;
+		
+	if( $@HA_Drops&2 )
+		removemapflag "ev_harena", mf_nomvploot;
+	else
+		setmapflag "ev_harena", mf_nomvploot;
+		
+	if( $@HA_Exp&1 )
+		removemapflag "ev_harena", mf_nobaseexp;
+	else
+		setmapflag "ev_harena", mf_nobaseexp;
+	
+	if( $@HA_Exp&2 )
+		removemapflag "ev_harena", mf_nojobexp;
+	else
+		setmapflag "ev_harena", mf_nojobexp;
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	set .TimerCount, .TimerCount+1;
+	if( .TimerCount >= $@HA_Waiting ) {
+		donpcevent "::OnHAOff";
+		if( getmapusers("ev_harena") < $@HA_MinPlayer || ($@HA_MaxPlayer && getmapusers("ev_harena") >= $@HA_MaxPlayer) ) {
+			announce "[Arena de Caça]: O Evento foi cancelado por falta de jogadores!", bc_all, "0xF4A460";
+			set $@HA_FLAG, 0;
+			donpcevent "hunting_arena#main::OnEnd";
+		}
+		else {
+			// Start Events
+			set $@HA_FLAG, 2;
+			announce "[Arena de Caça]: O Evento está completo, boa sorte caçadores!", bc_all, "0xF4A460";
+			sleep 3000;
+			mapannounce "ev_harena", "[Arena de Caça]: Atenção Caçadores, os alvos serão invocados em 5 segundos!", bc_all, "0xF4A460";
+			sleep 1000;
+			mapannounce "ev_harena", "[Arena de Caça]: Atenção Caçadores, os alvos serão invocados em 4 segundos!", bc_all, "0xF4A460";
+			sleep 1000;
+			mapannounce "ev_harena", "[Arena de Caça]: Atenção Caçadores, os alvos serão invocados em 3 segundos!", bc_all, "0xF4A460";
+			sleep 1000;
+			mapannounce "ev_harena", "[Arena de Caça]: Atenção Caçadores, os alvos serão invocados em 2 segundos!", bc_all, "0xF4A460";
+			sleep 1000;
+			mapannounce "ev_harena", "[Arena de Caça]: Atenção Caçadores, os alvos serão invocados em 1 segundos!", bc_all, "0xF4A460";
+			sleep 1000;
+			mapannounce "ev_harena", "[Arena de Caça]: Corram Caçadores ou os alvos irão fugir!", bc_all, "0xF4A460";
+			donpcevent "hunting_arena#mob::OnStart";
+			if( $@HA_MaxTimer )
+				donpcevent "hunting_arena#timer::OnStart";
+		}
+	}
+	else {
+		initnpctimer;
+		set .@count, $@HA_Waiting-.TimerCount;
+		announce "[Arena de Caça]: Em " + .@count + " minuto(s) o Evento irá começar!", bc_all, "0xF4A460";
+	}
+	end;
+	
+OnFail:
+	set $@HA_FLAG, 3;
+	killmonsterall "ev_harena", 1;
+	announce "[Arena de Caça]: A caça foram mais ágil e os Caçadores não tiveram sorte!", bc_all, "0xF4A460";
+	sleep 3000;
+	donpcevent "hunting_arena#main::OnEnd";
+	end;
+	
+OnFinish:
+	set $@HA_FLAG, 3;
+	killmonsterall "ev_harena", 1;
+	donpcevent "hunting_arena#timer::OnEnd";
+	sleep 3000;
+	mapannounce "ev_harena", "[Arena de Caça]: Parabéns Caçadores!! Vocês foram incríveis nesta Caçada!", bc_all, "0xF4A460";
+	sleep 3000;
+	donpcevent "hunting_arena#main::OnEnd";
+	end;
+	
+OnStopGM:
+	// Stop by GameMaster
+	killmonsterall "ev_harena", 1;
+	if( $@HA_FLAG == 1 )
+		donpcevent "::OnHAOff";
+	announce "[Arena de Caça]: O Evento foi encerrado pela equipe de GameMaster!", bc_all, "0xF4A460";
+	sleep 3000;
+	donpcevent "hunting_arena#main::OnEnd";
+	end;
+	
+OnEnd:
+	// End Events
+	stopnpctimer;
+	set $@HA_FLAG,0;
+	killmonsterall "ev_harena", 1;
+	donpcevent "::OnHAOff";
+	donpcevent "hunting_arena#timer::OnEnd";
+	donpcevent "hunting_arena#main::OnDefaults";
+	sleep 3000;
+	announce "[Arena de Caça]: Evento encerrado, obrigado a todos caçadores que participaram!", bc_all, "0xF4A460";
+	end;
+
+OnPCDieEvent:
+	set .@map$, strcharinfo(3);
+	if( .@map$ == "ev_harena" ) {
+		warp "prontera", 156, 191;
+		if( $@HA_FLAG == 2 &&   getmapusers("ev_harena") <= 0 )
+			donpcevent "hunting_arena#main::OnFail";
+		
+		// Wait 3 seconds to be able to revive the player and heal him again.
+		sleep2 3000;
+		alive;
+		percentheal 100,100;
+	}
+	end;
+}
+
+// Timer Evento
+-	script	hunting_arena#timer	FAKE_NPC,{
+OnStart:
+	// Init timer
+	set .TimerCount,0;
+	initnpctimer;
+	end;
+
+OnTimer60000:
+	stopnpctimer;
+	set .TimerCount, .TimerCount + 1;
+	if( $@HA_FLAG == 2 && getmapusers("ev_harena") > 0 && $@HA_MaxTimer >= .TimerCount )
+		donpcevent "hunting_arena#main::OnFail";
+	else
+		initnpctimer;	
+	end;
+	
+OnEnd:
+	stopnpctimer;
+	end;
+}
+
+// Spawn Mobs
+-	script	hunting_arena#mob	FAKE_NPC,{
+OnStart:
+	// Spawn Event
+	set $@HA_MobCount,0;
+	freeloop(1);
+	for( set .@i,0; .@i < getarraysize($@HA_Mobs$); set .@i, .@i + 4 ) {
+		monster "ev_harena", 0, 0, $@HA_Mobs$[.@i+2], atoi($@HA_Mobs$[.@i]), atoi($@HA_Mobs$[.@i+1]), $@HA_Mobs$[.@i+3];
+		set $@HA_MobCount, $@HA_MobCount + atoi($@HA_Mobs$[.@i+1]);
+	}
+	freeloop(0);
+	end;
+
+OnMobDead01:
+	callfunc "ha_mob_dead", 1, "hunting_arena#mob::OnMobDead01";
+	end;
+	
+OnMobDead10:
+	callfunc "ha_mob_dead", 10, "hunting_arena#mob::OnMobDead10";
+	end;
+	
+OnMobDead15:
+	callfunc "ha_mob_dead", 15, "hunting_arena#mob::OnMobDead15";
+	end;
+	
+OnMobDead20:
+	callfunc "ha_mob_dead", 20, "hunting_arena#mob::OnMobDead20";
+	end;
+}
+
+// Function to reward per eliminated target.
+function	script	ha_mob_dead	{
+	if( $@HA_FLAG != 2 )
+		return;
+		
+	set .@count, mobcount("ev_harena", getarg(1));
+	set $@HA_MobCount,$@HA_MobCount-1;
+	if( atoi($@HA_Currency$[2]) == 1 ) {
+		setd $@HA_Currency$[0], getd($@HA_Currency$[0]) + getarg(0);
+		dispbottom "Você recebeu 1 " + $@HA_Currency$[1] + " por eliminar o Alvo de 1 Ponto.";
+	}
+	else {
+		if( checkweight(atoi($@HA_Currency$[0]),getarg(0)) == 0 ) {
+			getmapxy .@map$, .@x, .@y, 0;
+			makeitem atoi($@HA_Currency$[0]), getarg(0), .@map$, .@x, .@y;
+			dispbottom "Você recebeu " + getarg(0) + " " + $@HA_Currency$[1] + " por eliminar o Alvo de " + getarg(0) + " Ponto(s), mais foi derrubado no chão por causa do seu peso.";
+		}
+		else {
+			getitem atoi($@HA_Currency$[0]), getarg(0);
+			dispbottom "Você recebeu " + getarg(0) + " " + $@HA_Currency$[1] + " por eliminar o Alvo de " + getarg(0) + " Ponto(s).";
+		}
+	}
+	
+	if( .@count > 0 ) {
+		mapannounce "ev_harena", "[Arena de Caça]: " + strcharinfo(0) + " eliminou um Alvo de " + getarg(0) + " ponto(s)!", bc_all, "0xF4A460";
+		mapannounce "ev_harena", "[Arena de Caça]: Resta(m) (" + .@count + ") Alvo(s) de " + getarg(0) + " ponto(s)!", bc_all, "0xF4A460";
+	}
+	else {
+		mapannounce "ev_harena", "[Arena de Caça]: " + strcharinfo(0) + " eliminou o último Alvo de " + getarg(0) + " ponto(s)!", bc_all, "0xF4A460";
+	}
+	
+	if( $@HA_MobCount <= 0 )
+		donpcevent "hunting_arena#main::OnFinish";
+	else
+		mapannounce "ev_harena", "[Arena de Caça]: Resta(m) (" + $@HA_MobCount + ") Alvo(s) na Arena!", bc_all, "0xF4A460";
+	end;
+}
+
+// Warper NPC
+event_room,79,88,5	script	Arena de Caça#warp	4_F_JOB_HUNTER,{
+	set .@talk, 0;
+	set .@loop_1,1;
+	while(.@loop_1) {
+		mes "^D2691E[Arena de Caça]^000000";
+		if( !.@talk ) mes "Bem-vindo a ^0000FFArena de Caça^000000!";
+		mes "Em que posso ajudar?";
+		set .@talk,1;
+		next;
+		switch( select(
+			(getgmlevel()>=$@HA_GroupID?($@HA_FLAG?"^FF0000- Desligar Evento.^000000":"^0000FF- Ligar Evento.^000000"):""),
+			($@HA_FLAG==1?"- Entrar no Evento.":""),
+			($@HA_Shop_Items?"^0000FF- Loja de Caça.^000000":""),
+			"^FFA500- Informações.^000000",
+			"^FF0000- Cancelar.^000000"
+		) ) {
+			// Ligar/Desligar Evento
+			case 1:
+				mes "^D2691E[Arena de Caça]^000000";
+				if( $@HA_FLAG ) {
+					donpcevent "hunting_arena#main::OnStopGM";
+					sleep2 2000;
+					if( !$@HA_FLAG )
+						mes "O Evento foi ^FF0000desligado^000000 com sucesso!";
+					else
+						mes "Houve uma falha ao ^FF0000desligar^000000 o Evento!";
+				}
+				else {
+					donpcevent "hunting_arena#main::OnStart";
+					sleep2 2000;
+					if( $@HA_FLAG )
+						mes "O Evento foi ^0000FFligado^000000 com sucesso!";
+					else
+						mes "Houve uma falha ao ^FF0000ligar^000000 o Evento!";
+				}
+				next;
+				break;
+			// Entrar no Evento
+			case 2:
+				mes "^D2691E[Arena de Caça]^000000";
+				if( $@HA_BaseLevel && BaseLevel < $@HA_BaseLevel )
+					mes "Você precisar ter no mínimo ^FF0000Nível " + $@HA_BaseLevel + " de Base^000000 para entrar no evento.";
+				else if( $@HA_MaxPlayer && getmapusers("ev_harena") >= $@HA_MaxPlayer )
+					mes "O evento está lotado, você pode tentar no próximo.";
+				else {
+					announce "[Arena de Caça]: " + strcharinfo(0) + " entrou no evento, boa sorte!", bc_all, "0xF4A460";
+					warp "ev_harena", 0, 0;
+					end;
+				}
+				next;
+				set .@loop_1,0;
+				break;
+			// Loja HA
+			case 3:
+				// Get Points
+				if( atoi($@HA_Currency$[2]) ) 
+					set .@amount, getd($@HA_Currency$[0]);
+				else
+					set .@amount, countitem(atoi($@HA_Currency$[0]));
+					
+				mes "^D2691E[Arena de Caça]^000000";
+				mes "Você possuí ^FF0000" + .@amount + "x " + $@HA_Currency$[1] + "^000000.";
+				mes "Muito bem, vou abrir a ^0000FFLoja de Caça^000000 para você.";
+				close2;
+				announce "A Loja utiliza '" + $@HA_Currency$[1] + "' como moeda!", bc_self, "0x00ffff";
+				callshop "hunting_arena#shop", 1;
+				end;
+			// Informações
+			case 4:
+				mes "^D2691E[Arena de Caça]^000000";
+				mes "Bem este evento é para quem gosta de farmar pontos para trocar com itens!";
+				next;
+				set .@n, 1;
+				mes "^D2691E[Arena de Caça]^000000";
+				mes .@n + "º Você precisa ter no ^0000FFMínimo Nível " + $@HA_BaseLevel + " de Base^000000 para entrar no evento.";
+				next;
+				set .@n, .@n + 1;
+				mes "^D2691E[Arena de Caça]^000000";
+				mes .@n + "º Monstros serão invocados, em seu nome terá a ^FF0000quantidade de pontos^000000 que você irá receber.";
+				next;
+				if( $@HA_MinPlayer && $@HA_MaxPlayer ) {
+					set .@n, .@n + 1;
+					mes "^D2691E[Arena de Caça]^000000";
+					mes .@n + "º É necessário no ^0000FFmínimo " + $@HA_MinPlayer + "^000000 jogadores para começar o evento,";
+					mes "e só é permitido no ^0000FFmáximo " + $@HA_MaxPlayer + "^000000 jogadores.";
+					next;
+				}
+				else if( $@HA_MaxPlayer ) {
+					set .@n, .@n + 1;
+					mes "^D2691E[Arena de Caça]^000000";
+					mes .@n + "º É permitido no ^0000FFmáximo " + $@HA_MaxPlayer + "^000000 jogadores no evento.";
+					next;
+				}
+				
+				if( $@HA_MaxTimer ) {
+					set .@n, .@n + 1;
+					mes "^D2691E[Arena de Caça]^000000";
+					mes .@n + "º O Evento dura no máximo ^0000FF" + $@HA_MaxTimer + " minutos^000000.";
+					next;
+				}
+				else {
+					set .@n, .@n + 1;
+					mes "^D2691E[Arena de Caça]^000000";
+					mes .@n + "º O evento encerra quando ^0000FFtodos alvos ou participantes forem eliminados^000000!";
+					next;
+				}
+				
+				set .@n, .@n + 1;
+				mes "^D2691E[Arena de Caça]^000000";
+				mes .@n + "º Os " + $@HA_Currency$[1] + " coletados podem ser trocado na ^0000FFLoja de Caça^000000 por itens.";
+				next;
+				mes "^D2691E[Arena de Caça]^000000";
+				mes "Espero que tenha entendido tudo, agora é só coletar pontos!";
+				next;
+				break;
+			// Cancelar
+			default:
+				set .@loop_1,0;
+				break;
+		}
+	}
+	
+	mes "^D2691E[Arena de Caça]^000000";
+	mes "Tudo bem, volte se precisar de algo!";
+	close;
+
+OnHAOn:
+	waitingroom "Aberto Arena de Caça", 0;
+	end;
+	
+OnHAOff:
+	delwaitingroom;
+	end;
+}
+
+// Loja de Caça
+-	pointshop	hunting_arena#shop	FAKE_NPC,HA_Points,41001:500
+
+// MapFlags Fixos
+ev_harena	mapflag	nowarp
+ev_harena	mapflag	nowarpto
+ev_harena	mapflag	nosave
+ev_harena	mapflag	noreturn
+ev_harena	mapflag	noteleport
+ev_harena	mapflag	nomemo
+ev_harena	mapflag	monster_noteleport

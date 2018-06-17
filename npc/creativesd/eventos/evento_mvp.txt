@@ -1,0 +1,707 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Evento MvP                                                       .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.1	.
+  .                                                                     .
+  . Compatível:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Evento aonde os jogadores devem enfretar por vez 4 MvP's com     .
+  .   dificuldades diferentes.                                          .
+  *---------------------------------------------------------------------*/
+
+// =============================================================
+// =						Configurações					   =
+// =============================================================
+-	script	Evento MvP#config	-1,{
+OnInit:
+	// Nível de GM para poder ligar/desligar o Evento através do comando @mvpevent
+	.AdmLevel = 99;
+	
+	// Minimo de Jogadores para começar o evento.
+	.MinPlayers = 1;
+	
+	// Máximo de Jogadores para entrar no evento.
+	.MaxPlayers = 20;
+	
+	// Minimo de Base Level para entrar no evento.
+	.MinBaseLevel = 99;
+	
+	// Mapa aonde será invocado o MvP.
+	//
+	//	Alterar os npcs manualmente na linha 382 e 415.
+	.MapName$ = "mvp_event";
+	
+	// Coordenada X aonde será invocado o MvP.
+	.Coord_X = 82;
+	
+	// Coordenada Y aonde será invocado o MvP.
+	.Coord_Y = 82;
+	
+	// Mapa aonde aonde será teleportado o jogador quando saír do evento.
+	.ExitMapName$ = "prontera";
+	
+	// Coordenada X aonde será teleportado o jogador quando saír do evento.
+	.ExitCoord_X = 155;
+	
+	// Coordenada X aonde será teleportado o jogador quando saír do evento.
+	.ExitCoord_Y = 179;
+	
+	// Bloquear o Drop de Itens MvPs no Evento? (1: Sim/0: Não)
+	setarray .BlockDrop[0],
+							0,	// MvPs Fácil
+							1,	// MvPs Médio
+							1,	// MvPs Difícil
+							1	// Mvps Extremamente Difícil
+	;
+	
+	// Bloquear Exp Ganha dos MvPs? (1:Sim/0: Não)
+	setarray .BlockExp[0],
+							0,	// MvPs Fácil
+							1,	// MvPs Médio
+							1,	// MvPs Difícil
+							1	// Mvps Extremamente Difícil
+	;
+	
+	// Bloquear Recompensas Padrões dos MvPs? (1: Sim/0: Não)
+	setarray .BlockReward[0],
+							0,	// MvPs Fácil
+							1,	// MvPs Médio
+							1,	// MvPs Difícil
+							1	// Mvps Extremamente Difícil
+	;
+	
+	// =============================================================
+	// =	   Configurações de Recompensas do Evento              =
+	// =============================================================
+	//
+	//	De que maneira o evento irá recompensar os jogadores?
+	//
+	//		0: Itens/Vars aleatórios
+	//		1: Todos os Itens/Vars configurados.
+	//		2: Da escolha do Jogador.
+	.RewardMode = 1;
+	
+	//	Quando a recompensa deve ser dada aos jogadores?
+	//
+	//		0: Quando o evento terminar, um npc será invocado para entregar a recompensa.
+	//		1: Quando o jogador eliminar o MvP. (Apenas o jogador que eliminar irá ganhar a recompensa)
+	//		2: Ambas opções.
+	.RewardType = 0;
+	
+	//	Recompensas de Itens/Vars aos jogadores.
+	//
+	//	Suporte máximo de 30 recompensas podem ser adicionada, seguindo o modelo de array abaixo:
+	//
+	//	* $@mvp_event_reward$[0], "<item_id/var>", <quantidade>, <nome>, <tipo>, <item_id>, <quantidade>, <nome>, <tipo>
+	//
+	//		<item_id/var>: 	Caso seja item não é obrigado a utilizar aspas, apenas adicione o ID do mesmo, em caso de variáveis utilize apas.
+	//							Apenas variáveis que aceitam números são válidas.
+	//		<quantidade>: 	Quantidade que será atribuido.
+	//		<nome>:			Nome que será exibido ao ganhar/selecionar a recompensa.
+	//		<tipo>:			Tipo da Recompensa, 0 é um item e 1 é uma variável.
+	//
+	//	Ex: setarray $@mvp_event_reward$[0], 501, 1, getitemname(501), 0, 502, 1, getitemname(502), 0, "#CASHPOINTS", 100, "Pontos de Cash", 1;
+	setarray $@mvp_event_reward$[0],
+									//501, 1, getitemname(501), 0,		// Recompensa (1) 1x Poção Vermelha
+									//"Zeny", 5000, "Zenys", 1			// Recompensa (2) 5000 Zenys.
+									41001, 100, getitemname(41001), 0	// Recompensa (1) 100x Moeda(s) de Evento
+	;
+	
+	// =============================================================
+	// =	   ID dos MvPs Configurados com suas Dificuldade       =
+	// =============================================================
+	//
+	// Ids dos MvP's considerados Fácil.
+	setarray $@EVMVP_MobsEasy[0],		1087, 1147, 1190, 1086, 1115, 1159, 1389, 1814, 1688, 1980, 1251, 1252, 1583, 2131, 2068, 2194, 1885;
+									
+	// Ids dos MvP's considerados Médio.
+	setarray $@EVMVP_MobsMedium[0],		1038, 1511, 1046, 1059, 1039, 1157, 1957, 1112, 2156, 1373, 1272, 1630, 1623, 1492, 2187, 2188, 1418, 1312, 1785, 2317, 2022, 2087, 2253, 2321;
+	
+	// Ids dos MvP's considerados Difícil.
+	setarray $@EVMVP_MobsHard[0],		1929, 1779, 1708, 1956, 2202, 1734, 1685, 1719, 2189, 2190, 2362, 1658, 2255, 2251, 2319; // 1768 -> Pesar Noturno (Bug de Sprite??)
+	
+	// Ids dos MvP's considerados Extremamente Difícil.
+	setarray $@EVMVP_MobsVeryHard[0],	1871, 2165, 1751, 2249, 1832, 1874, 1917, 1647, 1649, 1650, 1651, 1648, 1646, 2241, 2240, 2237, 2236, 2235, 2239, 2238;
+	
+	//
+	bindatcmd "mvpevent", strnpcinfo(0)+"::OnCmd", .AdmLevel, .AdmLevel;
+	mapwarp .MapName$, .ExitMapName$, .ExitCoord_X, .ExitCoord_Y;
+	end;
+	
+OnCmd:
+	if( !.@atcmd_numparameters )
+		message strcharinfo(0), "Você deve digitar @mvpevent ligar/desligar neste comando.";
+	else if( .@atcmd_parameters$[0] == "ligar" )
+		donpcevent "Evento MvP#event::OnStart";
+	else if( .@atcmd_parameters$[0] == "desligar" )
+	{
+		donpcevent "Evento MvP#event::OnReset";
+		announce "[Evento MvP]: O Evento foi terminado pelo GameMaster.",bc_all,"0x00FF00";
+	}
+	else
+		message strcharinfo(0), "As opções válidas são ligar/desligar neste comando.";
+	end;
+}
+
+// =============================================================
+// =						Eventos							   =
+// =============================================================
+-	script	Evento MvP#timer	-1,{
+OnTimer60000:
+	stopnpctimer;
+	.@map$ = getvariableofnpc(.MapName$, "Evento MvP#config");
+	if( !getmapusers(.@map$) )
+	{
+		if( mobcount(.@map$, "all") )
+			announce "[Evento MvP]: Todos os jogadores falharam no Evento.",bc_all,"0x00FF00";
+			
+		donpcevent "Evento MvP#event::OnReset";
+	}
+	else initnpctimer;
+	end;
+}
+
+-	script	Evento MvP#event	-1,{
+OnStart:	
+	$@ev_mvp_round = 1;
+	$@ev_mvp_timer = 1;
+	$@ev_mvp_flag = 1;
+	.@Map$ = getvariableofnpc(.MapName$,"Evento MvP#config");
+	.@map2$ = getvariableofnpc(.ExitMapName$, "Evento MvP#config");
+	.@x = getvariableofnpc(.ExitCoord_X, "Evento MvP#config");
+	.@y = getvariableofnpc(.ExitCoord_Y, "Evento MvP#config");
+	mapwarp .@Map$, .@map2$, .@x, .@y; 
+	setmapflag .@Map$, mf_monster_noteleport;
+	setmapflag .@Map$, mf_nowarp;
+	setmapflag .@Map$, mf_nowarpto;
+	setmapflag .@Map$, mf_novending;
+	setmapflag .@Map$, mf_noteleport;
+	setmapflag .@Map$, mf_nosave;
+	setmapflag .@Map$, mf_noreturn;
+	setmapflag .@Map$, mf_nomemo;
+	
+	disablenpc "Desistência#mvp_event";
+	donpcevent "Evento MvP#warp::OnStart";
+	initnpctimer;
+	announce "[Evento MvP]: O Evento MvP está aberto vocês tem " + $@ev_mvp_timer + " minutos para entrar na arena.",bc_all,"0x00FF00";
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	.@MinPlayers = getvariableofnpc(.MinPlayers, "Evento MvP#config");
+	.@map$ = getvariableofnpc(.MapName$, "Evento MvP#config");
+	$@ev_mvp_timer--;
+	
+	if( $@ev_mvp_timer <= 0 )
+	{
+		if( getmapusers(.@map$) < .@MinPlayers )
+		{
+			announce "[Evento MvP]: O Evento MvP está aberto e não atingiu a quantidade (" + getmapusers(.@map$) + "/" + .@MinPlayers + ") de jogadores.",bc_all,"0x00FF00";
+			sleep 5000;
+			announce "[Evento MvP]: Estamos adiando o evento em 1 minuto para chegada de novos jogadores.",bc_all,"0x00FF00";
+			$@ev_mvp_timer++;
+			initnpctimer;
+		}
+		else
+		{
+			$@ev_mvp_flag = 2;
+			initnpctimer "Evento MvP#timer";
+			donpcevent "Evento MvP#warp::OnEnd";
+			announce "[Evento MvP]: O Evento MvP começou, boa sorte a todos os participantes.",bc_all,"0x00FF00";
+			sleep 5000;
+			donpcevent "Evento MvP#event::OnMobSpawn";
+		}
+	}
+	else {
+		announce "[Evento MvP]: O Evento MvP está aberto vocês tem " + $@ev_mvp_timer + " minutos para entrar na arena.",bc_all,"0x00FF00";
+		initnpctimer;
+	}
+	end;
+	
+OnMobSpawn:
+	.@map$ = getvariableofnpc(.MapName$, "Evento MvP#config");
+	deletearray .@mobid, getarraysize(.@mobid);
+	if( $@ev_mvp_round == 1 )
+		copyarray .@mobid, $@EVMVP_MobsEasy, (getarraysize($@EVMVP_MobsEasy)-1);
+	else if( $@ev_mvp_round == 2 )
+		copyarray .@mobid, $@EVMVP_MobsMedium, (getarraysize($@EVMVP_MobsMedium)-1);
+	else if( $@ev_mvp_round == 3 )
+		copyarray .@mobid, $@EVMVP_MobsHard, (getarraysize($@EVMVP_MobsHard)-1);
+	else if( $@ev_mvp_round == 4 )
+		copyarray .@mobid, $@EVMVP_MobsVeryHard, (getarraysize($@EVMVP_MobsVeryHard)-1);
+	else {
+		// Fim do Evento
+		mapannounce .@map$, "Parabéns a todos que participaram do evento, vocês são os melhores!",bc_all,"0x00FF00";
+		sleep 5000;
+		.@RewardType = getvariableofnpc(.RewardType, "Evento MvP#config");
+		if( !.@RewardType || .@RewardType == 2 )
+			enablenpc "Recompensador#ev_mvp";
+		end;
+	}
+	
+	enablenpc "Desistência#mvp_event";
+	
+	.@BlockDrop = getvariableofnpc(.BlockDrop[($@ev_mvp_round-1)], "Evento MvP#config");
+	.@BlockExp = getvariableofnpc(.BlockExp[($@ev_mvp_round-1)], "Evento MvP#config");
+	.@BlockReward = getvariableofnpc(.BlockExp[($@ev_mvp_round-1)], "Evento MvP#config");
+	
+	if( !.@BlockDrop )
+	{
+		if( getmapflag(.@map$, mf_nodrop) )
+			removemapflag .@map$, mf_nodrop;
+		if( getmapflag(.@map$, mf_nomobloot) )
+			removemapflag .@map$, mf_nomobloot;
+		if( getmapflag(.@map$, mf_nomvploot) )
+			removemapflag .@map$, mf_nomvploot;
+	}
+	else {
+		if( !getmapflag(.@map$, mf_nodrop) )
+			setmapflag .@map$, mf_nodrop;
+		if( !getmapflag(.@map$, mf_nomobloot) )
+			setmapflag .@map$, mf_nomobloot;
+		if( !getmapflag(.@map$, mf_nomvploot) )
+			setmapflag .@map$, mf_nomvploot;
+	}
+	
+	if( !.@BlockExp )
+	{
+		if( getmapflag(.@map$, mf_nobaseexp) )
+			removemapflag .@map$, mf_nobaseexp;
+		if( getmapflag(.@map$, mf_nojobexp) )
+			removemapflag .@map$, mf_nojobexp;
+	}
+	else {
+		if( !getmapflag(.@map$, mf_nobaseexp) )
+			setmapflag .@map$, mf_nobaseexp;
+		if( !getmapflag(.@map$, mf_nojobexp) )
+			setmapflag .@map$, mf_nojobexp;
+	}
+		
+	if( !.@BlockReward )
+	{
+		if( getmapflag(.@map$, mf_nomobloot) )
+			removemapflag .@map$, mf_nomobloot;
+		if( getmapflag(.@map$, mf_nomvploot) )
+			removemapflag .@map$, mf_nomvploot;
+	}
+	else {
+		if( !getmapflag(.@map$, mf_nomobloot) )
+			setmapflag .@map$, mf_nomobloot;
+		if( !getmapflag(.@map$, mf_nomvploot) )
+			setmapflag .@map$, mf_nomvploot;
+	}
+		
+	freeloop(1);
+	while(1)
+	{
+		.@rand = rand(0,(getarraysize(.@mobid)-1));
+		if( getmonsterinfo(.@mobid[.@rand],0) == "null" )
+			continue;
+		else
+			break;
+	}
+	freeloop(0);
+	.@x = getvariableofnpc(.Coord_X, "Evento MvP#config");
+	.@y = getvariableofnpc(.Coord_Y, "Evento MvP#config");
+	mapannounce .@map$, "Vocês tem 30 segundos para se prepararem para enfrentar o MvP da " + $@ev_mvp_round + "ª Rodada.",bc_all,"0x00FF00";
+	sleep 30000;
+	disablenpc "Desistência#mvp_event";
+	mapannounce .@map$, "O MvP " + getmonsterinfo(.@mobid[.@rand],0) + " foi invocado.",bc_all,"0x00FF00";
+	monster .@map$, .@x, .@y, getmonsterinfo(.@mobid[.@rand],0), .@mobid[.@rand], 1, strnpcinfo(0)+"::OnMobDead";
+	$@ev_mvp_lastid = .@mobid[.@rand];
+	end;
+	
+OnMobDead:
+	$@ev_mvp_round++;
+	.@map$ = getvariableofnpc(.MapName$, "Evento MvP#config");
+	mapannounce .@map$, "O Jogador [" + strcharinfo(0) + "] derrotou o MvP " + getmonsterinfo($@ev_mvp_lastid,0) + ".",bc_all,"0x00FF00";
+	sleep2 5000;
+	donpcevent strnpcinfo(0)+"::OnMobSpawn";
+	.@RewardType = getvariableofnpc(.RewardType, "Evento MvP#config");
+	if( .@RewardType )
+	{
+		.@RewardMode = getvariableofnpc(.RewardMode, "Evento MvP#config");
+		callfunc "EvMvPReward", .@RewardMode;
+		if( $@ev_mvp_round > 4 && .@RewardType == 1 )
+		{
+			.@map2$ = getvariableofnpc(.ExitMapName$, "Evento MvP#config");
+			.@x = getvariableofnpc(.ExitCoord_X, "Evento MvP#config");
+			.@y = getvariableofnpc(.ExitCoord_Y, "Evento MvP#config");
+			mapwarp .@map$, .@map2$, .@x, .@y; 
+		}
+	}
+	end;
+	
+OnReset:
+	$@ev_mvp_flag = 0;
+	$@ev_mvp_timer = 0;
+	$@ev_mvp_round = 0;
+	disablenpc "Recompensador#ev_mvp";
+	enablenpc "Desistência#mvp_event";
+	stopnpctimer "Evento MvP#timer";
+	stopnpctimer "Evento MvP#event";
+	donpcevent "Evento MvP#warp::OnEnd";
+	.@map$ = getvariableofnpc(.MapName$, "Evento MvP#config");
+	.@map2$ = getvariableofnpc(.ExitMapName$, "Evento MvP#config");
+	.@x = getvariableofnpc(.ExitCoord_X, "Evento MvP#config");
+	.@y = getvariableofnpc(.ExitCoord_Y, "Evento MvP#config");
+	killmonsterall .@map$;
+	mapwarp .@map$, .@map2$, .@x, .@y; 
+	end;
+}
+
+// =============================================================
+// =						Teleportadores					   =
+// =============================================================
+event_room,94,114,5	script	Evento MvP#warp	4_F_NOVICE,{
+	.@npcname$ = "^B8860B[" + ($@ev_mvp_flag==1?"Imperador Morroc":"Ellia") + "]^000000";
+	.@w = 1;
+	while(.@w)
+	{
+		if( $@ev_mvp_flag == 1 )
+		{
+			mes .@npcname$;
+			mes "Está na hora dos monstros ensinarem uma lição aos Humanos.";
+			mes "Que tal entrar na nossa fila de espera?";
+		}
+		else {
+			mes .@npcname$;
+			mes "Bem-vindo ao ^0000FFEvento MvP^000000, em que poss ajudar?";
+		}
+		next;
+		switch( select(($@ev_mvp_flag==1?"^0000FF- Entrar no Evento.^000000":""), "- Sobre o Evento.", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				mes .@npcname$;
+				mes "O que? Tem coragem de nos desafiar?";
+				next;
+				if( select("^0000FF- Sim, monstro.^000000","^FF0000- Não... espere...^000000") == 1 )
+				{
+					set .@MinBaseLevel, getvariableofnpc(.MinBaseLevel, "Evento MvP#config");
+					
+					if( .@MinBaseLevel && BaseLevel < .@MinBaseLevel )
+					{
+						mes .@npcname$;
+						mes "Humano, você é muito fraco para entrar nessa arena.";
+						mes "Você deve ter no minimo ^FF0000" + .@MinBaseLevel + " Nível de Base^000000 para entrar no Evento.";
+						next;
+						break;
+					}
+					
+					mes .@npcname$;
+					mes "Boa-sorte lá dentro Humano...";
+					close2;
+					.@map$ = getvariableofnpc(.MapName$, "Evento MvP#config");
+					.@x = getvariableofnpc(.Coord_X, "Evento MvP#config");
+					.@y = getvariableofnpc(.Coord_Y, "Evento MvP#config");
+					warp .@map$, .@x, .@y;
+					end;
+				}
+				mes .@npcname$;
+				mes "Foi o que pensei Humano!!";
+				next;
+				break;
+			case 2:
+				mes .@npcname$;
+				if( $@ev_mvp_flag == 1 )
+				{
+					mes "Os Humanos passaram dos limites de respeito com os Monstros.";
+					mes "Eles vão enfrentar 4 MvP's dentro da arena com dificuldades diferentes.";
+					
+				}
+				else {
+					mes "Os Monstros acham que nós Humanos desrespeitam muitos eles, na verdade eles que querem tomar nosso espaço.";
+					mes "Então os monstros decidiram que iriam acabar com os mais bravos guerreiros em uma luta contra MvP's.";
+					mes "Na arena os Humanos devem enfrentar 4 MvP's com dificuldades diferentes.";
+				}
+				mes "Começa com um MvP de dificuldade baixa, seguido de um MvP com dificuldade média, em seguida vem o MvP com uma dificuldade um pouco dificil, e termina-rá com um MvP de dificuldade extrema!";
+				next;
+				break;
+			case 3:
+				.@w=0;
+				break;
+		}
+	}
+	
+	mes .@npcname$;
+	if( $@ev_mvp_flag == 1 )
+		mes "Está com medo Humano? Só vamos fazer picadinho de você dentro daquela arena...";
+	else
+		mes "Tudo bem, volte quando precisar de ajuda.";
+	close;
+	
+OnStart:
+	setnpcdisplay(strnpcinfo(0), strnpcinfo(0), 1916, 1);
+	end;
+	
+OnEnd:
+	setnpcdisplay(strnpcinfo(0), strnpcinfo(0), 4_F_NOVICE, 0);
+	end;
+}
+
+mvp_event,82,82,4	script	Desistência#mvp_event	4_F_NOVICE,{
+	mes "^B8860B[Evento MvP]^000000";
+	mes "Deseja desistir do Evento?";
+	next;
+	if( select("^FF0000- Sim, claro.^000000", "^0000FF- Não, obrigado.^000000") == 2 )
+	{
+		mes "^B8860B[Evento MvP]^000000";
+		mes "Hah, aprecio sua coragem.";
+		close;
+	}
+	
+	mes "^B8860B[Evento MvP]^000000";
+	mes "Hmmm, tudo bem... vou te tirar dessa encrenca.";
+	close;
+	.@map$ = getvariableofnpc(.ExitMapName$, "Evento MvP#config");
+	.@x = getvariableofnpc(.ExitCoord_X, "Evento MvP#config");
+	.@y = getvariableofnpc(.ExitCoord_Y, "Evento MvP#config");
+	warp .@map$, .@x, .@y;
+	end;
+	
+OnStart:
+	enablenpc strnpcinfo(0);
+	end;
+
+OnEnd:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+// =============================================================
+// =	   			Recompensador do Evento					   =
+// =============================================================
+mvp_event,82,82,4	script	Recompensador#ev_mvp	4_F_NOVICE,{
+	.@RewardMode = getvariableofnpc(.RewardMode, "Evento MvP#config");
+	callfunc "EvMvPReward", .@RewardMode;
+	.@map$ = getvariableofnpc(.ExitMapName$, "Evento MvP#config");
+	.@x = getvariableofnpc(.ExitCoord_X, "Evento MvP#config");
+	.@y = getvariableofnpc(.ExitCoord_Y, "Evento MvP#config");
+	warp .@map$, .@x, .@y;
+	end;
+	
+OnInit:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+function	script	EvMvPReward	{
+
+	for( .@i = 0; .@i < getarraysize($@mvp_event_reward$); .@i+=4 )
+	{
+		.@tmp_object$[getarraysize(.@tmp_object$)] = $@mvp_event_reward$[.@i];
+		.@tmp_value$[getarraysize(.@tmp_value$)] = $@mvp_event_reward$[(.@i+1)];
+		.@tmp_name$[getarraysize(.@tmp_name$)] = $@mvp_event_reward$[(.@i+2)];
+		.@tmp_type$[getarraysize(.@tmp_type$)] = $@mvp_event_reward$[(.@i+3)];
+	}
+	
+	freeloop(1);
+	mes "^B8860B[Recompensador]^000000";
+	mes "Hey! Excelente, você acabou de ganhar uma recompensa.";
+	next;
+	switch( getarg(0) )
+	{
+		case 0:
+			.@rand = rand(0,(getarraysize(.@tmp_object$)-1));
+			while(1)
+			{
+				if( !atoi(.@tmp_type$[.@rand]) )
+				{
+					if( !checkweight(atoi(.@tmp_object$[.@rand]),atoi(.@tmp_value$[.@rand])) )
+					{
+						mes "^B8860B[Recompensador]^000000";
+						mes "Você recebeu ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000 como recompensa.";
+						mes "Mais está carregando itens de mais em seu invetário, vou abrir o Armazém para você.";
+						next;
+						openstorage();
+						mes "^B8860B[Recompensador]^000000";
+						mes "Clique em continuar quando terminar de usar seu armazém.";
+						next;
+						if( prompt("Continuar") > 1 )
+						{
+							mes "^B8860B[Recompensador]^000000";
+							mes "Tem certeza que não deseja uma recompensa?";
+							next;
+							if( prompt("^FF0000- Sim.^000000", "^0000FF- Não, desejo pegar uma recompensa.^000000") == 1 )
+							{
+								mes "^B8860B[Recompensador]^000000";
+								mes "Tudo bem então.";
+								close2;
+								break;
+							}
+						}
+					}
+					else
+					{
+						getitem atoi(.@tmp_object$[.@rand]), atoi(.@tmp_value$[.@rand]);
+						mes "^B8860B[Recompensador]^000000";
+						mes "Aqui está sua recompensa... ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000.";
+						close2;
+						break;
+					}
+				}
+				else {
+					setd .@tmp_object$[.@rand], getd(.@tmp_object$[.@rand]) + atoi(.@tmp_value$[.@rand]);
+					mes "^B8860B[Recompensador]^000000";
+					mes "Aqui está sua recompensa... ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000.";
+					close2;
+					break;
+				}
+			}
+			break;
+		case 1:
+			.@count=1;
+			.@rand=0;
+			while(1)
+			{
+				if( !atoi(.@tmp_type$[.@rand]) )
+				{
+					if( !checkweight(atoi(.@tmp_object$[.@rand]),atoi(.@tmp_value$[.@rand])) )
+					{
+						mes "^B8860B[Recompensador]^000000";
+						mes "Você recebeu ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + " como " + .@count + "ª recompensa^000000.";
+						mes "Mais está carregando itens de mais em seu invetário, vou abrir o Armazém para você.";
+						next;
+						openstorage();
+						mes "^B8860B[Recompensador]^000000";
+						mes "Clique em continuar quando terminar de usar seu armazém.";
+						next;
+						if( prompt("Continuar") > 1 )
+						{
+							mes "^B8860B[Recompensador]^000000";
+							mes "Tem certeza que não deseja uma recompensa?";
+							next;
+							if( prompt("^FF0000- Sim.^000000", "^0000FF- Não, desejo pegar uma recompensa.^000000") == 1 )
+							{
+								mes "^B8860B[Recompensador]^000000";
+								mes "Tudo bem então.";
+								close2;
+								break;
+							}
+						}
+							
+					}
+					else
+					{
+						getitem atoi(.@tmp_object$[.@rand]), atoi(.@tmp_value$[.@rand]);
+						mes "^B8860B[Recompensador]^000000";
+						mes "Aqui está sua " + .@count + " recompensa... ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000.";
+						.@count++;
+						.@rand++;
+						if( .@rand < getarraysize(.@tmp_object$) )
+							next;
+						else
+						{
+							close2;
+							break;
+						}
+					}
+				}
+				else {
+					setd .@tmp_object$[.@rand], getd(.@tmp_object$[.@rand]) + atoi(.@tmp_value$[.@rand]);
+					mes "^B8860B[Recompensador]^000000";
+					mes "Aqui está sua " + .@count + " recompensa... ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000.";
+					.@count++;
+					.@rand++;
+					if( .@rand < getarraysize(.@tmp_object$) )
+						next;
+					else
+					{
+						close2;
+						break;
+					}
+				}
+			}
+			break;
+		case 2:
+			.@buildmenu$="";
+			for( .@i=0; .@i < getarraysize(.@tmp_object$); .@i++ )
+				.@buildmenu$ = .@buildmenu$ + "^0000FF" + .@tmp_value$[.@i] + "x " + .@tmp_name$[.@i] + "^000000:";
+				
+			.@w=1;
+			while(.@w)
+			{
+				.@choose = prompt(.@buildmenu$);
+				switch(.@choose)
+				{
+					default:
+						.@rand = (.@choose-1);
+						if( !atoi(.@tmp_type$[.@rand]) )
+						{
+							if( !checkweight(atoi(.@tmp_object$[.@rand]),atoi(.@tmp_value$[.@rand])) )
+							{
+								mes "^B8860B[Recompensador]^000000";
+								mes "Você recebeu ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000 como recompensa.";
+								mes "Mais está carregando itens de mais em seu invetário, vou abrir o Armazém para você.";
+								next;
+								openstorage();
+								mes "^B8860B[Recompensador]^000000";
+								mes "Clique em continuar quando terminar de usar seu armazém.";
+								next;
+								if( prompt("Continuar") > 1 )
+								{
+									mes "^B8860B[Recompensador]^000000";
+									mes "Tem certeza que não deseja uma recompensa?";
+									next;
+									if( prompt("^FF0000- Sim.^000000", "^0000FF- Não, desejo pegar uma recompensa.^000000") == 1 )
+									{
+										mes "^B8860B[Recompensador]^000000";
+										mes "Tudo bem então.";
+										close2;
+										.@w=0;
+									}
+								}
+							}
+							else
+							{
+								getitem atoi(.@tmp_object$[.@rand]), atoi(.@tmp_value$[.@rand]);
+								mes "^B8860B[Recompensador]^000000";
+								mes "Aqui está sua recompensa... ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000.";
+								close2;
+								.@w=0;
+							}
+						}
+						else {
+							setd .@tmp_object$[.@rand], getd(.@tmp_object$[.@rand]) + atoi(.@tmp_value$[.@rand]);
+							mes "^B8860B[Recompensador]^000000";
+							mes "Aqui está sua recompensa... ^0000FF" + atoi(.@tmp_value$[.@rand]) + "x " + .@tmp_name$[.@rand] + "^000000.";
+							close2;
+							.@w=0;
+						}
+						break;
+					case 255:
+						mes "^B8860B[Recompensador]^000000";
+						mes "Tem certeza que não deseja uma recompensa?";
+						next;
+						if( prompt("^FF0000- Sim.^000000", "^0000FF- Não, desejo pegar uma recompensa.^000000") == 1 )
+						{
+							mes "^B8860B[Recompensador]^000000";
+							mes "Tudo bem então.";
+							close2;
+							.@w=0;
+						}
+						break;
+				}
+			}
+			break;
+		default:
+			close2;
+			break;
+	}
+	freeloop(0);
+	return;
+}

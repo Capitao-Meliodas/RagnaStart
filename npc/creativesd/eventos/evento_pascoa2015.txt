@@ -1,0 +1,676 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Evento de Páscoa 2015                                            .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Eventos de Páscoa para alegrar seu servidor.                     .
+  *---------------------------------------------------------------------*/
+  
+//
+// Eventos que ocorre durante a Páscoa.
+//
+//		Evento nº 1:
+//			Monstros são invocados com drop do item ovo que pode ser trocado por outros itens no jogo.
+//
+//		Evento nº 2:
+//			Ache os Ovos surpresa, itens que pode vir como recompensa dentro dos ovos.
+//
+//		Quest Evento nº 3:
+//			Resgate o coelho da Pácoa, os jogadores devem resgatar o coelho da Páscoa que foi suspeita-mente raptado pelo MvP Antonio, mais na verdade a Bruxa má de Niflheim que capturou ele para pegar as Crianças.
+//
+//
+-	script	Páscoa 2015#config	-1,{
+OnInit:
+	// ===========================================================
+	// =			 Configurações do Evento nº 1		         =
+	// ===========================================================
+	//
+	setarray $@easter2015_maplist1$[0],	"prontera", "geffen", "payon";		// Lista de Mapas habilitados para invocar os monstros.
+	$@easter2015_egg = 7605;												// Id do Ovo que será entregue quando matar os Coelhos Operários e Supervisores.
+
+	
+	// Configurações de Pontos para troca.
+	//
+	// Está configurado para receber 1 ponto a cada 5 Ovos.
+	//
+	$@easter2015_p_amount = 1;					// Quantidade de pontos a cada x Ovos os Jogadores vão receber.
+	$@easter2015_p_eggs =	5;					// Quantidade de Ovos o jogador precisa para receber x pontos.
+	
+	
+	// ===========================================================
+	// =			 Configurações do Evento nº 2		         =
+	// ===========================================================
+	//
+	setarray $@easter2015_maplist2$[0], "prontera", "geffen", "payon";		// Lista de Mapas habilitados para invocar os monstros.
+	
+	// Configurações de Itens de Recompensas que ganha no Ovo Surpresa. (Max. 60 itens)
+	//
+	// Ex: setarray .@reward2ev[0], <item_id>, <quantidade>, <item_id>, <quantidade>;
+	setarray .@reward2ev[0],	501, 1, 502, 10, 503, 1, 504, 1;
+	// Array com as quantidades dos Itens
+	
+	// ===========================================================
+	// =		Configurações do Quest Evento nº 3		         =
+	// ===========================================================
+	$@easter2015_q_id = 505;	// Id do item que será de recompensa.
+	$@easter2015_q_qt =  10;	// Quantidade da recompensa.
+	
+	// ===========================================================
+	// =			Configurações de Itens de Troca				 =
+	// ===========================================================
+	//
+	//	Configurações de Itens que pode ser trocado por BunnyPoints.
+	//
+	//	Ex: setarray $@easter2015_exchange[0], <item_id>, <quantidade>, <quantidade_BunnyPoint>, <item_id>, <quantidade>, <quantidade_BunnyPoint>;
+	setarray $@easter2015_exchange[0], 501, 10, 5, 502, 10, 10, 503, 10, 50;
+	
+	// ===========================================================
+	// =			Processo do Sistema, não altere! 			 =
+	// ===========================================================
+	// Mecânismo do Sistema.
+	for( .@i=0; .@i < getarraysize(.@reward2ev); .@i+=2 )
+	{
+		$@easter2015_rev2id[getarraysize($@easter2015_rev2id)] = .@reward2ev[.@i];
+		$@easter2015_rev2qt[getarraysize($@easter2015_rev2qt)] = .@reward2ev[(.@i+1)];
+	}
+	end;
+}
+
+-	script	Páscoa 2015#event	-1,{
+
+OnInit:
+	sleep 5000;
+	// Depurando @reloadscript.
+	if( $easter2015_mob1 > 0 )
+		callsub sSumnEaster2015, 1063, $easter2015_mob1, "Coelho Operário Maligno", strnpcinfo(0)+"::OnMobDead01", $@easter2015_maplist1$;
+	if( $easter2015_mob2 > 0 )
+		callsub sSumnEaster2015, 1063, $easter2015_mob2, "Coelho Operário Maligno", strnpcinfo(0)+"::OnMobDead02", $@easter2015_maplist1$;
+	if( $easter2015_mob3 > 0 )
+		callsub sSumnEaster2015, 1063, $easter2015_mob3, "Coelho Operário Maligno", strnpcinfo(0)+"::OnMobDead03", $@easter2015_maplist1$;
+	if( $easter2015_mob4 > 0 )
+		callsub sSumnEaster2015, 1322, $easter2015_mob4, "Coelho Supervisor Maligno", strnpcinfo(0)+"::OnMobDead04", $@easter2015_maplist1$;
+	if( $easter2015_mob5 > 0 )
+		callsub sSumnEaster2015, 1322, $easter2015_mob5, "Coelho Supervisor Maligno", strnpcinfo(0)+"::OnMobDead05", $@easter2015_maplist1$;
+	if( $easter2015_mob6 > 0 )
+		callsub sSumnEaster2015, 2166, $easter2015_mob6, "Ovo de Páscoa Surpresa", strnpcinfo(0)+"::OnMobDead06", $@easter2015_maplist2$;
+	end;
+	
+// ===========================================================
+// =				Invocação de Monstros				     =
+// ===========================================================
+//
+//	Adicionar mais horários para Invocação:
+//
+//	OnClock<Hora><Minuto>:
+OnClock1200:
+	// Invoca 200 Monstros com o Drop de 1 Ovo.
+	callsub sSumnEaster2015, 1063, 200, "Coelho Operário Maligno", strnpcinfo(0)+"::OnMobDead01", $@easter2015_maplist1$;
+	$easter2015_mob1 += 200;
+	
+	// Invoca 100 Monstros com o Drop de 2 Ovos.
+	callsub sSumnEaster2015, 1063, 100, "Coelho Operário Maligno", strnpcinfo(0)+"::OnMobDead02", $@easter2015_maplist1$;
+	$easter2015_mob2 += 100;
+	
+	// Invoca 50 Monstros com o Drop de 4 Ovos.
+	callsub sSumnEaster2015, 1063, 50, "Coelho Operário Maligno", strnpcinfo(0)+"::OnMobDead03", $@easter2015_maplist1$;
+	$easter2015_mob3 += 50;
+	
+	// Invoca 25 Monstros com o Drop de 5 Ovos.
+	callsub sSumnEaster2015, 1322, 25, "Coelho Supervisor Maligno", strnpcinfo(0)+"::OnMobDead04", $@easter2015_maplist1$;
+	$easter2015_mob4 += 25;
+	
+	// Invoca 10 Monstros com o Drop de 10 Ovos.
+	callsub sSumnEaster2015, 1322, 10, "Coelho Supervisor Maligno", strnpcinfo(0)+"::OnMobDead05", $@easter2015_maplist1$;
+	$easter2015_mob5 += 10;
+	
+	// Invoca 10 Ovos Surpresas.
+	callsub sSumnEaster2015, 2166, 10, "Ovo de Páscoa Surpresa", strnpcinfo(0)+"::OnMobDead06", $@easter2015_maplist2$;
+	$easter2015_mob6 += 10;
+	end;
+
+OnMobDead01:
+	$easter2015_mob1--;
+	.@a = 1;
+	callsub sItemEaster2015, $@easter2015_egg, .@a;
+	end;
+	
+OnMobDead02:
+	$easter2015_mob2--;
+	.@a = 2;
+	callsub sItemEaster2015, $@easter2015_egg, .@a;
+	end;
+	
+OnMobDead03:
+	$easter2015_mob3--;
+	.@a = 4;
+	callsub sItemEaster2015, $@easter2015_egg, .@a;
+	end;
+	
+OnMobDead04:
+	$easter2015_mob4--;
+	.@a = 5;
+	callsub sItemEaster2015, $@easter2015_egg, .@a;
+	end;
+	
+OnMobDead05:
+	$easter2015_mob5--;
+	.@a = 10;
+	callsub sItemEaster2015, $@easter2015_egg, .@a;
+	end;
+	
+OnMobDead06:
+	$easter2015_mob6--;
+	.@a = 1;
+	callsub sItemEaster2015, $@easter2015_rev2id, $@easter2015_rev2qt;
+	end;
+
+// Entrega um determinado item ao jogador.
+//	callsub sItemEaster2015 <var_list_id>, <var_list_amount>;
+sItemEaster2015:
+	getmapxy .@map$, .@x, .@y, 0;
+	copyarray .@item_id, getarg(0), getarraysize(getarg(0));
+	copyarray .@amount, getarg(1), getarraysize(getarg(1));
+	.@rand = rand(0,(getarraysize(.@item_id)-1));
+	.@g_item = .@item_id[.@rand];
+	if( getarraysize(.@amount) < getarraysize(.@item_id) )
+		.@g_amount = .@amount[0];
+	else
+		.@g_amount = .@amount[.@rand];
+		
+	if( checkweight(.@g_item, .@g_amount) )
+		getitem .@g_item, .@g_amount;
+	else if( .@map$ != "" )
+		makeitem .@g_item, .@g_amount, .@map$, .@x+1, .@y+1;
+	return;
+
+// Invocar monstros em determinados mapas.
+//
+//	callsub sSumnEaster2015, <id_do_monstro>, <quantidade>, "<Nome_de_Exibição>", "<NPC::Evento>", <map_list_var>;
+//
+//		<map_list_flag>:
+//				1: Monstros a respeito da lista de mapas habilitados do Evento nº 1.
+//				2: Monstros a respeito da lista de mapas habilitados do Evento nº 2.
+sSumnEaster2015:
+	freeloop(1);
+	for( .@i=0; .@i < getarg(1); .@i++ )
+	{
+		copyarray .@map$, getarg(4), getarraysize(getarg(4));
+		.@m = rand(0,(getarraysize(.@map$)-1));
+		
+		if( .@map$[.@m] == "" )
+			continue;
+
+		monster .@map$[.@m], 0, 0, getarg(2), getarg(0), getarg(1), getarg(3);
+	}
+	freeloop(0);
+	return;
+}
+
+// ===========================================================
+// =				Trocador por Recompensas			     =
+// ===========================================================
+prontera,156,171,4	script	Evento Páscoa 2015#ev2015	4_GEFFEN_03,{
+	mes "^4169E1[Evelyn]^000000";
+	if( easter2015 && easter2015 <= 5 )
+		mes "Ah, você voltou... alguma notícia do Coelho?";
+	else if( easter2015 == 6 )
+	{
+		mes "Você conseguiu, venceu a Bruxa e resgatou o ^0000FFCoelho da Páscoa^000000.";
+		mes "Ele me mandou entreguar isso para você.";
+		getitem $@easter2015_q_id, $@easter2015_q_qt;
+		easter2015 = 7;
+	}
+	else if( easter2015 == 7 )
+	{
+		mes "Graças a você, a Páscoa está salva e todas as crianças vão poder se deliciar com esses ovinhos de chocolate.";
+		mes "Em que posso te ajudar?";
+	}
+	else 
+		mes "Olá... realmente muitas crianças irão ficar desapontadas nesta Páscoa...";
+	next;
+	
+	if( !easter2015 )
+		.@menu = select("^0000FF- O que está acontecendo?^000000", "", "", "^FF0000- Ignorar...^000000");
+	else
+		.@menu = select("", "- Trocar Ovos de Páscoas por BunnyPoints.", "- Trocar BunnyPoints por Recompensas.", "^FF0000- Nada não, obrigado.^000000");
+		
+	switch( .@menu )
+	{
+		case 1:
+			// O que está acontecendo?
+			mes "^4169E1[Evelyn]^000000";
+			mes "Essa páscoa está arruinada, Coelhos Malignos sequestrarão os Ovos que os Coelhos Operários estavão separando para o Coelho da Páscoa.";
+			mes "Ainda para piorar tudo, o Coelho da Páscoa desapareceu e os Coelhos Supervisores não sabem como lidar com a situação...";
+			next;
+			mes "^0000FF[" + strcharinfo(0) + "]^000000";
+			mes "Coelho da Páscoa??! Ele existe?";
+			next;
+			mes "^4169E1[Evelyn]^000000";
+			mes "Sim, existe... veja as cidades estão repletas por coelhos Malignos que sequestrão o Coelho da Páscoa.";
+			mes "Preciso de muita ajuda para achar esse Coelho da Páscoa para lidar com essa situação.";
+			next;
+			mes "^4169E1[Evelyn]^000000";
+			mes "Deve ter sido o ^FF0000Antonio^000000, ele sempre teve ódio do Coelho da Páscoa por ser amigo do Papai Noel.";
+			next;
+			if( select("- Posso ajudar...", "^FF0000- Ignorar...^000000") == 1 )
+			{
+				easter2015 = 1;
+				mes "^4169E1[Evelyn]^000000";
+				mes "Obrigado, todas as crianças estarão contando com você!";
+				mes "A Nordeste de ^0000FFLutie^000000 tem uma garotinha chamada ^0000FFIvve^000000, ela pode te ajudar a encontrar o ^FF0000Antonio^000000, ela disse que estaria na Igreja rezando para a volta do Coelho da Páscoa.";
+				close;
+			}
+			break;
+		case 2:
+			// Trocar Ovos por BunnyPoints
+			if( countitem($@easter2015_egg) < $@easter2015_p_eggs )
+			{
+				mes "^4169E1[Evelyn]^000000";
+				mes "Você não tem " + getitemname($@easter2015_egg) + " suficiente para trocar por BunnyPoints.";
+				close;
+			}
+			.@delamount = $@easter2015_p_eggs*(countitem($@easter2015_egg)/$@easter2015_p_eggs);
+			.@addpoint = (countitem($@easter2015_egg)/$@easter2015_p_eggs)*$@easter2015_p_amount;
+			mes "^4169E1[Evelyn]^000000";
+			mes "Nossa, você tem " + .@delamount + " " + getitemname($@easter2015_egg) + " que pode ser trocado por " + .@addpoint + " BunnyPoints.";
+			mes "Deseja fazer a troca?";
+			next;
+			if( select("- Sim, trocar.", "- Não, ficarei com eles.") == 2 )
+			{
+				mes "^4169E1[Evelyn]^000000";
+				mes "Ah! Que pena, esses ovos os Operários irião precisar desses Ovos.";
+				close;
+			}
+			
+			delitem $@easter2015_egg, .@delamount;
+			BunnyPoint += .@addpoint;
+			
+			mes "^4169E1[Evelyn]^000000";
+			mes "Aqui está, fica despreocupado que irei entreguar aos Coelhos Supervisores, eles saberão o que fazer com os Ovos.";
+			close;
+		case 3:
+			// Trocar BunnyPoints por Recompensas.
+			
+			.@buildmenu = "";
+			for( .@i=0; .@i < getarraysize($@easter2015_exchange); .@i+=3 )
+			{
+				.@item_id[getarraysize(.@item_id)] = $@easter2015_exchange[.@i];
+				.@item_qt[getarraysize(.@item_qt)] = $@easter2015_exchange[(.@i+1)];
+				.@item_pt[getarraysize(.@item_pt)] = $@easter2015_exchange[(.@i+2)];
+				.@buildmenu$ += "- ^FF0000" + $@easter2015_exchange[(.@i+1)] + "x " + getitemname($@easter2015_exchange[.@i]) + "^000000 -> ^0000FF" + $@easter2015_exchange[(.@i+2)] + " BunnyPoints^000000.:";
+			}
+			.@w=1;
+			while(.@w)
+			{
+				mes "^4169E1[Evelyn]^000000";
+				mes "Você tem ^FF0000" + BunnyPoint + " BunnyPoints^000000, selecione o item que deseja trocar.";
+				next;
+				.@choose = select(.@buildmenu$+"^FF0000- Cancelar.^000000")-1;
+				
+				if( .@choose == getarraysize(.@item_id) )
+					break;
+
+				if( BunnyPoint < .@item_pt[.@choose] )
+				{
+					mes "^4169E1[Evelyn]^000000";
+					mes "Você não tem ^0000FFBunnyPoints^000000 para trocar pelo ^0000FF" + getitemname(.@item_id[.@choose]) + "^000000.";
+					mes "Tente outro item.";
+					next;
+					continue;
+				}
+				else if( !checkweight(.@item_id[.@choose],.@item_qt[.@choose]) )
+				{
+					mes "^4169E1[Evelyn]^000000";
+					mes "Você não pode carregar tantos ^0000FF" + getitemname(.@item_id[.@choose]) + "^000000.";
+					mes "Guarde-os em seu Armazém ou tente outro item.";
+					next;
+					continue;
+				}
+				
+				mes "^4169E1[Evelyn]^000000";
+				mes "Tem certeza que deseja trocar ^0000FF" + .@item_pt[.@choose] + "x BunnyPoints^000000 por ^0000FF" + .@item_qt[.@choose] + "x " + getitemname(.@item_id[.@choose]) + "^000000?";
+				next;
+				switch( select("^0000FF- Sim, desejo.", "^FF8C00- Não, quero outro item.", "^FF0000- Cancelar.^000000") )
+				{
+					case 1:
+						BunnyPoint -= .@item_pt[.@choose];
+						getitem .@item_id[.@choose], .@item_qt[.@choose];
+						mes "^4169E1[Evelyn]^000000";
+						mes "Tudo bem, aqui está... ^0000FF" + .@item_qt[.@choose] + "x " + getitemname(.@item_id[.@choose]) + "^000000.";
+						next;
+						break;
+					case 2:
+						break;
+					case 3:
+						.@w=0;
+						break;
+				}
+			}
+			mes "^4169E1[Evelyn]^000000";
+			mes "Tudo bem, volte quando precisar de mim.";
+			close;
+		case 4:
+			// Cancelar.
+			break;
+	}
+	
+	if( !easter2015 )
+	{
+		mes "^4169E1[Evelyn]^000000";
+		mes "...";
+		close;
+	}
+	
+	mes "^4169E1[Evelyn]^000000";
+	mes "Estarei aqui se quiser falar comigo.";
+	close;
+}
+
+// ===========================================================
+// =			NPC's da Quest Evento de Páscoa			     =
+// ===========================================================
+xmas_in,34,171,8	script	Ivve#easter2015_01	4_F_06,{
+
+	if( !easter2015 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Esta páscoa está sendo muito triste, acho que todos já sabem que o Coelho foi raptado...";
+		close;
+	}
+	else if( easter2015 == 1 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Todos estão triste porque o Coelinho da Páscoa sumiu, o boato é que ele foi raptado.";
+		next;
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Garotinha não fique triste estou aqui para ajudar.";
+		mes "Estou a par da situação, a ^4169E1Evelyn^000000 disse para eu te procurar.";
+		mes "Falou que você pode ajudar a encontrar o ^FF0000Antonio^000000.";
+		next;
+		mes "^4169E1[Ivve]^000000";
+		mes "Sério? Só há uma maneira de fazer o ^FF0000Antonio^000000 aparecer.";
+		mes "Deixando as crianças felizes ele vem para tentar roubar de alguma maneira a felicidade das Crianças.";
+		next;
+		easter2015 = 2;
+		mes "^4169E1[Ivve]^000000";
+		mes "Me encontre nos Arredores de Lutie pela entrada Central, estarei aguardando Leste com meus amigos.";
+		mes "Traga ^0000FF50x " + getitemname($@easter2015_egg) + "^000000, iremos se divertir muito pintando esses " + getitemname($@easter2015_egg) + ", talvez o ^FF0000Antonio^000000 apareça!";
+		close;
+	}
+	else if( easter2015 == 2 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Me encontre nos Arredores de Lutie pela entrada Central, estarei aguardando Leste com meus amigos.";
+		mes "Traga ^0000FF50x " + getitemname($@easter2015_egg) + "^000000, iremos se divertir muito pintando esses " + getitemname($@easter2015_egg) + ", talvez o ^FF0000Antonio^000000 apareça!";
+		close;
+	}
+	else if( easter2015 == 3 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Estarei rezando para você trazer o Coelinho de volta!";
+		mes "Mais para isso você tem que ír para Igreja de Prontera, embusca da ^0000FFSacerdotisa Rebeca^000000.";
+		close;
+	}
+	else if( easter2015 == 4 || easter2015 == 5 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Que bom que você achou a ^0000FFSacerdotisa Rebeca^000000, espero que ela tenha te ajudado.";
+		close;
+	}
+	
+	mes "^4169E1[Ivve]^000000";
+	mes "Que bom que você encontrou o Coelinho da Páscoa, agora a Páscoa está a salva!";
+	close;
+}
+
+xmas_fild01,203,192,3	script	Ivve#easter2015_02	4_F_06,{
+	if( !easter2015 || easter2015 == 1 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Esta páscoa está sendo muito triste, acho que todos já sabem que o Coelho foi raptado...";
+		close;
+	}
+	else if( easter2015 == 2 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Ah " + strcharinfo(0) + ", você voltou...";
+		mes "Você trouxe os ^0000FF" + getitemname($@easter2015_egg) + "^000000?";
+		next;
+		if( countitem($@easter2015_egg) < 50 )
+		{
+			mes "^0000FF[" + strcharinfo(0) + "]^000000";
+			mes "Não, vou pega e me aguarde aqui...";
+			close;
+		}
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Sim, está aqui comigo.";
+		next;
+		delitem $@easter2015_egg,50;
+		mes "^4169E1[Ivve]^000000";
+		mes "Ótimo, vamos começar com a brincadeira...";
+		next;
+		hideoffnpc "Antonio#easter2015";
+		mes "^4169E1[Ivve]^000000";
+		mes strcharinfo(0)+"... ali... logo atrás de você.";
+		next;
+		mes "^FF0000[Antonio]^000000";
+		mes "Hohohoho!!!! Malditas Crianças, porque estão felizes?";
+		next;
+		donpcevent "Antonio#easter2015::OnHit01";
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Calado ^FF0000Antonio^000000, não estou aqui para brincadeiras...";
+		mes "Me diga logo aonde está o ^0000FFCoelho da Páscoa^000000?";
+		next;
+		mes "^FF0000[Antonio]^000000";
+		mes "Que?.. que... não sei de Coelho nenhum!";
+		next;
+		donpcevent "Antonio#easter2015::OnHit01";
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Já falei que não estou brincando ^FF0000Antonio^000000, me diga logo aonde está o ^0000FFCoelho da Páscoa^000000!";
+		next;
+		mes "^FF0000[Antonio]^000000";
+		mes "Já te falei que não sei de Coelho nenhum...";
+		mes "Pergunte a Bruxa do Castelo em Niflheim, ela estava com planos para levar as Crianças até ela...";
+		next;
+		hideonnpc "Antonio#easter2015";
+		mes "^4169E1[Ivve]^000000";
+		mes "Bruxa do Castelo?? " + strcharinfo(0) + ", esta Bruxa é muito perigosa.";
+		next;
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Mais o que posso fazer? Temos que restabelecer a Páscoa.";
+		next;
+		easter2015 = 3;
+		mes "^4169E1[Ivve]^000000";
+		mes "Na Igreja Prontera, tem uma Sacerdotisa chamada ^0000FFRebeca^000000... ela ajudou muitas pessoas a quebrar os feitiço desta bruxa.";
+		mes "Fale com ela, ela pode te ajudar.";
+		close;
+	}
+	else if( easter2015 == 3 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Estarei rezando para você trazer o Coelinho de volta!";
+		mes "Mais para isso você tem que ír para Ireja de Prontera, embusca da ^0000FFSacerdotisa Rebeca^000000.";
+		close;
+	}
+	else if( easter2015 == 4 || easter2015 == 5 )
+	{
+		mes "^4169E1[Ivve]^000000";
+		mes "Que bom que você achou a ^0000FFSacerdotisa Rebeca^000000, espero que ela tenha te ajudado.";
+		close;
+	}
+	mes "^4169E1[Ivve]^000000";
+	mes "Que bom que você encontrou o Coelinho da Páscoa, agora a Páscoa está a salva!";
+	close;
+}
+
+xmas_fild01,203,195,3	script	Criança#easter2015_01	4_M_06,{
+}
+
+xmas_fild01,207,193,3	duplicate(Criança#easter2015_01)	Crianças#easter2015_02	4_M_KID2
+
+xmas_fild01,198,188,7	script	Antonio#easter2015	4_M_ANTONIO,{
+	end;
+OnHit01:
+	specialeffect 122;
+	end;
+OnInit:
+	hideonnpc strnpcinfo(0);
+	end;
+}
+
+prt_church,105,104,3	script	Rebeca#easter2015	1_F_PRIEST,{
+	if( easter2015 < 3 )
+	{
+		mes "^4169E1[Rebeca]^000000";
+		mes "Não há nenhum lugar melhor do que a Igreja.";
+		close;
+	}
+	else if( easter2015 == 3 )
+	{
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Sacerdotisa Rebeca, preciso muito da ajuda de você para uma nobre missão.";
+		next;
+		mes "^4169E1[Rebeca]^000000";
+		mes "Ajuda de mim? O que te pertuba?";
+		next;
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Preciso de sua ajuda para enfrentar a ^FF0000Bruxa de Niflheim^000000, há suspeitas que ela raptou o ^0000FFCoelho da Páscoa^000000 com ituito de atrair crianças.";
+		next;
+		mes "^4169E1[Rebeca]^000000";
+		mes "Não acredito, aquela Bruxa vive tentando fazer o mau... eu preciso de alguns itens para poder te ajudar.";
+		next;
+		mes "^4169E1[Rebeca]^000000";
+		mes "Me traga ^0000FFuma Água Benta e um Colar^000000, estarei te aguardando aqui.";
+		mes "Seja rápido...";
+		easter2015 = 4;
+		close;
+	}
+	else if( easter2015 == 4 )
+	{
+		if( !countitem(523) || !countitem(2603) )
+		{
+			mes "^4169E1[Rebeca]^000000";
+			mes "Me traga ^0000FFuma Água Benta e um Colar^000000, estarei te aguardando aqui.";
+			mes "Seja rápido...";
+			close;
+		}
+		mes "^4169E1[Rebeca]^000000";
+		mes "Trouxe os itens que te pedi?";
+		next;
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Sim Sacerdotisa Rebbeca, está tudo aqui comigo.";
+		next;
+		delitem 523,1;
+		delitem 2603,1;
+		easter2015 = 5;
+		mes "^4169E1[Rebeca]^000000";
+		mes "Ah sim, aqui está...";
+		mes "Agora seja rápido e vá derrotar aquela Bruxa má, as crianças precisam de você.";
+		next;
+		mes "^0000FF[" + strcharinfo(0) + "]^000000";
+		mes "Obrigado Sacerdotisa Rebbeca.";
+		close;
+	}
+	else if( easter2015 == 5 )
+	{
+		mes "^4169E1[Rebeca]^000000";
+		mes "Agora seja rápido e vá derrotar aquela Bruxa má, as crianças precisam de você.";
+		close;
+	}
+	mes "^4169E1[Rebeca]^000000";
+	mes "Você derrotou a Bruxa, graças a Deus.";
+	close;
+}
+
+nif_in,116,172,4	script	Bruxa#easter2015	4_F_NFDEADMGCIAN,4,4,{
+OnTouch:
+	if( easter2015 > 5 )
+		end;
+	
+	hideoffnpc "Bruxa#easter2015";
+	mes "^800080[Bruxa]^000000";
+	mes "Quem é você intruso?";
+	next;
+	mes "^0000FF[" + strcharinfo(0) + "]^000000";
+	mes "Sou " + strcharinfo(0) + ", vim para resgar o ^0000FFCoelho da Páscoa^000000.";
+	next;
+	mes "^800080[Bruxa]^000000";
+	mes "Coelho da Páscoa??";
+	mes "Como ousa pertubar-me com essa história de ^0000FFCoelho da Páscoa^000000?";
+	if( easter2015 < 6 )
+	{
+		close2;
+		sleep2 300;
+		npctalk "Morra " + strcharinfo(0) + "!! Por seu atrevimento!";
+		percentheal -100,-100;
+		sleep 300;
+		hideonnpc "Bruxa#easter2015";
+		end;
+	}
+	mes "Morra ^0000FF" + strcharinfo(0) + "^000000!! Por seu atrevimento!";
+	next;
+	mes "^800080[Bruxa]^000000";
+	mes "............";
+	mes ".... o que??....";
+	next;
+	mes "^0000FF[" + strcharinfo(0) + "]^000000";
+	mes "Suas maldições não pega em mim Bruxa!";
+	mes "Entregue o coelho ou ire forçar você fazer isso...";
+	next;
+	mes "^800080[Bruxa]^000000";
+	mes "... como?... é melhor eu saír daqui.";
+	next;
+	specialeffect 0;
+	mes "^0000FF[" + strcharinfo(0) + "]^000000";
+	mes "Eu disse entregue o Coelho ou te forço a fazer isso Bruxa!";
+	next;
+	hideoffnpc "Coelho da Páscoa#ea2015";
+	mes "^800080[Bruxa]^000000";
+	mes "Você venceu dessa vez...";
+	next;
+	hideonnpc "Bruxa#easter2015";
+	mes "^4169E1[Coelho da Páscoa]^000000";
+	mes "Obrigado ^0000FF" + strcharinfo(0) + "^000000, se não fosse por você á Páscoa estaria arruinada!";
+	mes "O que trouxe o brav" + (Sex?"o":"a") + " guerreir" + (Sex?"o":"a") + " a vir me resgatar?";
+	next;
+	mes "^0000FF[" + strcharinfo(0) + "]^000000";
+	mes "Vim a pedido da ^4169E1Evelyn^000000, ela explicou a situação e então vim te resgatar.";
+	next;
+	easter2015 = 6;
+	mes "^4169E1[Coelho da Páscoa]^000000";
+	mes "Hmmm... da ^4169E1Evelyn^000000, ela realmente é uma garota muito boa e se preocupa com todos.";
+	mes "Retorne até ela, lá estará uma lembrancinha de mim para você.";
+	close2;
+	sleep 3000;
+	donpcevent "Coelho da Páscoa#ea2015::OnHide";
+	end;
+	
+OnInit:
+	hideonnpc strnpcinfo(0);
+	end;
+}
+
+nif_in,117,173,4	script	Coelho da Páscoa#ea2015	4_LUNATIC,{
+	end;
+OnHide:
+	specialeffect 258;
+OnInit:
+	hideonnpc strnpcinfo(0);
+	end;
+}

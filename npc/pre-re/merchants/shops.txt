@@ -1,0 +1,43 @@
+//===== rAthena Script ======================================= 
+//= Shops
+//===== By: ================================================== 
+//= Daegaladh
+//===== Current Version: ===================================== 
+//= 1.2
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//===== Description: ========================================= 
+//= Pre-renewal-specific town shop NPCs.
+//===== Additional Comments: ================================= 
+//= 1.0 First version.
+//= 1.1 Moved Izlude shops to pre-re/re paths. [Streusel]
+//= 1.2 Moved Ninja shops to Pre-RE/RE paths. [Euphy]
+//============================================================ 
+
+//=======================================================
+// Izlude
+//=======================================================
+izlude,124,165,4	shop	Vendedora de Frutas#iz	53,512:-1,513:-1,515:-1,516:-1
+izlude_a,124,165,4	duplicate(Vendedora de Frutas#iz)	Vendedora de Frutas#iz_a	53
+izlude_b,124,165,4	duplicate(Vendedora de Frutas#iz)	Vendedora de Frutas#iz_b	53
+izlude_c,124,165,4	duplicate(Vendedora de Frutas#iz)	Vendedora de Frutas#iz_c	53
+izlude_d,124,165,4	duplicate(Vendedora de Frutas#iz)	Vendedora de Frutas#iz_d	53
+izlude,160,186,0	shop	Açougueiro#iz	54,517:-1
+izlude_a,160,186,0	duplicate(Açougueiro#iz)	Açougueiro#iz_a	54
+izlude_b,160,186,0	duplicate(Açougueiro#iz)	Açougueiro#iz_b	54
+izlude_c,160,186,0	duplicate(Açougueiro#iz)	Açougueiro#iz_c	54
+izlude_d,160,186,0	duplicate(Açougueiro#iz)	Açougueiro#iz_d	54
+izlude,128,158,7	shop	Vendendor de Leite#i	90,519:-1
+izlude_a,128,158,7	duplicate(Vendendor de Leite#i)	Vendendor de Leite#a	90
+izlude_b,128,158,7	duplicate(Vendendor de Leite#i)	Vendendor de Leite#b	90
+izlude_c,128,158,7	duplicate(Vendendor de Leite#i)	Vendendor de Leite#c	90
+izlude_d,128,158,7	duplicate(Vendendor de Leite#i)	Vendendor de Leite#d	90
+izlude_in,72,98,4	shop	Loja de Bichinhos#iz	124,537:-1,643:-1,10013:-1,10014:-1,554:-1,6113:-1,6114:-1,6115:-1
+izlude_in,57,110,0	shop	Loja de Utilidades#iz	47,611:-1,501:-1,502:-1,503:-1,504:-1,506:-1,645:-1,656:-1,601:-1,602:-1,1065:-1,1750:-1
+izlude_in,72,110,3	shop	Mercador#iz	900,13200:-1,13201:-1,13202:-1,13150:-1,13102:-1,13151:-1,13154:-1,13155:-1,13163:-1,13165:-1,13168:-1
+
+//=======================================================
+// Ninja Shops
+//=======================================================
+que_ng,72,31,2	shop	Boonji#nin	83,13250:-1,13251:-1,13252:-1,13253:-1,13254:-1
+que_ng,73,26,5	shop	Boonray#nin	83,2117:-1,7521:-1,7522:-1,7523:-1,7524:-1

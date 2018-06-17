@@ -1,0 +1,127 @@
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%           _____    _____   _____   _____   _____    _   _____   _   _            %%
+//%%          |  _  \  /  _  \ |  _  \ | ____| |  _  \  | | /  ___| | | / /           %%
+//%%          | |_| |  | | | | | | | | | |__   | |_| |  | | | |     | |/ /            %%
+//%%          |  _  /  | | | | | | | | |  __|  |  _  /  | | | |     | |\ \            %%
+//%%          | | \ \  | |_| | | |_| | | |___  | | \ \  | | | |___  | | \ \           %%
+//%%          |_|  \_\ \_____/ |_____/ |_____| |_|  \_\ |_| \_____| |_|  \_\          %%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%==================================================================================%%
+//%% | Desenvolvido Por [ADM] Roderick | Cronus | Por Favor, Não Retire Os Créditos | %%
+//%%==================================================================================%%
+//%%  		|		TABELA SQL       (NÃO ESQUECER DE IMPORTAR PARA O BD)		|		  %%
+//%%==================================================================================%%
+//%% 			DROP TABLE IF EXISTS `invasao`;												  %%
+//%%		 	CREATE TABLE `invasao` (														  %%
+//%% 			`id` int(11) unsigned NOT NULL auto_increment,							  %%
+//%% 			`mobid` int(11) unsigned NOT NULL default '0',							  %%
+//%% 			PRIMARY KEY (`id`)															  %%
+//%% 			)ENGINE=MyISAM;																  %%
+//%%==================================================================================%%
+-	script	INVASAOMVP	-1,{																	//%%	
+OnInit:																							//%%
+//%%==================================================================================%%
+//%% Colocar aqui a ID dos MVPS "normais" ou seja os MVP's que vão ser sumonado em    %%
+//%% maior quantidade																		  %%
+setarray $MVP[1],1650,1649,1651,1685,1768,1779,1312,1252,1492,1418,1623,1272,1112,1373,1157,1251,1039,1059,1511,1115,1086,1147,1159,1087,1096,1582,1120;
+//%% Colocar aqui a ID dos MVPS "melhores" ou seja os MVP's que vão ser sumonado em   %%
+//%% menor quantidade																		  %%
+setarray $TopMVP[1],1873,1832,1646,1917,1648,1871,1751,1734,1708,1583,1688,1647;				//%%
+//%% Aqui é a % de chance que os MVPs "normais", poderam ser sumonado 2 do mesmo!!    %%
+//%% Pra cada monstro invocado, vai ser aplicado a taxa de porcetentagem para poder   %%
+//%% dobrar e invocar 2 do mesmo, sendo assim só alguns vai ser dobrado conforme a %! %%
+//%% Colocar 100 para 100% e 0 para desabilitar essa função								  %%
+set $dobroMVP,30;																			    //%%
+//%% Aqui é a % de chance que os MVPs "melhores", poderam ser sumonado 2 do mesmo!!   %%
+//%% Pra cada monstro invocado, vai ser aplicado a taxa de porcetentagem para poder   %%
+//%% dobrar e invocar 2 do mesmo, sendo assim só alguns vai ser dobrado conforme a %! %%
+//%% Colocar 100 para 100% e 0 para desabilitar essa função								  %%
+set $dobroTOP,10;																				//%%
+//%% Quantidade média de MVP "normais" que vai ser sumonado, média porquê esse número %%
+//%% poderá ser maior conforme a taxa de dobro (se estiver ativada)					  %%
+set $qtdeMVP,15;																					//%%
+//%% Quantidade média de MVP "melhores" que vai ser sumonado, média porquê esse nº    %%
+//%% poderá ser maior conforme a taxa de dobro (se estiver ligada)						  %%																			    //%%
+set $qtdeTOP,3;																					//%%
+//%% Chance do evento poder não acontecer, se quiser que o evento sempre aconteça     %%
+//%% colocar o valor em 100 > 100%. O número equivale a % que evento VAI acontecer!!  %%
+set $acontecer,80;																				//%%
+//%% MAPA que vai acontecer a invasão (colocar igual o nome digitado no @warp)		  %%
+set $mapa$,"morocc, payon";																				//%%
+//%% Nome do MAPA que vai aparecer nas mensagens globais anunciando o EVENTO!!        %%
+set $nomemapa$,"Morocc, Payon";																		//%%
+//%% Quando estiver faltando 'x' MVP's pra serem mortos o npc começa mandar global	  %%
+//%% avisando quantos MVP's faltam para ser mortos; Colocar 0 (zero) pra desativar	  %%
+set $faltam,10;																					//%%
+//%%																							  %%
+end;																						    //%%
+//%% Configure aqui os horários para acontecer o evento, coloque os horários em       %%
+//%% formato PM sem o separador de horas e minutos. Ex: "1945" para 19:45> 07:45 PM   %%
+//%% Pode colocar quantos horários quizer, ou também, apenas um                       %%
+OnClock1000:OnClock1530:OnClock1917:OnClock2230:											    //%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+query_sql ("delete from `invasao` where id>0");
+set .@iniciar,rand(1,100);
+	if (.@iniciar > $acontecer){
+		end;
+	}
+for (set .@c,1; .@c <= $qtdeMVP; .@c++){
+	set .@max,getarraysize($MVP)-1;
+	set .@ID,rand(1,.@max);
+	query_sql ("select mobid from invasao where mobid='"+$MVP[.@ID]+"'",.@fromtable);
+		if ($MVP[.@ID] == .@fromtable){
+		while ($MVP[.@ID] == .@fromtable){ 		
+			set .@ID,rand(1,.@max);
+		}}
+	set .@dobrar,rand(1,100);
+		if(.@dobrar<=$dobroMVP)set .@quantos,2;
+		else{ set .@quantos,1;}
+		monster $mapa$,0,0,getmonsterinfo($MVP[.@ID],0),$MVP[.@ID],.@quantos,strnpcinfo(0)+"::OnKILLMOB";
+		query_sql("insert into `invasao` (mobid) value ('"+$MVP[.@ID]+"')");
+}
+for (set .@c,1; .@c <= $qtdeTOP; .@c++){
+		set .@max,getarraysize($TopMVP)-1;
+		set .@ID,rand(1,.@max);
+		query_sql ("select mobid from invasao where mobid='"+$TopMVP[.@ID]+"'",.@fromtable);
+		if ($TopMVP[.@ID] == .@fromtable){
+		while ($TopMVP[.@ID] == .@fromtable){				 
+			set .@ID,rand(1,.@max);
+		}}
+	set .@dobrar,rand(1,100);
+		if(.@dobrar<=$dobroTOP)set .@quantos,2;
+		else{ set .@quantos,1;}
+		monster $mapa$,0,0,getmonsterinfo($TopMVP[.@ID],0),$TopMVP[.@ID],.@quantos,strnpcinfo(0)+"::OnKILLMOB";
+		query_sql("insert into `invasao` (mobid) value ('"+$TopMVP[.@ID]+"')");
+}
+announce "CORRAM TODOS, VÁRIOS MVP's INVADIRAM "+$nomemapa$+"",bc_yellow;
+sleep 5000;
+announce "CORRAM PORQUÊ ELES VÃO FUGIR EM 30 MINUTOS!!",bc_yellow;   //Não esqueça de alterar essa linha, caso você altere o tempo da Invasão!
+initnpctimer;
+set $mob,mobcount($mapa$,strnpcinfo(0)+"::OnKILLMOB");
+end;
+OnTimer1800000:						//Configure o tempo que a invasão durará aqui, coloque o tempo em segundos!!
+killmonster $mapa$,strnpcinfo(0)+"::OnKILLMOB";
+cleanmap $mapa$;
+announce "OS MVPS FUGIRAM, A INVASÃO TERMINOU!!!",bc_all,0xFF0000;
+stopnpctimer;
+end;
+OnKILLMOB:
+	$mob--;
+    if($mob==0){
+		sleep 3000;
+		announce "TODOS OS MVP's FORAM MORTOS, A INVASÃO TERMINOU!!!",bc_all,0xFF0000;
+		stopnpctimer;
+		end;
+}
+	if($mob==1){
+		sleep 3000;
+		announce "FALTA APENAS 1 MVP EM PRA INVASÃO TERMINAR!!",bc_yellow;
+	}
+	if($mob<=$faltam && $mob>1){
+		sleep 3000;
+		announce "AINDA EXISTE "+$mob+" MVP's EM "+$nomemapa$+"!!",bc_yellow;
+	}	
+	
+end;
+}

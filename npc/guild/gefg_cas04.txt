@@ -1,0 +1,107 @@
+// Guild Flag (Outside Castle)
+//============================================================
+-	script	Saffran#1::OutsideFlagsG4	722,{
+
+	set .@GID, GetCastleData("gefg_cas04",1);
+
+	if (.@GID == 0) {
+		mes " [ Decreto do Reino de Midgard ]";
+		mes " ";
+		mes "1. Conforme o pacto do Reino de Midgard e o Feudo de Luina, declaro que este Castelo não possui um Senhor.";
+		mes " ";
+		mes "2. Aquele que superar terríveis desafios e destruir o Emperium, receberá a posse do castelo com o apoio do nosso rei.";
+		close;
+	}
+	if (getcharid(2) == .@GID) {
+		mes "[ Echoing Voice ]";
+		mes "Bravo guerreiro...";
+		mes "Você deseja retornar ao seu lugar de honra?";
+		next;
+		if(select("Retornar para o castelo do Clã.:Sair.") == 1) {
+			close2;
+			if (getcharid(2) == GetCastleData("gefg_cas04",1)) {
+				warp "gefg_cas04",168,43;
+				end;
+			}
+			end;
+		}
+		close;
+	}
+	mes "[ Decreto do Reino de Midgard ]";
+	mes " ";
+	mes "1. Seguindo o decreto do Reino de Midgard.";
+	mes "Nós declaramos que esse castelo pertence ao clã ^ff0000"+GetGuildName(.@GID)+"^000000.";
+	mes " ";
+	mes "2. O líder do clã ^ff0000"+GetGuildName(.@GID)+"^000000 se chama";
+	mes "^ff0000"+GetGuildMaster(.@GID)+"^000000";
+  	mes "Se alguém se opõe a esse decreto, que prove sua força e honra com uma espada em suas mãos.";
+	close;
+
+OnRecvCastleG04:
+	FlagEmblem GetCastleData("gefg_cas04",1);
+	end;
+}
+
+gef_fild13,190,283,3	duplicate(OutsideFlagsG4)	Saffran#1-2	722
+gef_fild13,199,274,3	duplicate(OutsideFlagsG4)	Saffran#2	722
+
+// Bandeira da guilda (dentro do castelo)
+//============================================================
+-	script	Saffran#3::InsideFlagsG4	722,{
+	end;
+
+OnRecvCastleG04:
+	FlagEmblem GetCastleData("gefg_cas04",1);
+	end;
+}
+
+gefg_cas04,24,157,4	duplicate(InsideFlagsG4)	Saffran#3-2	722
+gefg_cas04,35,158,4	duplicate(InsideFlagsG4)	Saffran#4	722
+gefg_cas04,44,184,4	duplicate(InsideFlagsG4)	Saffran#5	722
+gefg_cas04,51,184,4	duplicate(InsideFlagsG4)	Saffran#6	722
+gefg_cas04,39,212,7	duplicate(InsideFlagsG4)	Saffran#7	722
+gefg_cas04,29,212,1	duplicate(InsideFlagsG4)	Saffran#8	722
+gefg_cas04,24,73,1	duplicate(InsideFlagsG4)	Saffran#9	722
+gefg_cas04,35,73,4	duplicate(InsideFlagsG4)	Saffran#10	722
+
+// Bandeira da guilda (cidade)
+//============================================================
+geffen,127,130,7	duplicate(InsideFlagsG4)	Saffran#11	722
+
+// Funcionaria Kafra
+//============================================================
+gefg_cas04,59,70,3	duplicate(guildkafra)	Funcionaria Kafra#gefg_cas04	117
+
+// Mordomo
+//============================================================
+gefg_cas04,73,46,3	duplicate(cm)	Kellvahni#gefg_cas04	55
+
+// Saída do quarto do tesouro
+//============================================================
+gefg_cas04,116,123,0	script	#lever_G04	111,{
+	mes " ";
+	mes "Há uma pequena alavanca. Você vai puxar";
+	next;
+	if(select("Sim.:Não.") == 1) {
+		close2;
+		warp "gefg_cas04",73,47;
+		end;
+	}
+	close;
+}
+
+// Calabouço da Guilda
+//============================================================
+gefg_cas04,58,75,0	duplicate(gdlever)	#gefg_cas04	111
+
+// Gerador de baus do Tesouro
+//============================================================
+gefg_cas04,116,119,0	duplicate(Gld_Trea_Spawn)	Tesouro#gefg_cas04	-1
+
+// Gerente de agit
+//============================================================
+gefg_cas04,174,178,0	duplicate(Gld_Agit_Manager)	Agit#gefg_cas04	-1
+
+// Guardiões
+//============================================================
+gefg_cas04,73,46,3	duplicate(Gld_Guard_Template)	Guardian#gefg_cas04	-1

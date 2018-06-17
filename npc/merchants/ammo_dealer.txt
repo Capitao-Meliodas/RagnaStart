@@ -1,0 +1,124 @@
+//===== rAthena Script =======================================
+//= Bullet Dealers
+//===== By ===================================================
+//= Playtester, Paradox924X
+//===== Version ==============================================
+//= 2.1
+//===== Compatible With ======================================
+//= rAthena Project
+//===== Description ==========================================
+//= Bullet trader.
+//===== Comments =============================================
+//= 1.0 First version [Playtester]
+//= 1.1 Converted from Aegis [Paradox924X]
+//= 1.2 More optimized conversion [Legionaire]
+//= 1.2a Removed .GATs [Lupus]
+//= 1.3 Fixed [Playtester] Optimized. Got rid of @vars [Lupus]
+//= 1.4 Updated to match AEGIS script. [Kisuka]
+//= 1.5 Updated to match AEGIS script again. [Masao]
+//= 1.6 Moved Izlude duplicate to pre-re/re paths. [Euphy]
+//= 2.0 Clean-up. [Capuche]
+//= 2.1 Fixes Issue #1482, where Rebellion jobs cannot use this npc. [Limestone]
+//============================================================
+
+alberta,118,160,3	script	Vendendor de Munição Tony#alb::bdt	4_M_04,{
+	mes "[Tony]";
+	if (BaseClass == Job_Gunslinger) {
+		mes "[Tony]";
+		mes "Eu sou Tony, o negociador de projéteis.";
+		mes "Venha a mim sempre";
+		mes "que precisar de munições.";
+		mes "Apenas me traga os materiais,"; 
+		mes "e eu irei lhe fazer os projéteis que precisar.";
+		next;
+		switch(select("Esfera Venenosa:Esfera de Chamas:Esfera de Relâmpagos:Esfera Cegante:Esfera Congelante:Cancelar")) {
+		case 1: callsub S_BulletTrade,937,10,13205;// <item required>, <amount req>, <bullet id>
+		case 2: callsub S_BulletTrade,7097,2,13203;
+		case 3: callsub S_BulletTrade,7053,3,13204;
+		case 4: callsub S_BulletTrade,1024,5,13206;
+		case 5: callsub S_BulletTrade,7054,2,13207;
+		case 6:
+			mes "[Tony]";
+			mes "mudou de idéia?";
+			mes "Bem, se você precisar";
+			mes "qualquer bala, eu vou estar certo.";
+			mes "Volte sempre";
+			mes "você acha que vai precisar de mais";
+			mes "munição, Justiceiro. ";
+			close;
+		}
+	}
+	mes "Ei, sou Tony.";
+	mes "Eu sou o responsável"; 
+	mes "pela distribuição"; 
+	mes "e fabricação"; 
+	mes "de projéteis";	
+	mes "para Justiceiros.";
+	next;
+	mes "[Tony]";
+	mes "Lamento se você veio"; 
+	mes "para comprar munição.";
+	mes "Eu só posso negociar";
+	mes "com Justiceiros.";
+	close;
+
+S_BulletTrade:
+	.@required_id = getarg(0);
+	.@required_amount = getarg(1);
+	.@bullet_id = getarg(2);
+
+	mes "[Tony]";
+	mes "Para cada";
+	mes callfunc("F_InsertPlural",30,getitemname(.@bullet_id))+",";
+	mes "você deve me entregar";
+	mes "1 Emveretarcon,";
+	mes "1 Fracon, and";
+	mes callfunc("F_InsertPlural",.@required_amount,getitemname(.@required_id))+".";
+	next;
+	mes "[Tony]";
+	mes "Lembre-se que só posso entregar"; 
+	mes "um máximo de 500 caixas de 30 projéteis por negociação.";
+	mes "Por favor entre com o número"; 
+	mes "de caixas de projéteis que você gostaria.";
+	mes "Caso queira parar a"; 
+	mes "negociação, apenas digite '0'.";
+	next;
+	input .@amount;
+	mes "[Tony]";
+	if (.@amount < 1 || .@amount > 500) {
+		mes "Ei, não posso lhe";
+		mes "dar tantos projéteis.";
+		mes "Não esqueça de digitar";
+		mes "um número menor que 500"; 
+		mes "se você quiser trocar alguns"; 
+		mes "itens por alguns projéteis.";
+	}
+	else if (countitem(1010) >= .@amount && countitem(1011) >= .@amount && countitem(.@required_id) >= (.@amount*.@required_amount)) {
+		if (checkweight(.@bullet_id,.@amount * 30) == 0) {
+			mes "Ei? Seu inventário não possui"; 
+			mes "espaço o suficiente para esta quantia de projéteis.";
+			mes "Volte quando tiver"; 
+			mes "mais espaço no inventário.";
+			mes "Tente guardar algumas coisas"; 
+			mes "no Armazém da Kafra.";
+		} else {
+			mes "Muito bom, tudo parece estar em ordem.";
+			mes "Deixe-me pegar esses materiais,"; 
+			mes "e aqui estão seus projéteis.";
+			mes "Foi um prazer"; 
+			mes "fazer negocio com você~";
+			delitem 1010,.@amount; //Phracon
+			delitem 1011,.@amount; //Emveretarcon
+			delitem .@required_id,.@amount * .@required_amount;
+			getitem .@bullet_id,.@amount * 30;
+		}
+	} else {
+		mes "Hum. Parece que você"; 
+		mes "não possui os"; 
+		mes "materiais que necessito.";
+		mes "Bem, isso não é problema.";
+		mes "Apenas volte aqui quando"; 
+		mes "pegar tudo que preciso, ok?";
+	}
+	close;
+}

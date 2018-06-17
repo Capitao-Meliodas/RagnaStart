@@ -1,0 +1,1014 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Battleground Warfare (1st Valfreyja)                         .
+  .-----------------------------------------------------------------.
+  . Author: Romulo SM (sbk_)                         Version: 1.0   .
+  .                                                                 .
+  . Compatible:                                                     .
+  .    eAthena, rAthena and derivations.                            .
+  .-----------------------------------------------------------------.
+  . Description:                                                    .
+  .    Battle in which the Armies must capture the Flags of the     .
+  . opposing Army.                                                  .                                                 .
+  *-----------------------------------------------------------------*/
+
+// Valfreyja Engine
+// -----------------------------------------------------------------
+bat_v01,1,1,3	script	start#bat_v01	CLEAR_NPC,{
+	end;
+	
+OnInit:
+	// Removing Players from Arena
+	mapwarp "bat_v01","bat_room",154,150;
+	
+	// Creating Queue and specific times for Arena
+	queue_create(9, "1st Valfreyja", 0, 0, "start#bat_v01::OnReadyCheck");
+	set $@ValFreyjaBG1_id1, bg_create_team(17, "bat_v01", 41, 48, 97, 167, 0, "start#bat_v01::OnGuillaumeQuit", "", "start#bat_v01::OnGuillWO");
+	set $@ValFreyjaBG1_id2, bg_create_team(18, "bat_v01", 357, 48, 310, 168, 1, "start#bat_v01::OnCroixQuit", "", "start#bat_v01::OnCroixWO");
+	
+	// Expeling Players
+	bg_kick_team($@ValFreyjaBG1_id1, 0);
+	bg_kick_team($@ValFreyjaBG1_id2, 0);
+	
+	// Getting Started
+	set .BlockStatus, 0;
+	set .global_announce, 0;
+	donpcevent "start#bat_v01::OnReadyCheck";
+	
+	// Set NPC's of Flags with the Symbol of the Army.
+	donpcevent "::OnBatV01Emblem";
+	end;
+	
+OnReadyCheck:
+	if( .BlockStatus )
+	{
+		sleep 5000;
+		donpcevent "start#bat_v01::OnReadyCheck";
+	}
+		
+	set .BlockStatus, 1;
+
+	set .@min_player, callfunc("bg_getarenainfo", 9, "min_player");
+	set .@max_player, callfunc("bg_getarenainfo", 9, "max_player");
+	set .@a_name$, callfunc("bg_getarenainfo", 9, "arena_name");
+	set .@min_player, (.@min_player*2);
+	
+	if( .@max_player > MAX_BG_MEMBERS )
+	{
+		bg_console "(BG_ID: 9) Maximum number of players in a team exceeds the established limit, setting the maximum number of players to " + MAX_BG_MEMBERS + ".";
+		set .@max_player, MAX_BG_MEMBERS;
+	}
+	
+	queue_get_players 9;
+	set .@playlist_team1, bg_team_size($@ValFreyjaBG1_id1);
+	set .@playlist_team2, bg_team_size($@ValFreyjaBG1_id2);
+	if( !.@queue_count )
+	{
+		set .BlockStatus, 0;
+		end;
+	}
+	else if( $@ValFreyjaBG1 && $@ValFreyjaBG1 < 2 && .@queue_count && (.@playlist_team1 < .@max_player || .@playlist_team2 < .@max_player) )
+	{
+		set .@guill, 0;
+		set .@croix, 0;
+		set .@count_g, 0;
+		set .@count_c, 0;
+		
+		// ---------------------------------------------------
+		// -              Equating the Armies                -
+		// ---------------------------------------------------
+		if( .@playlist_team1 < .@playlist_team2 )
+		{
+			set .@guill, .@playlist_team2-.@playlist_team1;
+			for( set .@i,0; .@i < .@guill; set .@i, .@i + 1 )
+			{
+				bg_join_team $@ValFreyjaBG1_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_g, .@count_g + 1;
+				message .@queue_player$[.@i], "You joined Guillaume's Army in a battle on " + .@a_name$ + " that is already happening, and will be teleported in 10 seconds.";
+			}
+			
+			deletearray .@queue_cid;
+			deletearray .@queue_aid;
+			deletearray .@queue_player$;
+			set .@queue_count, 0;
+			queue_get_players 9; // Reset
+			set .@playlist_team1, bg_team_size($@ValFreyjaBG1_id1);
+		}
+		else if( .@playlist_team2 < .@playlist_team1 )
+		{
+			set .@croix, .@playlist_team1-.@playlist_team2;
+			for( set .@i,0; .@i < .@croix; set .@i, .@i + 1 )
+			{
+				bg_join_team $@ValFreyjaBG1_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_c, .@count_c + 1;
+				message .@queue_player$[.@i], "You joined Croix's Army in a battle on" + .@a_name$ + " that is already happening, and will be teleported in 10 seconds.";
+			}
+			
+			deletearray .@queue_cid;
+			deletearray .@queue_aid;
+			deletearray .@queue_player$;
+			set .@queue_count, 0;
+			queue_get_players 9; // Reset
+			set .@playlist_team2, bg_team_size($@ValFreyjaBG1_id2);
+		}
+		// ---------------------------------------------------
+		// -             Expanding the Armies                -
+		// ---------------------------------------------------
+		if( .@queue_count && .@playlist_team1 == .@playlist_team2 && .@playlist_team1 < .@max_player && .@playlist_team2 < .@max_player )
+		{
+			set .@guill, .@max_player-.@playlist_team1;
+			set .@croix, .@max_player-.@playlist_team2;
+			
+			if( .@queue_count > (.@guill+.@croix) )
+				set .@queue_count, (.@guill+.@croix);
+				
+			if( .@queue_count%2 )
+				set .@queue_count, .@queue_count-1;
+			
+			set .@size, .@queue_count/2;
+			for( set .@i, 0; .@i < .@size; set .@i, .@i + 1 )
+			{
+				bg_join_team $@ValFreyjaBG1_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@players_name_g$[.@count_g], .@queue_player$[.@i];
+				set .@count_g, .@count_g + 1;
+			}
+			
+			for( set .@i,.@size; .@i < .@queue_count; set .@i, .@i + 1 )
+			{
+				bg_join_team $@ValFreyjaBG1_id2, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@players_name_c$[.@count_c], .@queue_player$[.@i];
+				set .@count_c, .@count_c + 1;
+			}
+		}
+		
+		if( .@count_c || .@count_g )
+		{
+			announce "[Battleground]: " + (.@count_c+.@count_g) + " players are being sent to a battle that is going on in " + .@a_name$ + ", the Armies were balanced and expanded.", bc_all, "0xFFCE00";
+			sleep 3000;
+		}
+		
+		deletearray .@queue_cid;
+		deletearray .@queue_aid;
+		deletearray .@queue_player$;
+		set .@queue_count, 0;
+		queue_get_players 9; // Reset
+		
+		set .@queue_size, queue_size(9);
+		set .@team1_size, bg_team_size($@ValFreyjaBG1_id1);
+		set .@team2_size, bg_team_size($@ValFreyjaBG1_id2);
+		
+		if( .@team1_size < .@max_player || .@team2_size < .@max_player )
+		{
+			set .@size, (2*.@max_player)-(.@team1_size+.@team2_size)-.@queue_size;
+			announce "[Battleground]: There are still " + (.@size) + " spots for a battle going on in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+		}
+	}
+	else if( $@ValFreyjaBG1 && !.global_announce && .@queue_count >= .@min_player )
+	{
+		announce "[Battleground]: The battle is complete, but there is a battle going on in " + .@a_name$ + ", all players standing in the queue must wait.", bc_all, "0xFFCE00";
+		set .global_announce, 9;
+	}
+	else if( .@queue_count < .@min_player )
+		announce "[Battleground]: There are " + (.@min_player-.@queue_count) + " players left in the battle in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+	else
+	{
+		// ---------------------------------------------------
+		// -                    Balancing                    -
+		// ---------------------------------------------------
+		if( .@queue_count > (.@max_player*2) )
+			set .@queue_count, (.@max_player*2);
+			
+		if( .@queue_count%2 )
+			set .@queue_count, .@queue_count-1;
+			
+		if( .@queue_count >= .@min_player )
+		{
+			for( set .@i,0; .@i < .@queue_count; set .@i, .@i + 2 )
+			{
+				// Entering Guillaume's Army
+				bg_join_team $@ValFreyjaBG1_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				message .@queue_player$[.@i], "You joined Guillaume's Army, you will be teleported in 10 seconds.";
+				
+				// Entering Croix's Army
+				bg_join_team $@ValFreyjaBG1_id2, 1, .@queue_aid[.@i+1];
+				queue_leave 0, .@queue_aid[.@i+1];
+				message .@queue_player$[.@i+1], "You joined the Croix's Army, you will be teleported in 10 seconds.";
+			}
+		}
+		
+		bg_refresh_patent $@ValFreyjaBG1_id1;
+		bg_refresh_patent $@ValFreyjaBG1_id2;
+		set .global_announce, 0;
+		set $@ValFreyjaBG1, 1;
+		announce "[Battleground]: Both Armies, are complete good luck in the battles at " + .@a_name$ + ".", bc_all, "0xFFCE00";
+		set $@ValFreyjaBG1_CroixScore, 0;
+		set $@ValFreyjaBG1_GuillScore, 0;
+		bg_updatescore "bat_v01",0,0;
+		donpcevent "start#bat_v01::OnEnable";
+		donpcevent "BattleGround#queue_main::OnStopTimer";
+		sleep 3000;
+		initnpctimer;
+		
+		if( .@queue_count < (2*.@max_player) )
+		{
+			sleep 3000;
+			set .@count, (2*.@max_player)-.@queue_count;
+			announce "[Battleground]: There are still " + .@queue_count + " spots in the battles in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+		}
+	}
+	set .BlockStatus, 0;
+	end;
+
+OnGuillaumeQuit:
+	callfunc "bg_clear_score", getcharid(0);
+	callfunc "bg_ranking", getcharid(0), 9, 0, 0, 1, 0, 0;
+	donpcevent "start#bat_v01::OnReadyCheck";
+	end;
+	
+OnCroixQuit:
+	callfunc "bg_clear_score", getcharid(0);
+	callfunc "bg_ranking", getcharid(0), 9, 0, 1, 1, 0, 0;
+	donpcevent "start#bat_v01::OnReadyCheck";
+	end;
+	
+OnEnable:
+	bg_flag_respawn "bat_v01", $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2;
+	disablenpc "Lieutenant#bat_v01_a";
+	disablenpc "Lieutenant#bat_v01_b";
+	enablenpc "Battle Therapist#bat_v01_a";
+	enablenpc "Battle Therapist#bat_v01_b";
+	donpcevent "guardian#bat_v01_a::OnKill";
+	donpcevent "guardian#bat_v01_b::OnKill";
+	donpcevent "guardian#bat_v01_a01::OnKill";
+	donpcevent "guardian#bat_v01_a02::OnKill";
+	donpcevent "guardian#bat_v01_a03::OnKill";
+	donpcevent "guardian#bat_v01_a04::OnKill";
+	donpcevent "guardian#bat_v01_a05::OnKill";
+	donpcevent "guardian#bat_v01_b01::OnKill";
+	donpcevent "guardian#bat_v01_b02::OnKill";
+	donpcevent "guardian#bat_v01_b03::OnKill";
+	donpcevent "guardian#bat_v01_b04::OnKill";
+	donpcevent "guardian#bat_v01_b05::OnKill";
+	donpcevent "guardian#bat_v01_a::OnEnable";
+	donpcevent "guardian#bat_v01_b::OnEnable";
+	donpcevent "guardian#bat_v01_a01::OnEnable";
+	donpcevent "guardian#bat_v01_a02::OnEnable";
+	donpcevent "guardian#bat_v01_a03::OnEnable";
+	donpcevent "guardian#bat_v01_a04::OnEnable";
+	donpcevent "guardian#bat_v01_a05::OnEnable";
+	donpcevent "guardian#bat_v01_b01::OnEnable";
+	donpcevent "guardian#bat_v01_b02::OnEnable";
+	donpcevent "guardian#bat_v01_b03::OnEnable";
+	donpcevent "guardian#bat_v01_b04::OnEnable";
+	donpcevent "guardian#bat_v01_b05::OnEnable";
+	donpcevent "time#bat_v01::OnEnable";
+	donpcevent "time_event#bat_v01::OnEnable";
+	donpcevent "countdown#bat_v01::OnEnable";
+	donpcevent "start#bat_v01_Out::OnStop";
+	donpcevent "EffectBase#bat_v01_1::OnStart";
+	donpcevent "EffectBase#bat_v01_2::OnStart";
+	end;
+
+OnDisable:
+	bg_flag_respawn "bat_v01", $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2;
+	donpcevent "EffectBase#bat_v01_1::OnStop";
+	donpcevent "EffectBase#bat_v01_2::OnStop";
+	donpcevent "Battle Therapist#bat_v01_a::OnStop";
+	donpcevent "Battle Therapist#bat_v01_b::OnStop";
+	donpcevent "time#bat_v01::OnStop";
+	donpcevent "time_event#bat_v01::OnStop";
+	donpcevent "countdown#bat_v01::OnStop";
+	donpcevent "start#bat_v01_Out::OnBegin";
+	enablenpc "Lieutenant#bat_v01_a";
+	enablenpc "Lieutenant#bat_v01_b";
+	bg_warp $@ValFreyjaBG1_id1,"bat_v01",41,48;
+	bg_warp $@ValFreyjaBG1_id2,"bat_v01",357,48;
+	end;
+
+OnGuillWO:
+	set $@ValFreyjaBG1, 2;
+	set $@ValFreyjaBG1_Victory, 2;
+	callfunc "bg_finish", 9, $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2, $@ValFreyjaBG1_Victory, $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+	mapannounce "bat_v01", "Lieutenant Swandery: Guillaume's cowards fled. We won this one! Wow!",bc_map,"0xFFCE00";
+	sleep 2000;
+	donpcevent "start#bat_v01::OnDisable";
+	end;
+	
+OnCroixWO:
+	set $@ValFreyjaBG1, 2;
+	set $@ValFreyjaBG1_Victory, 1;
+	callfunc "bg_finish", 9, $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2, $@ValFreyjaBG1_Victory, $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+	mapannounce "bat_v01", "Lieutenant Axl Rose: Croix's cowards fled. We won this one! Wow!",bc_map,"0xFFCE00";
+	sleep 2000;
+	donpcevent "start#bat_v01::OnDisable";
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	if( !getmapusers("bat_v01") )
+	{
+		set $@ValFreyjaBG1, 0;
+		bg_kick_team $@ValFreyjaBG1_id1;
+		bg_kick_team $@ValFreyjaBG1_id2;
+		
+		if( $@BG_MODE )
+			donpcevent "BattleGround#queue_main::OnReload";
+		else
+			donpcevent "start#bat_v01::OnReadyCheck";
+	}
+	else
+		initnpctimer;
+	end;
+}
+
+// Guardians of Guillaume Base
+// -------------------------------------------------------
+bat_v01,1,2,0	script	guardian#bat_v01_a	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 112, 158, "Guillaume Guardian", 1949, "Base Guardian", "guardian#bat_v01_a::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 112, 177, "Guillaume Guardian", 1949, "Base Guardian", "guardian#bat_v01_a::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_a::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_a::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Guillaume's Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,3,0	script	guardian#bat_v01_a01	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 182, 80, "Guillaume Guardian", 1949, "Guardian 1st Flag", "guardian#bat_v01_a01::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 191, 80, "Guillaume Guardian", 1949, "Guardian 1st Flag", "guardian#bat_v01_a01::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_a01::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_a01::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Guillaume's 1st Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,4,0	script	guardian#bat_v01_a02	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 178, 209, "Guillaume Guardian", 1949, "Guardian 2nd Flag", "guardian#bat_v01_a02::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 187, 209, "Guillaume Guardian", 1949, "Guardian 2nd Flag", "guardian#bat_v01_a02::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_a02::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_a02::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Guillaume's 2nd Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,5,0	script	guardian#bat_v01_a03	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 131, 268, "Guillaume Guardian", 1949, "Guardian 3th Flag", "guardian#bat_v01_a03::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 131, 281, "Guillaume Guardian", 1949, "Guardian 3th Flag", "guardian#bat_v01_a03::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_a03::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_a03::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Guillaume's 3th Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,6,0	script	guardian#bat_v01_a04	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 168, 295, "Guillaume Guardian", 1949, "Guardian 4th Flag", "guardian#bat_v01_a04::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 177, 295, "Guillaume Guardian", 1949, "Guardian 4th Flag", "guardian#bat_v01_a04::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_a04::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_a04::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Guillaume's 4th Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,7,0	script	guardian#bat_v01_a05	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 79, 337, "Guillaume Guardian", 1949, "Guardian 5th Flag", "guardian#bat_v01_a05::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id1, "bat_v01", 79, 324, "Guillaume Guardian", 1949, "Guardian 5th Flag", "guardian#bat_v01_a05::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_a05::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_a05::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Guillaume's 5th Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+// Guardians of Croix Base
+// -------------------------------------------------------
+bat_v01,1,8,0	script	guardian#bat_v01_b	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 294, 177, "Croix Guardian", 1950, "Base Guardian", "guardian#bat_v01_b::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 294, 158, "Croix Guardian", 1950, "Base Guardian", "guardian#bat_v01_b::OnMobDead";
+	end;
+	
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_b::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_b::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Croix's Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,9,0	script	guardian#bat_v01_b01	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 216, 80, "Croix Guardian", 1950, "Guardian 1st Flag", "guardian#bat_v01_b01::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 225, 80, "Croix Guardian", 1950, "Guardian 1st Flag", "guardian#bat_v01_b01::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_b01::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_b01::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Croix's 1st Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,10,0	script	guardian#bat_v01_b02	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 220, 209, "Croix Guardian", 1950, "Guardian 2nd Flag", "guardian#bat_v01_b02::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 229, 209, "Croix Guardian", 1950, "Guardian 2nd Flag", "guardian#bat_v01_b02::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_b02::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_b02::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Croix's 2nd Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,11,0	script	guardian#bat_v01_b03	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 276, 281, "Croix Guardian", 1950, "Guardian 3th Flag", "guardian#bat_v01_b03::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 276, 267, "Croix Guardian", 1950, "Guardian 3th Flag", "guardian#bat_v01_b03::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_b03::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_b03::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Croix's 3th Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,12,0	script	guardian#bat_v01_b04	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 230, 295, "Croix Guardian", 1950, "Guardian 4th Flag", "guardian#bat_v01_b04::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 239, 295, "Croix Guardian", 1950, "Guardian 4th Flag", "guardian#bat_v01_b04::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_b04::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_b04::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Croix's 4th Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+bat_v01,1,13,0	script	guardian#bat_v01_b05	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 328, 337, "Croix Guardian", 1950, "Guardian 5th Flag", "guardian#bat_v01_b05::OnMobDead";
+	bg_monster $@ValFreyjaBG1_id2, "bat_v01", 328, 324, "Croix Guardian", 1950, "Guardian 5th Flag", "guardian#bat_v01_b05::OnMobDead";
+	end;
+
+OnKill:
+	killmonster "bat_v01","guardian#bat_v01_b05::OnMobDead";
+	end;
+	
+OnMobDead:
+	if (mobcount("bat_v01","guardian#bat_v01_b05::OnMobDead") < 1)
+		mapannounce "bat_v01", "The Guardian who protects Croix's 5th Flag Base was destroyed.",bc_map,"0xFFCE00";
+	end;
+}
+
+// Flags Capture
+// -------------------------------------------------------
+bat_v01,1,17,0	script	Flag Capture#bat_v01	CLEAR_NPC,{
+	end;
+
+OnGuillCapture:
+	set .@n, charat(@flag_name$,0);
+	set .@order$, (.@n==1?"st":(.@n==2?"nd":"th"));
+	set $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_GuillScore+1;
+	bg_updatescore "bat_v01", $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+	mapannounce "bat_v01", strcharinfo(0)+" captured " + .@n + .@order$ + " Croix Flag!",bc_map,"0x99CC00";
+	if( $@ValFreyjaBG1_GuillScore >= 5 )
+	{
+		set $@ValFreyjaBG1, 2;
+		set $@ValFreyjaBG1_Victory, 1;
+		
+		// Computes Ranking and awards rewards
+		callfunc "bg_finish", 9, $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2, $@ValFreyjaBG1_Victory, $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+	
+		donpcevent "start#bat_v01::OnDisable";
+		mapannounce "bat_v01", "Lieutenant Axl Rose: Wow! We conquered all Croix Army Flags. We won!!",bc_map,"0xFFCE00";
+	}
+	else {
+		mapannounce "bat_v01", strcharinfo(0)+" conquered the " + .@n + .@order$ + " Croix Flag for Guillaume's army!",bc_map,"0x99CC00";
+	}
+	end;
+	
+OnCroixCapture:
+	set .@n, charat(@flag_name$,0);
+	set .@order$, (.@n==1?"st":(.@n==2?"nd":"th"));
+	set $@ValFreyjaBG1_CroixScore, $@ValFreyjaBG1_CroixScore+1;
+	bg_updatescore "bat_v01", $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+	mapannounce "bat_v01", strcharinfo(0)+" captured " + .@n + .@order$ + " Guillaume Flag!",bc_map,"0x99CC00";
+	if( $@ValFreyjaBG1_CroixScore >= 5 )
+	{
+		set $@ValFreyjaBG1, 2;
+		set $@ValFreyjaBG1_Victory, 2;
+		
+		// Computes Ranking and awards rewards
+		callfunc "bg_finish", 9, $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2, $@ValFreyjaBG1_Victory, $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+		
+		donpcevent "start#bat_v01::OnDisable";
+		mapannounce "bat_v01", "Lieutenant Swandery: Wow! We conquered all Guillaume Army Flags. We won!!",bc_map,"0xFFCE00";
+	}
+	else {
+		mapannounce "bat_v01", strcharinfo(0)+" conquered " + .@n + .@order$ + " Guillaume Flag for Croix's army!",bc_map,"0x99CC00";
+	}
+	end;
+	
+OnGuillRecapture:
+	set .@n, charat(@flag_name$,0);
+	set .@order$, (.@n==1?"st":(.@n==2?"nd":"th"));
+	mapannounce "bat_v01", strcharinfo(0)+" recaptured the " + .@n + .@order$ + " Guillaume Flag!",bc_map,"0x99CC00";
+	end;
+	
+OnCroixReCapture:
+	set .@n, charat(@flag_name$,0);
+	set .@order$, (.@n==1?"st":(.@n==2?"nd":"th"));
+	mapannounce "bat_v01", strcharinfo(0)+" recaptured the " + .@n + .@order$ + " Croix Flag!",bc_map,"0x99CC00";
+	end;
+}
+
+// Guillaume flags
+// -------------------------------------------------------
+bat_v01,186,74,7	script	1st Guillaume Flag#bat_v01_a01	GUILD_FLAG,{
+	bg_flag_click();
+	end;
+
+OnBatV01Emblem:
+	bg_set_npc $@ValFreyjaBG1_id1, 310, 168, "Flag Capture#bat_v01::OnCroixCapture", "Flag Capture#bat_v01::OnGuillRecapture";
+	end;
+}
+
+bat_v01,182,215,4	duplicate(1st Guillaume Flag#bat_v01_a01)	2nd Guillaume Flag#bat_v01_a02	GUILD_FLAG
+bat_v01,120,275,6	duplicate(1st Guillaume Flag#bat_v01_a01)	3th Guillaume Flag#bat_v01_a03	GUILD_FLAG
+bat_v01,172,301,4	duplicate(1st Guillaume Flag#bat_v01_a01)	4th Guillaume Flag#bat_v01_a04	GUILD_FLAG
+bat_v01,68,330,6	duplicate(1st Guillaume Flag#bat_v01_a01)	5th Guillaume Flag#bat_v01_a05	GUILD_FLAG
+
+bat_v01,92,162,6	script	Guillaume Base#bat_v01_1	GUILD_FLAG,{
+	mes "^0000FF[ Guillaume's Army ]^000000";
+	mes "1. Capture enemy flags and bring them safely to this base.";
+	mes "2. Guardians protect enemy flags.";
+	mes "3. Enemies and guardians can intercept the capture of the Flag.";
+	close;
+
+OnBatV01Emblem:
+	bg_set_npc $@ValFreyjaBG1_id1;
+	end;
+}
+
+bat_v01,92,173,6	duplicate(Guillaume Base#bat_v01_1)	Guillaume Base#bat_v01_2	GUILD_FLAG
+bat_v01,103,173,6	duplicate(Guillaume Base#bat_v01_1)	Guillaume Base#bat_v01_3	GUILD_FLAG
+bat_v01,103,162,6	duplicate(Guillaume Base#bat_v01_1)	Guillaume Base#bat_v01_4	GUILD_FLAG
+bat_v01,46,52,3	duplicate(Guillaume Base#bat_v01_1)	Guillaume Base#bat_v01_5	GUILD_FLAG
+
+// Croix flags
+// -------------------------------------------------------
+bat_v01,221,74,1	script	1st Croix Flag#bat_v01_b01	GUILD_FLAG,{
+	bg_flag_click();
+	end;
+
+OnBatV01Emblem:
+	bg_set_npc $@ValFreyjaBG1_id2, 97, 167, "Flag Capture#bat_v01::OnGuillCapture", "Flag Capture#bat_v01::OnCroixRecapture";
+	end;
+}
+
+bat_v01,225,215,4	duplicate(1st Croix Flag#bat_v01_b01)	2nd Croix Flag#bat_v01_b02	GUILD_FLAG
+bat_v01,287,275,2	duplicate(1st Croix Flag#bat_v01_b01)	3th Croix Flag#bat_v01_b03	GUILD_FLAG
+bat_v01,235,301,4	duplicate(1st Croix Flag#bat_v01_b01)	4th Croix Flag#bat_v01_b04	GUILD_FLAG
+bat_v01,339,331,2	duplicate(1st Croix Flag#bat_v01_b01)	5th Croix Flag#bat_v01_b05	GUILD_FLAG
+
+bat_v01,97,167,0	script	EffectBase#bat_v01_1	HIDDEN_WARP_NPC,{
+OnStart:
+	initnpctimer;
+	end;
+
+OnTimer3000:
+	specialeffect EF_LOCKON;
+	end;
+	
+OnTimer7000:
+	stopnpctimer;
+	initnpctimer;
+	specialeffect EF_CHANGEPOISON;
+	end;
+
+OnStop:
+	stopnpctimer;
+	end;
+}
+
+bat_v01,315,173,2	script	Croix Base#bat_v01_1	GUILD_FLAG,{
+	mes "^0000FF[ Croix's Army ]^000000";
+	mes "1. Capture enemy flags and bring them safely to this base.";
+	mes "2. Guardians protect enemy flags.";
+	mes "3. Enemies and guardians can intercept the capture of the Flag.";
+	close;
+
+OnBatV01Emblem:
+	bg_set_npc $@ValFreyjaBG1_id2;
+	end;
+}
+
+bat_v01,315,162,2	duplicate(Croix Base#bat_v01_1)	Croix Base#bat_v01_2	GUILD_FLAG
+bat_v01,304,173,2	duplicate(Croix Base#bat_v01_1)	Croix Base#bat_v01_3	GUILD_FLAG
+bat_v01,304,162,2	duplicate(Croix Base#bat_v01_1)	Croix Base#bat_v01_4	GUILD_FLAG
+bat_v01,362,52,3	duplicate(Croix Base#bat_v01_1)	Croix Base#bat_v01_5	GUILD_FLAG
+
+bat_v01,310,168,0	script	EffectBase#bat_v01_2	HIDDEN_WARP_NPC,{
+OnStart:
+	initnpctimer;
+	end;
+
+OnTimer3000:
+	specialeffect EF_LOCKON;
+	end;
+	
+OnTimer7000:
+	stopnpctimer;
+	initnpctimer;
+	specialeffect EF_CHANGEFIRE;
+	end;
+	
+OnStop:
+	stopnpctimer;
+	end;
+}
+
+// Respawn's
+// -------------------------------------------------------
+bat_v01,1,14,0	script	time#bat_v01	CLEAR_NPC,{
+OnEnable:
+	donpcevent "Battle Therapist#bat_v01_a::OnEnable";
+	donpcevent "Battle Therapist#bat_v01_b::OnEnable";
+	end;
+
+OnStop:
+	donpcevent "Battle Therapist#bat_v01_a::OnStop";
+	donpcevent "Battle Therapist#bat_v01_b::OnStop";
+	end;
+}
+
+bat_v01,44,51,3	script	Battle Therapist#bat_v01_a	4_F_SISTER,{
+	specialeffect2 EF_HEAL;
+	mes "[Battle Therapist]";
+	mes "Just close your eyes";
+	mes "and take a deep breath.";
+	mes "You can free yourself from pain.";
+	close;
+
+OnTimer25000:
+	specialeffect EF_SANCTUARY;
+	end;
+
+OnTimer26500:
+	stopnpctimer;
+	donpcevent "Battle Therapist#bat_v01_a::OnEnable";
+	end;
+
+OnEnable:
+	initnpctimer;
+	enablenpc "Battle Therapist#bat_v01_a";
+	end;
+
+OnStop:
+	disablenpc "Battle Therapist#bat_v01_a";
+	stopnpctimer;
+	end;
+}
+
+bat_v01,360,51,3	script	Battle Therapist#bat_v01_b	4_F_SISTER,{
+	specialeffect2 EF_HEAL;
+	mes "[Battle Therapist]";
+	mes "Just close your eyes";
+	mes "and take a deep breath.";
+	mes "You can free yourself from pain.";
+	close;
+
+OnTimer25000:
+	specialeffect EF_SANCTUARY;
+	end;
+
+OnTimer26500:
+	stopnpctimer;
+	donpcevent "Battle Therapist#bat_v01_b::OnEnable";
+	end;
+
+OnEnable:
+	initnpctimer;
+	enablenpc "Battle Therapist#bat_v01_b";
+	end;
+
+OnStop:
+	disablenpc "Battle Therapist#bat_v01_b";
+	stopnpctimer;
+	end;
+}
+
+// Countdown
+// -------------------------------------------------------
+bat_v01,1,15,0	script	countdown#bat_v01	CLEAR_NPC,{
+OnInit:
+	stopnpctimer;
+	end;
+
+OnEnable:
+	stopnpctimer;
+	initnpctimer;
+	end;
+
+OnStop:
+	stopnpctimer;
+	end;
+
+OnTimer7000:
+	mapannounce "bat_v01", "Lieutenant Axl Rose: Let's attack and conquer the enemy's flags!",bc_map,"0xFF9900";
+	end;
+
+OnTimer8000:
+	mapannounce "bat_v01", "Lieutenant Swandery: Great Freyja! Even if we do not win, we will fight with honor! We will show them our power.",bc_map,"0xFF99CC";
+	end;
+
+OnTimer1800000:
+	mapannounce "bat_v01", "Marollo VII : Guillaume Marollo, Croix Marollo! And his followers!",bc_map,"0x99CC00";
+	end;
+
+OnTimer1803000:
+	mapannounce "bat_v01", "Marollo VII : Both armies are very competitive, so it is difficult to judge which group is superior.",bc_map,"0x99CC00";
+	end;
+
+OnTimer1808000:
+	mapannounce "bat_v01", "Marollo VII : I think it would be better to end the battle, and we call it a tie.",bc_map,"0x99CC00";
+	end;
+
+OnTimer1822000:
+	mapannounce "bat_v01", "Marollo VII : Keep faith and loyalty for Freyja, define this battle now!",bc_map,"0x99CC00";
+	end;
+
+OnTimer1825000:
+	mapannounce "bat_v01", "Axl Rose, Swandery : Yes Sir.",bc_map,"0x99CC00";
+	stopnpctimer;
+	end;
+}
+
+bat_v01,1,16,3	script	time_event#bat_v01	CLEAR_NPC,{
+OnInit:
+	stopnpctimer;
+	end;
+
+OnEnable:
+	set .Valfreyja_Timer, 0;
+	stopnpctimer;
+	initnpctimer;
+	end;
+	
+OnStop:
+	stopnpctimer;
+	end;
+	
+OnTimer60000:
+	set .Valfreyja_Timer, .Valfreyja_Time+1;
+	set .@event_timer, callfunc("bg_getarenainfo",9,"event_timer");
+	if( .Valfreyja_Timer >= .@event_timer )
+	{
+		set $@ValFreyjaBG1, 2;
+		if( $@ValFreyjaBG1_CroixScore > $@ValFreyjaBG1_GuillScore )
+		{
+			set $@ValFreyjaBG1_Victory, 2;
+			mapannounce "bat_v01", "Marollo VII: The Croix Army has won more Flags, it's the winner!",bc_map,"0x99CC00";
+		}
+		else if( $@ValFreyjaBG1_GuillScore > $@ValFreyjaBG1_CroixScore )
+		{
+			set $@ValFreyjaBG1_Victory, 1;
+			mapannounce "bat_v01", "Marollo VII: The Guillaume Army has won more Flags, it's the winner!",bc_map,"0x99CC00";
+		}
+		else {
+			set $@ValFreyjaBG1_Victory, 3;
+			mapannounce "bat_v01", "Marollo VII: Both Armies did not meet their goals, this is a draw!",bc_map,"0x99CC00";
+		}
+		
+		// Computes Ranking and awards rewards
+		callfunc "bg_finish", 9, $@ValFreyjaBG1_id1, $@ValFreyjaBG1_id2, $@ValFreyjaBG1_Victory, $@ValFreyjaBG1_GuillScore, $@ValFreyjaBG1_CroixScore;
+		
+		donpcevent "start#bat_v01::OnDisable";
+		stopnpctimer;
+	}
+	else
+	{
+		stopnpctimer;
+		initnpctimer;
+	}
+	end;
+}
+
+-	script	start#bat_v01_Out	FAKE_NPC,{
+	end;
+
+OnBegin:
+	initnpctimer;
+	end;
+	
+OnStop:
+	stopnpctimer;
+	end;
+
+OnTimer1000:
+	mapannounce "bat_v01", "Please talk to the Lieutenant to leave the battlefield.",bc_map,"0x00ff00";
+	end;
+
+OnTimer3000:
+	mapannounce "bat_v01", "In 30 seconds, the Lieutenant will dispense with the grouping.",bc_map,"0x00ff00";
+	end;
+
+OnTimer5000:
+	mapannounce "bat_v01", "Speak to the Lieutenant to leave the battlefield immediately. Please be careful.",bc_map,"0x00ff00";
+	end;
+
+OnTimer55000:
+	mapannounce "bat_v01", "You will be sent back.",bc_map,"0x00ff00";
+	end;
+
+OnTimer60000:
+	stopnpctimer;
+	bg_kick_team $@ValFreyjaBG1_id1;
+	bg_kick_team $@ValFreyjaBG1_id2;
+	donpcevent "start#bat_v01::OnReset";
+	mapwarp "bat_v01","bat_room",154,150;
+	maprespawnguildid "bat_v01",0,3; // Just in case someone else
+	end;
+}
+
+// Lieutenants
+// -----------------------------------------------------------------
+bat_v01,44,51,3	script	Lieutenant#bat_v01_a	4_M_KY_HEAD,{
+	mes "[Axl Rose]";
+	if( getcharid(4) == $@ValFreyjaBG1_id2 )
+	{
+		mes "What?? Some of the Croix Army soldiers are doing it at Guillaume's camp!!";
+		mes "A soldier will lead you to his group.";
+		close2;
+		warp "bat_v01", 357, 48;
+		end;
+	}
+	else if( getcharid(4) == $@ValFreyjaBG1_id1 )
+	{
+		if( $@ValFreyjaBG1_Victory == 0 )
+		{
+			mes "The Battle is not yet soldered, go right to your post, Guillaume's Army needs you!";
+			close;
+		}
+		else if( $@ValFreyjaBG1_Victory == 1 )
+		{
+			mes "Bless the Guillaume Army!";
+			mes strcharinfo(0) + ", let's enjoy our glorious victory!";
+		}
+		else if( $@ValFreyjaBG1_Victory == 2 ) {
+			mes "You lost, but you dedicated yourself to this battle for Guillaume Marollo!";
+			mes "Consider this defeat as a lesson, and next time you will come out victorious.";
+		}
+		else {
+			mes "This indeed was a great Battle!";
+			mes "Not everyone can come out victorious, consider this tie as a lesson and next time we will be victorious.";
+		}
+		close2;
+		bg_leave;
+	}
+	else {
+		mes "A Civilian on our battlefield?";
+		mes "We'll take you to a safe place!";
+		close2;
+	}
+	warp "prontera", 156, 176;
+	end;
+
+OnInit:
+	disablenpc "Lieutenant#bat_v01_a";
+	end;
+}
+
+bat_v01,360,51,3	script	Lieutenant#bat_v01_b	4_M_CRU_HEAD,{
+	mes "[Swandery]";
+	if( getcharid(4) == $@ValFreyjaBG1_id1 )
+	{
+		mes "What?? One of Guillaume's Army soldiers is doing at Croix's camp!!";
+		mes "A soldier will lead you to his group.";
+		close2;
+		warp "bat_v01", 41, 48;
+		end;
+	}
+	else if( getcharid(4) == $@ValFreyjaBG1_id2 )
+	{
+		if( $@ValFreyjaBG1_Victory == 0 )
+		{
+			mes "The Battle is not yet soldered, go right to your post, the Croix Army needs you!";
+			close;
+		}
+		else if( $@ValFreyjaBG1_Victory == 1 ) {
+			mes "Oh " + strcharinfo(0) + ", do not be sed.";
+			mes "Even if we did not win, we did our best.";
+			mes "Do not forget this battle, we will win the next.";
+		}
+		else if( $@ValFreyjaBG1_Victory == 2 )
+		{
+			mes "Bless the Croix Army!";
+			mes strcharinfo(0) + ", let's enjoy our glorious victory!";
+		}
+		else {
+			mes "This indeed was a great Battle!";
+			mes "Not everyone can come out victorious, do not forget this battle!";
+			mes "We'll win the next one.";
+		}
+		close2;
+		bg_leave;
+	}
+	else {
+		mes "A Civilian on our battlefield?";
+		mes "We'll take you to a safe place!";
+		close2;
+	}
+	warp "prontera", 156, 176;
+	end;
+
+OnInit:
+	disablenpc "Lieutenant#bat_v01_b";
+	end;
+}
+
+// MapFlags
+// -----------------------------------------------------------------
+bat_v01	mapflag	nowarp
+bat_v01	mapflag	nowarpto
+bat_v01	mapflag	nomemo
+bat_v01	mapflag	noteleport
+bat_v01	mapflag	nosave
+bat_v01	mapflag	noreturn
+bat_v01	mapflag	nobranch
+bat_v01	mapflag	nopenalty
+bat_v01	mapflag	battleground	2
+bat_v01	mapflag	nobgskillcall

@@ -1,0 +1,304 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Mestre Ferreiro                                              .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena e derivações.                                        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Refina, repara e remove cartas de equipamentos.              .
+  *-----------------------------------------------------------------*/
+prontera,149,189,5	script	Ferreiro#repairman	4W_M_01,{
+	set .@loop_1, 1;
+	setarray .@ZenyCost[0], 100000, 35000;																// Zeny para ser cobrado. [reparo,remover carta,refinar]
+	setarray .@MaterialsRef[0], 1, 985, 4, 2000, 2, 1010, 7, 2000, 4, 984, 5, 2000, 10, 984, 4, 2000;	// Materiais requeridos para refinamento do item. [zenycost, item_id, amount]
+	setarray .@ConfigVip[0], 100, 10, 10;																// Configurações de VIP. [lvlvip (100:desativar), maxrefine, maxrefinenonvip]
+	
+	while(.@loop_1)
+	{
+		//enable_items;
+		mes "^FF0000[Ferreiro]^000000";
+		if( .@loop_chk )
+			mes "Posso ajudar em mais alguma coisa?";
+		else {
+			mes "Hey! Sou o ^FF0000Ferreiro^000000 especializado em concertar itens e remover cartas.";
+			mes "Em que posso te ajudar?";
+			set .@loop_chk,1;
+		}
+		next;
+		switch( select("- Refinar um Item.", "- Reparar um item.", "- Remover carta de um item.", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					enable_items;
+					mes "^FF0000[Ferreiro]^000000";
+					mes "Certifique-se que você está com o item equipado para fazer o refinamento.";
+					mes "^0000FFVocê pode equipar o item agora mesmo, ao avançar não poderá equipar os itens.^000000";
+					next;
+					disable_items;
+					.@build_menu$ = "";
+					for( .@i=1; .@i <= 10; .@i++ )
+						.@build_menu$ += (getequipisequiped(.@i)&&getequipisenableref(.@i)&&((getgmlevel()>=.@ConfigVip[0]&&getequiprefinerycnt(.@i)<.@ConfigVip[1])||(getequiprefinerycnt(.@i)<.@ConfigVip[2]))?"- " + getequipname(.@i) + " Nv. " + getequiprefinerycnt(.@i) + ".:":":");
+				
+					set .@choose, select(.@build_menu$+"^FFA500- Voltar.^000000:^FF0000- Cancelar.^000000");
+					
+					if( .@choose == 11 )
+					{
+						enable_items;
+						break;
+					}
+					else if( .@choose == 12 )
+					{
+						set .@loop_1, 0;
+						break;
+					}
+					
+					set .@refamount, getequiprefinerycnt(.@choose);
+					
+					for( .@i=0; .@i < getarraysize(.@MaterialsRef); .@i+=4 )
+					{
+						if( .@refamount < .@MaterialsRef[.@i] )
+						{
+							set .@ReqItem, .@MaterialsRef[(.@i+1)];
+							set .@ReqAmount, .@MaterialsRef[(.@i+2)];
+							set .@Price, .@MaterialsRef[(.@i+3)];
+							break;
+						}
+					}
+					
+					mes "^FF0000[Ferreiro]^000000";
+					if( .@ReqItem && countitem(.@ReqItem) < .@ReqAmount )
+					{
+						mes "Para refinar o ^0000FF" + getequipname(.@choose) + "^000000 é nescessário de  ^0000FF" + .@ReqAmount + "x " + getitemname(.@ReqItem) + "^000000.";
+						next;
+					}
+					else if( .@Price && Zeny < .@Price )
+					{
+						mes "Para refinar o ^0000FF" + getequipname(.@choose) + "^000000 é nescessário ^0000FF" + .@Price + "^000000 Zenys.";
+						next;
+					}
+					else {
+						if( .@ReqItem || .@Price )
+						{
+							if( .@ReqItem && .@Price )
+								mes "Para refinar o ^0000FF" + getequipname(.@choose) + "^000000 é nescessário de ^0000FF" + .@ReqAmount + "x " + getitemname(.@ReqItem) + " e " + .@Price + "^000000 Zenys.";
+							else if( .@ReqItem )
+								mes "Para refinar o ^0000FF" + getequipname(.@choose) + "^000000 é nescessário de ^0000FF" + .@ReqAmount + "x " + getitemname(.@ReqItem) + ".";
+							else
+								mes "Para refinar o ^0000FF" + getequipname(.@choose) + "^000000 é nescessário de ^0000FF" + .@Price + "^000000 Zenys.";
+						}
+						
+						mes "Deseja refinar o ^0000FF" + getequipname(.@choose) + "^000000?";
+						if( getgmlevel() < .@ConfigVip[0] )
+							mes "^FF0000Caso o processo der errado, você perderá o seu equipamento!^000000.";
+						else
+							mes "^0000FFCaso o processo der errado, você não perderá o seu equipamento apenas os materiais!^000000.";
+						next;
+						switch( select("- Sim, por favor.", "^FFA500- Não, refinar outro equipamento.^000000", "^FF0000- Cancelar.^000000") )
+						{
+							case 1:
+								if( getequippercentrefinery(.@choose) <= rand(100) )
+								{
+									emotion (!rand(5))?et_cash:et_omg;
+									mes "^FF0000[Ferreiro]^000000";
+									if( getgmlevel() < .@ConfigVip[0] )
+									{
+										mes "Hmmm, não foi dessa vez meu amigo... como havia dito seu equipamento foi totalmente destruído.";
+										failedrefitem .@choose;
+									}
+									else
+									{
+										if( .@Price ) set Zeny, Zeny - .@Price;
+										if( .@ReqItem ) delitem .@ReqItem, .@ReqAmount;
+										mes "Hmmm, houve um erro ao refinar seu equipamento meu amigo... seu equipamento está intacto mais porém as verbas utilizadas não terá devolução.";
+										//downrefitem .@choose;
+										specialeffect EF_REFINEFAIL;
+									}
+								}
+								else {
+									emotion et_heh;
+									successrefitem .@choose;
+									if( .@Price ) set Zeny, Zeny - .@Price;
+									if( .@ReqItem ) delitem .@ReqItem, .@ReqAmount;
+									mes "^FF0000[Ferreiro]^000000";
+									mes "Ah sim! aqui está seu equipamento intacto!";
+									mes "Deu tudo certo, acredite sempre em um bom Ferreiro.";
+								}
+								next;
+								break;
+							case 2:
+								break;
+							case 3:
+								set .@loop_2, 0;
+								set .@loop_1, 0;
+								break;
+						}
+					}
+				}
+				break;
+			case 2:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					.@b=1;
+					deletearray .@brokenid, getarraysize(.@brokenid);
+					while(1)
+					{
+						if( getbrokenid(.@b) == 0 )
+							break;
+						
+						set .@brokennum[getarraysize(.@brokenid)], .@b;
+						set .@brokenid[getarraysize(.@brokenid)], getbrokenid(.@b);
+						.@b++;
+					}
+					
+					if( !getarraysize(.@brokenid) )
+					{
+						mes "^FF0000[Ferreiro]^000000";
+						mes "Vejo que você é cuidado-so com seus itens, você tem nenhum quebrado.";
+						next;
+						break;
+					}
+					
+					.@build_menu$ = "";
+					for( .@i=0; .@i < getarraysize(.@brokenid); set .@i, .@i + 1 )
+						.@build_menu$ += "- " + getitemname(.@brokenid[.@i]) + ".:";
+						
+					set .@choose, select(.@build_menu$+"^FFA500- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+					
+					if( .@choose == getarraysize(.@brokenid) )
+						break;
+					else if( .@choose > getarraysize(.@brokenid) )
+					{
+						set .@loop_1, 0;
+						break;
+					}
+					
+					set .@Price, .@ZenyCost[0];
+					mes "^FF0000[Ferreiro]^000000";
+					mes "Para reparar o ^0000FF" + getitemname(.@brokenid[.@choose]) + "^000000 é nescessário ^0000FF" + .@Price + "^000000 Zenys.";
+					if( Zeny < .@Price )
+					{
+						mes "^FF0000Você não possue " + .@Price + " Zenys.^000000";
+						next;
+					}
+					else {
+						mes "Deseja reparar o ^0000FF" + getitemname(.@brokenid[.@choose]) + "^000000?";
+						next;
+						switch( select("- Sim, reparar.", "^FFA500- Não, escolher outro equipamento.", "^FF0000- Cancelar.^000000") )
+						{
+							case 1:
+								set Zeny, Zeny - .@Price;
+								specialeffect EF_REFINEOK;
+								repair .@brokennum[.@choose];
+								mes "^FF0000[Ferreiro]^000000";
+								mes "Muito bem, o seu ^0000FF" + getitemname(.@brokenid[.@choose]) + "^000000 foi reparado.";
+								next;
+								break;
+							case 2:
+								break;
+							case 3:
+								set .@loop_2, 0;
+								set .@loop_1, 0;
+								break;
+						}
+					}
+				}
+				break;
+			case 3:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					enable_items;
+					mes "^FF0000[Ferreiro]^000000";
+					mes "Certifique-se que você está com o item equipado para remover as cartas.";
+					mes "Todas as cartas removidas não serão devolvida e o custo para remoção de cada carta é de ^0000FF" + .@ZenyCost[1] + " Zenys^000000.";
+					mes "^0000FFVocê pode equipar o item agora mesmo, ao avançar não poderá equipar os itens.^000000";
+					next;
+					disable_items;
+					.@build_menu$ = "";
+					for( .@i=1; .@i <= 10; .@i++ )
+						.@build_menu$ += (getequipisequiped(.@i)&&getequipcardcnt(.@i)?"- " + getequipname(.@i) + " (" + getequipcardcnt(.@i) + ") cartas.:":":");
+					
+					set .@choose, select(.@build_menu$+"^FFA500- Voltar.^000000:^FF0000- Cancelar.^000000");
+					
+					if( .@choose == 11 )
+					{
+						enable_items;
+						break;
+					}
+					else if( .@choose == 12 )
+					{
+						set .@loop_1, 0;
+						break;
+					}
+					
+					.@Price = (getequipcardcnt(.@choose)*.@ZenyCost[1]);
+				
+					mes "^FF0000[Ferreiro]^000000";
+					mes "Para remover as cartas do seu item eu nescessito de ^0000FF" + .@Price + " Zenys^000000.";
+					if( Zeny < .@Price )
+					{
+						mes "^FF0000Você não possue " + .@Price + " Zenys.^000000";
+						next;
+					}
+					else {
+						mes "Deseja remover as cartas do seu ^0000FF" + getequipname(.@choose) + "^000000?";
+						next;
+						switch( select("- Sim, remover cartas.", "^FFA500- Não, escolher outro equipamento.", "^FF0000- Cancelar.^000000") )
+						{
+							case 1:
+								// Faz a contagem das cartas para ser removidas.
+								deletearray .@cardid[0], getarraysize(.@cardid);
+								for( .@i=0; .@i < getequipcardcnt(.@choose); .@i++ )
+									set .@cardid[.@i], getequipcardid(.@choose,.@i);
+						
+								set Zeny, Zeny - .@Price;
+								specialeffect EF_HITBODY;
+								specialeffect EF_DOUBLEGUMGANG;
+								successremovecards .@choose;
+								
+								for( .@i=0; .@i < getarraysize(.@cardid); .@i++ )
+									delitem .@cardid[.@i], 1;
+								
+								mes "^FF0000[Ferreiro]^000000";
+								mes "Muito bem, as cartas foi removida do seu ^0000FF" + getequipname(.@choose) + "^000000.";
+								next;
+								specialeffect EF_HITBODY;
+								specialeffect EF_NONE;
+								break;
+							case 2:
+								break;
+							case 3:
+								set .@loop_1, 0;
+								set .@loop_2, 0;
+								break;
+						}
+					}
+				}
+				break;
+			case 4:
+				set .@loop_1,0;
+				break;
+		}
+	}
+
+	mes "^FF0000[Ferreiro]^000000";
+	mes "Tudo bem, volte quando desejar concertar algum item especifico seu ou quando desejar remover as cartas.";
+	close;
+}

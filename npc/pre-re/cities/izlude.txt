@@ -1,0 +1,105 @@
+//===== rAthena Script ======================================= 
+//= Izlude Town Pre-Renewal
+//===== By: ================================================== 
+//= Daegaladh
+//===== Current Version: ===================================== 
+//= 1.0
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//===== Description: ========================================= 
+//= [Official Conversion]
+//= Izlude town NPCs.
+//===== Additional Comments: ================================= 
+//= 1.0 First Version.
+//============================================================
+
+// Izlude
+//============================================================
+izlude,197,205,1	duplicate(Sailor_izlude)	Sailor#izlude	100
+izlude_a,197,205,1	duplicate(Sailor_izlude)	Sailor#izlude_a	100
+izlude_b,197,205,1	duplicate(Sailor_izlude)	Sailor#izlude_b	100
+izlude_c,197,205,1	duplicate(Sailor_izlude)	Sailor#izlude_c	100
+izlude_d,197,205,1	duplicate(Sailor_izlude)	Sailor#izlude_d	100
+
+izlude,71,92,2	duplicate(Bonne_izlude)	Bonne#izlude	90
+izlude_a,71,92,2	duplicate(Bonne_izlude)	Bonne#izlude_a	90
+izlude_b,71,92,2	duplicate(Bonne_izlude)	Bonne#izlude_b	90
+izlude_c,71,92,2	duplicate(Bonne_izlude)	Bonne#izlude_c	90
+izlude_d,71,92,2	duplicate(Bonne_izlude)	Bonne#izlude_d	90
+
+izlude,172,215,4	duplicate(Charfri_izlude)	Charfri#izlude	91
+izlude_a,172,215,4	duplicate(Charfri_izlude)	Charfri#izlude_a	91
+izlude_b,172,215,4	duplicate(Charfri_izlude)	Charfri#izlude_b	91
+izlude_c,172,215,4	duplicate(Charfri_izlude)	Charfri#izlude_c	91
+izlude_d,172,215,4	duplicate(Charfri_izlude)	Charfri#izlude_d	91
+
+izlude,174,164,4	duplicate(Cuskoal_izlude)	Cuskoal#izlude	124
+izlude_a,174,164,4	duplicate(Cuskoal_izlude)	Cuskoal#izlude_a	124
+izlude_b,174,164,4	duplicate(Cuskoal_izlude)	Cuskoal#izlude_b	124
+izlude_c,174,164,4	duplicate(Cuskoal_izlude)	Cuskoal#izlude_c	124
+izlude_d,174,164,4	duplicate(Cuskoal_izlude)	Cuskoal#izlude_d	124
+
+izlude,85,103,4	duplicate(Dega_izlude)	Dega#izlude	84
+izlude_a,85,103,4	duplicate(Dega_izlude)	Dega#izlude_a	84
+izlude_b,85,103,4	duplicate(Dega_izlude)	Dega#izlude_b	84
+izlude_c,85,103,4	duplicate(Dega_izlude)	Dega#izlude_c	84
+izlude_d,85,103,4	duplicate(Dega_izlude)	Dega#izlude_d	84
+
+izlude,140,186,4	duplicate(Kylick_izlude)	Kylick#izlude	97
+izlude_a,140,186,4	duplicate(Kylick_izlude)	Kylick#izlude_a	97
+izlude_b,140,186,4	duplicate(Kylick_izlude)	Kylick#izlude_b	97
+izlude_c,140,186,4	duplicate(Kylick_izlude)	Kylick#izlude_c	97
+izlude_d,140,186,4	duplicate(Kylick_izlude)	Kylick#izlude_d	97
+
+izlude,57,159,2	duplicate(Red_izlude)	Red#izlude	85
+izlude_a,57,159,2	duplicate(Red_izlude)	Red#izlude_a	85
+izlude_b,57,159,2	duplicate(Red_izlude)	Red#izlude_b	85
+izlude_c,57,159,2	duplicate(Red_izlude)	Red#izlude_c	85
+izlude_d,57,159,2	duplicate(Red_izlude)	Red#izlude_d	85
+
+izlude,55,159,2	duplicate(Cebalis_izlude)	Cebalis#izlude	98
+izlude_a,55,159,2	duplicate(Cebalis_izlude)	Cebalis#izlude_a	98
+izlude_b,55,159,2	duplicate(Cebalis_izlude)	Cebalis#izlude_b	98
+izlude_c,55,159,2	duplicate(Cebalis_izlude)	Cebalis#izlude_c	98
+izlude_d,55,159,2	duplicate(Cebalis_izlude)	Cebalis#izlude_d	98
+
+izlude,165,156,2	duplicate(Soldier_izlude)	Soldier#izlude	105
+izlude_a,165,156,2	duplicate(Soldier_izlude)	Soldier#izlude_a	105
+izlude_b,165,156,2	duplicate(Soldier_izlude)	Soldier#izlude_b	105
+izlude_c,165,156,2	duplicate(Soldier_izlude)	Soldier#izlude_c	105
+izlude_d,165,156,2	duplicate(Soldier_izlude)	Soldier#izlude_d	105
+
+-	script	::Guard_izlude	-1,{
+	mes "[Izlude Guard]";
+	mes "Welcome to Izlude.";
+	close;
+}
+prt_fild08,350,219,4	duplicate(Guard_izlude)	Guard#izlude	105
+prt_fild08a,350,219,4	duplicate(Guard_izlude)	Guard#izlude_a	105
+prt_fild08b,350,219,4	duplicate(Guard_izlude)	Guard#izlude_b	105
+prt_fild08c,350,219,4	duplicate(Guard_izlude)	Guard#izlude_c	105
+prt_fild08d,350,219,4	duplicate(Guard_izlude)	Guard#izlude_d	105
+
+// Channel Warper
+//============================================================
+function	script	F_IzludeChannel	{
+	mes "[Trocar de Canal]";
+	mes "Izlude é um lugar vivamente animado, não é?";
+	mes "Estou aqui para ajudar a tornar Izlude ainda melhor!";
+	mes "Posso enviar-lhe outra cópia de Izlude.";
+	mes "Você quer ir para outra cópia?";
+	next;
+	set .@i, select(getarg(0)+":Deixa pra lá");
+	if (.@i < 6) {
+		setarray .@maps$[1],"izlude","izlude_b","izlude_c","izlude_d";
+		savepoint .@maps$[.@i],128,138;
+		warp .@maps$[.@i],128,138;
+		end;
+	}
+	close;
+}
+izlude,134,150,5	script	Izlude Trocar de Canal	64,{ callfunc "F_IzludeChannel",":Izlude_b:Izlude_c:Izlude_d"; }
+izlude_b,134,150,5	script	Izlude Trocar de Canal#_a	64,{ callfunc "F_IzludeChannel","Izlude::Izlude_c:Izlude_d"; }
+izlude_c,134,150,5	script	Izlude Trocar de Canal#_b	64,{ callfunc "F_IzludeChannel","Izlude:Izlude_b::Izlude_d"; }
+izlude_d,134,150,5	script	Izlude Trocar de Canal#_c	64,{ callfunc "F_IzludeChannel","Izlude:Izlude_b:Izlude_c:"; }
+//izlude_a,134,150,5	script	Izlude Trocar de Canal#_d	64,{ callfunc "F_IzludeChannel","Vá para copiar 1:Vá para copiar 2:Vá para copiar 3:Vá para copiar 4:"; }

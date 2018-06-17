@@ -1,0 +1,478 @@
+
+function	script	Kafra_bro	{
+mes "[Funcionária Kafra]";
+mes "Este é o Escritório Central da Corporação Kafra.";
+mes "Nós estamos aqui para servi-lo no que for possivel.";
+next;
+mes "[Funcionária Kafra]";
+mes "Em que posso ajudá-lo ^FF0000"+strcharinfo(0)+"^000000?";
+next;
+switch(select("Salvar ponto de retorno:Abrir armazém:Alugar Carrinho:Cancelar")) {
+	case 1:
+		mes "[Funcionária Kafra]";
+		mes "O seu Ponto de Retorno foi salvo.";
+		mes "Obrigada por utilizar nossos serviços.";
+	next;
+		mes "[Funcionária Kafra]";
+		mes "Porfavor, use os";
+		mes "serviços da Corporação Kafra";
+		mes "disponíveis em toda";
+		mes "Rune Midgard. Obrigado por";
+		mes "visitar a Corporação Kafra. ^FFFFFFcobo^000000";
+	cutin "",255;
+	end;
+case 2:
+	if (Zeny < 20) {
+		mes "[Funcionária Kafra]";
+		mes "Você não tem dinheiro suficiente.";
+		mes "A taxa do Armazém é de 20 zenys.";
+	cutin "",255;
+	end;
+		}
+		mes "[Funcionária Kafra]";
+		mes "Esse serviço é";
+		mes "feito esclusivamente pelos funcionários";
+		mes "Kafra Recepcioniosta";
+		mes "como funções administrativas,";
+		mes "vou liberar o seu Armazém. ^FFFFFFcobo^000000";
+	next;
+		mes "[Funcionária Kafra]";
+		mes "Da próxima vez,";
+		mes "pergunte para Kafra Recepcioniosta";
+		mes "caso desejar utilizar";
+		mes "qualquer Serviço.";
+		mes "Obrigado pela ajuda.";
+		Zeny -= 20;
+		set RESRVPTS, RESRVPTS + (20/5);
+	cutin "",255;
+	openstorage;
+	end;
+case 3:
+	if(checkfalcon()){ mes "Você já possui um Falcão."; close2; }
+		setfalcon();
+	if(checkriding()){ mes "Você já possui um PecoPeco."; close2; }
+		setriding();
+	if(checkcart()){ mes "Você já possui um Carrinho."; close2; }
+		setcart();
+		mes "Obrigado Aventureiro";
+		mes "Volte sempre pois estarei a sua disposição";
+	cutin "",255;
+	end;
+case 4:
+		mes "[Funcionária Kafra]";
+		mes "^666666*Whew...*^000000";
+		mes "Ótimo, porque estou";
+		mes "atualmente em meu";
+		mes "horário de lanche. Apertar";
+		mes "''Cancelar'' seria a";
+		mes "melhor escolha agora.";
+cutin "",255;
+end;
+}
+cutin "",255;
+end;
+}
+
+
+
+// Prontera
+//============================================================
+prontera,160,193,4	script	Funcionária Kafra::01		115,{
+	cutin "kafra_05",2;
+	savepoint "prontera",156,191;
+	callfunc "Kafra_bro",0,1,"na cidade de Geffen";
+	}
+	
+prontera,151,29,0	script	Funcionária Kafra::kaf_prontera2	115,{
+	cutin "kafra_03",2;
+	savepoint "prontera",150,33;
+	callfunc "Kafra_bro",0,1,"na cidade de Prontera";
+}
+
+prontera,29,207,6	script	Funcionária Kafra::kaf_prontera3	113,{
+	cutin "kafra_05",2;
+	savepoint "prontera",33,208;
+	callfunc "Kafra_bro",0,1,"na cidade de Prontera";
+}
+
+prontera,282,200,2	script	Funcionária Kafra::kaf_prontera4	114,{
+	cutin "kafra_04",2;
+	savepoint "prontera",281,203;
+	callfunc "Kafra_bro",0,1,"na cidade de Prontera";
+}
+
+prontera,146,89,6	script	Funcionária Kafra::kaf_prontera5	117,{
+	cutin "kafra_01",2;
+	savepoint "prontera",116,73;
+	callfunc "Kafra_bro",0,1,"na cidade de Prontera";
+}	
+	
+// Alberta
+//============================================================
+alberta,28,229,0	script	Funcionária Kafra::kaf_alberta	116,{
+	cutin "kafra_02",2;
+	savepoint "alberta",31,231;
+	callfunc "Kafra_bro",0,1,"na cidade de Alberta";
+}
+
+alberta,113,60,6	script	Funcionária Kafra::kaf_alberta2	112,{
+	cutin "kafra_06",2;
+	savepoint "alberta",117,57;
+	callfunc "Kafra_bro",0,1,"na cidade de Alberta";
+}
+
+alberta,185,144,6	script	Funcionária Kafra::kaf_alberta3	112,{
+	cutin "kafra_06",2;
+	savepoint "alberta",117,57;
+	callfunc "Kafra_bro",0,1,"na cidade de Alberta";
+}
+	
+// Aldebaran
+//============================================================
+aldebaran,147,119,4	script	Funcionária Kafra::kaf_aldebaran	113,{
+	cutin "kafra_05",2;
+	savepoint "aldebaran",140,115;
+	callfunc "Kafra_bro",0,1,"na cidade de Morroc";
+}
+
+// Amatsu
+//============================================================
+amatsu,102,149,4	script	Funcionária Kafra::kaf_amatsu	116,{
+	cutin "kafra_02",2;
+	savepoint "amatsu",110,150;
+	callfunc "Kafra_bro",0,1,"na cidade de Amatsu";
+}
+
+// Ayothaya
+//============================================================
+ayothaya,155,114,5	script	Funcionária Kafra::kaf_ayothaya	116,{
+	cutin "kafra_02",2;
+	savepoint "ayothaya",150,110;
+	callfunc "Kafra_bro",0,1,"na cidade de Ayotaya";
+}
+
+// Brasilis
+//============================================================
+brasilis,197,221,4	script	Funcionária Kafra#brlis	117,{
+	cutin "kafra_01",2;
+
+
+	M_Save:
+		savepoint "brasilis",188,220;
+		callfunc "Kafra_bro",0,1,"na cidade de Brasilis";
+}
+
+// Comodo
+//============================================================
+comodo,195,150,4	script	Funcionária Kafra::kaf_comodo	721,{
+	cutin "kafra_07",2;
+	savepoint "comodo",193,146;
+	callfunc "Kafra_bro",0,1,"na cidade de Comodo";
+}
+
+cmd_fild07,136,134,4	script	Funcionária Kafra::kaf_cmd_fild07	721,{
+	cutin "kafra_07",2;
+	savepoint "cmd_fild07",127,134;
+	callfunc "Kafra_bro",0,1,"no Farol Pyros";
+}
+
+
+// Einbech
+//============================================================
+einbech,83,101,5	script	Funcionária Kafra#ein3::kaf_einbech	860,{
+	cutin "kafra_08",2;
+	savepoint "einbech",182,124;
+	callfunc "Kafra_bro",0,1,"na cidade de Einbech";
+}
+
+// Einbroch
+//============================================================
+einbroch,242,205,5	script	Funcionária Kafra#ein2::kaf_einbroch	860,{
+	cutin "kafra_08",2;
+	savepoint "einbroch",238,198;
+	callfunc "Kafra_bro",0,1,"na cidade de Einbroch";
+}
+
+einbroch,59,203,6	script	Funcionária Kafra#ein1::kaf_einbroch2	861,{
+	cutin "kafra_09",2;
+	savepoint "einbroch",240,197;
+	callfunc "Kafra_bro",0,1,"na cidade de Einbroch";
+}
+
+// ESPLENDOR ------ SPENDIDE
+//===========================================================
+splendide,207,185,5	script	Funcionária Kafra::kaf_splendide	113,{
+	cutin "kafra_05",2;
+	savepoint "splendide",208,179;
+	callfunc "Kafra_bro",0,1,"na cidade de Esplendide";
+}
+
+// Geffen
+//============================================================
+geffen,126,64,4	script	Funcionária Kafra::kaf_geffen	113,{
+	cutin "kafra_05",2;
+	savepoint "geffen",119,65;
+	callfunc "Kafra_bro",0,1,"na cidade de Geffen";
+}
+
+// Gonryun
+//============================================================
+gonryun,159,122,4	script	Funcionária Kafra::kaf_gonryun	116,{
+	cutin "kafra_02",2;
+	savepoint "gonryun",160,62;
+	callfunc "Kafra_bro",0,1,"na cidade de Kunlun";
+}
+
+// Izlude
+//============================================================
+-	script	::kaf_izlude	-1,{
+	cutin "kafra_01",2;
+	if (checkre(0))
+		savepoint strnpcinfo(4),129,97,1,1;
+	else
+		savepoint "izlude",128,110,1,1;
+	callfunc "Kafra_bro",0,1,"in the city of Izlude";
+}
+
+// Hugel
+//============================================================
+hugel,88,167,4	script	Funcionária Kafra::kaf_hugel	116,{
+	cutin "kafra_02",2;
+	savepoint "hugel",95,145;
+	callfunc "Kafra_bro",0,1,"na cidade de Hugel";
+}
+
+// Yuno
+//============================================================
+yuno,150,45,4	script	Funcionária Kafra::kaf_yuno	860,{
+	cutin "kafra_08",2;
+	savepoint "yuno",157,35;
+	callfunc "Kafra_bro",0,1,"na cidade de Juno";
+}
+
+yuno,327,108,4	script	Funcionária Kafra::kaf_yuno2	860,{
+	cutin "kafra_08",2;
+	savepoint "yuno",328,101;
+	callfunc "Kafra_bro",0,1,"na cidade de Juno";
+}
+
+yuno,277,221,4	script	Funcionária Kafra::kaf_yuno3	861,{
+	cutin "kafra_09",2;
+	savepoint "yuno",274,229;
+	callfunc "Kafra_bro",0,1,"na cidade de Juno";
+}
+
+// Lighthalzen
+//============================================================
+lighthalzen,164,100,4	script	Funcionária Kafra::kaf_lighthalzen	860,{
+	cutin "kafra_08",2;
+	savepoint "lighthalzen",158,94;
+	callfunc "Kafra_bro",0,1,"na cidade de Lighthalzen";
+}
+
+lighthalzen,191,320,4	script	Funcionária Kafra::kaf_lighthalzen2	861,{
+	cutin "kafra_09",2;
+	savepoint "lighthalzen",194,313;
+	callfunc "Kafra_bro",0,1,"na cidade de Lighthalzen";
+}
+
+lhz_in02,237,284,4	script	Funcionária Kafra::kaf_lhz_in02	861,{
+	cutin "kafra_09",2;
+	savepoint "lhz_in02",278,215;
+	callfunc "Kafra_bro",0,1,"na cidade de Lighthalzen";
+}
+
+// Louyang
+//============================================================
+louyang,210,104,5	script	Funcionária Kafra::kaf_louyang	861,{
+	cutin "kafra_09",2;
+	savepoint "louyang",217,92;
+	callfunc "Kafra_bro",0,1,"na cidade de Louyang";
+}
+
+// Manuk
+//============================================================
+manuk,291,192,5	script	Funcionária Kafra::kaf_manuk	117,{
+	cutin "kafra_01",2;
+	savepoint "manuk",217,92;
+	callfunc "Kafra_bro",0,1,"na cidade de Manuk";
+}
+
+// Morocc
+//============================================================
+morocc,156,97,4	script	Funcionária Kafra::kaf_morocc	113,{
+	cutin "kafra_05",2;
+	savepoint "morocc",156,46;
+	callfunc "Kafra_bro",0,1,"na cidade de Morroc";
+}
+
+morocc,160,258,4	script	Kafra::kaf_morocc2	114,{
+	cutin "kafra_04",2;
+	savepoint "morocc",157,272;
+	callfunc "Kafra_bro",0,1,"na cidade de Morroc";
+}
+
+// Moscovia
+//============================================================
+moscovia,223,191,3	script	Funcionária Kafra::kaf_mosk	114,{
+	cutin "kafra_04",2;
+	savepoint "moscovia",221,194;;
+	callfunc "Kafra_bro",0,3,"na cidade de Moscovia";
+}
+
+// Nameless_i
+//============================================================
+nameless_i,174,256,3	script	Funcionária Kafra::kaf_nameless_i	113,{
+	cutin "kafra_05",2;
+	savepoint "nameless_i",180,250;
+	callfunc "Kafra_bro",1,1,"na cidade de Nameless_i";
+}
+
+
+// Niflheim
+//============================================================
+niflheim,202,180,3	script	Funcionária Kafra::kaf_niflheim	791,{
+	savepoint "niflheim",192,182;
+	callfunc "Kafra_bro",1,1,"na cidade de Niflheim";
+}
+
+niflheim,32,162,5	script	Funcionária Kafra::kaf_niflheim2	791,{
+	savepoint "niflheim",373,235;
+	callfunc "Kafra_bro",1,1,"na cidade de Niflheim";
+}
+
+// Payon
+//============================================================
+payon,181,104,4	script	Funcionária Kafra::kaf_payon	113,{
+	cutin "kafra_05",2;
+	savepoint "payon",160,58;
+	callfunc "Kafra_bro",0,1,"na cidade de Payon";
+}
+
+payon,175,226,4	script	Funcionária Kafra::kaf_payon2	116,{
+	cutin "kafra_02",2;
+	savepoint "payon",257,242;
+	callfunc "Kafra_bro",0,1,"na cidade de Payon";
+}
+
+pay_arche,55,123,0	script	Funcionária Kafra::kaf_payon3	115,{
+	cutin "kafra_03",2;
+	savepoint "pay_arche",49,144;
+	callfunc "Kafra_bro",0,1,"na cidade de Payon";
+}
+
+// Umbala
+//============================================================
+umbala,87,160,4	script	Funcionária Kafra::kaf_umbala	721,{
+	cutin "kafra_07",2;
+	savepoint "umbala",91,153;
+	callfunc "Kafra_bro",0,1,"na cidade de Umbala";
+}
+umbala,130,131,4	script	Funcionária Kafra::kaf_umbala2	721,{
+	cutin "kafra_07",2;
+	savepoint "umbala",126,131;
+	callfunc "Kafra_bro",0,1,"na cidade de Umbala";
+}
+
+// Veins
+//============================================================
+veins,215,122,4	script	Funcionária Kafra::kaf_veins	113,{
+	cutin "kafra_05",2;
+	savepoint "veins",205,115;
+	callfunc "Kafra_bro",0,1,"na cidade de Veins";
+}
+
+
+
+
+
+// Cavernas e Campos
+//============================================================
+// - Ilha Byalan
+izlu2dun,106,58,8	script	Funcionária Kafra::kaf_izlu2dun	115,{
+	cutin "kafra_03",2;
+	if(BaseJob==Job_Novice && job_merchant_q2>0) callfunc "F_MercKafra";
+	savepoint "izlu2dun",87,170;
+	callfunc "Kafra_bro",0,1,"na Ilha Byalan";
+}
+
+// - Esgoto de Prontera
+prt_fild05,290,224,3	script	Funcionária Kafra::prt_fild05	114,{
+	cutin "kafra_04",2;
+	M_Save:
+		savepoint "prt_fild05",274,243;
+		callfunc "Kafra_bro",0,1, "no Esgoto de Prontera";
+}
+
+// - Mina do Carvão
+mjolnir_02,83,362,4	script	Funcionária Kafra::kaf_mjolnir_02	116,{
+	cutin "kafra_02",2;
+	savepoint "mjolnir_02",81,355;
+	callfunc "Kafra_bro",0,1,"na Mina de Mjolnir";
+}
+
+// - Ruínas de Morroc
+moc_ruins,59,157,5	script	Funcionária Kafra::moc_ruins	114,{
+	cutin "kafra_04",2;
+	savepoint "moc_ruins",41,141;
+	callfunc "Kafra_bro",0,1," nas Pirâmides";
+}
+
+// - Caverna dos Orcs
+gef_fild10,73,340,5	script	Funcionária Kafra::kaf_gef_fild10	116,{
+	cutin "kafra_02",2;
+	savepoint "gef_fild10",54,326;
+	callfunc "Kafra_bro",0,1,"na Caverna dos Orcs";
+}
+
+// - Navio Fantasma
+alb2trea,59,69,5	script	Funcionária Kafra::kaf_alb2trea	117,{
+	cutin "kafra_01",2;
+	savepoint "alb2trea",92,64;
+	callfunc "Kafra_bro",0,1,0,"no Navio Fantasma";
+}
+
+
+
+//IZLUDE
+//============================================================
+izlude,133,254,4	script	Funcionária Kafra::kaf_izlude5	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,245;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude,128,148,4	script	Funcionária Kafra::kaf_izlude6	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,138;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude_b,133,254,4	script	Funcionária Kafra::kaf_izlude7	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,245;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude_b,128,148,4	script	Funcionária Kafra::kaf_izlude8	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,138;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude_c,133,254,4	script	Funcionária Kafra::kaf_izlude9	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,245;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude_c,128,148,4	script	Funcionária Kafra::kaf_izlude10	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,138;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude_d,133,254,4	script	Funcionária Kafra::kaf_izlude11	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,245;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}
+izlude_d,128,148,4	script	Funcionária Kafra::kaf_izlude12	861,{
+	cutin "kafra_09",2;
+	savepoint "izlude",128,138;
+	callfunc "Kafra_bro",0,1,"na cidade de Izlude";
+}

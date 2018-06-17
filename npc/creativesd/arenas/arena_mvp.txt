@@ -1,0 +1,289 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Arena MvP                                                        .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   9 Arenas de Monstros vs Jogadores, (3) Solo, (3) Jogadores e     .
+  .  (3) Jogadores.                                                     .
+  *---------------------------------------------------------------------*/
+// Configurações:
+//
+-	script	Arena MvP#config	-1,{
+OnInit:
+	// Ids dos MvPs
+	setarray $@mvp_a_id[0], 1059, 1647, 1511, 2362, 1645, 1650, 1785, 1039, 2320, 2317, 1873, 1086, 1871, 2068, 2319, 1251, 2188, 2189, 2187, 2190, 2234, 2229, 2232, 1719, 1046, 2131, 1112, 1389, 1115, 1652, 1952, 1157, 1150, 1159, 2253, 1312, 2251, 1885, 2255, 1252, 1734, 2202, 1779, 1980, 1630, 1688, 2156, 1946, 1147, 1708, 2233, 2231, 1648, 1917, 1956, 1087, 2228, 1768, 2194, 2230, 2249, 1623, 1492, 1272, 1373, 1190, 1418, 2022, 1649, 1583, 1751, 2106;
+	
+	// Nome de Exibição das Arenas
+	setarray $@mvp_a_name$[0], "Solo", "Solo", "Solo", "3 Jogadores", "3 Jogadores", "3 Jogadores", "5 Jogadores", "5 Jogadores", "5 Jogadores";
+	
+	// Mapa da Arena
+	setarray $@mvp_a_map$[0], "mvp_arena01", "mvp_arena02", "mvp_arena03", "mvp_arena04", "mvp_arena05", "mvp_arena06", "mvp_arena07", "mvp_arena08", "mvp_arena09";
+	
+	// Coordenada X
+	setarray $@mvp_a_x[0], 51, 51, 51, 51, 51, 51, 51, 51, 51;
+	
+	// Coordenada Y
+	setarray $@mvp_a_y[0], 49, 49, 49, 49, 49, 49, 49, 49, 49;
+	
+	// Máximo de Jogadores na Arena
+	setarray $@mvp_a_p[0], 1, 1, 1, 3, 3, 3, 5, 5, 5;
+	
+	// Zeny que será cobrado para invocar um MvP.
+	setarray $@mvp_a_z[0], 1000, 1000, 1000, 3000, 3000, 3000, 5000, 5000, 5000;
+	
+	// Bloquear Drop de Itens dos MvP's?
+	setarray $@mvp_a_drop[0], 0, 0, 0, 1, 1, 1, 1, 1, 1;
+	
+	// Bloquear Recompensas dos MvP's?
+	setarray $@mvp_a_reward[0], 0, 0, 0, 1, 1, 1, 1, 1, 1;
+	
+	// Bloquear Recompensa de EXP dos MvP's?
+	setarray $@mvp_a_exp[0], 0, 0, 0, 1, 1, 1, 1, 1, 1;
+	
+	for( .@i = 0; .@i < getarraysize($@mvp_a_map$); .@i++ )
+	{
+		setarray .@flags[0], mf_monster_noteleport, mf_noreturn, mf_nosave, mf_noteleport, mf_nowarp, mf_nowarpto, mf_nosave, mf_novending;
+		for( .@i2 = 0; .@i2 < getarraysize(.@flags); .@i2++ )
+		{
+			if( !getmapflag($@mvp_a_map$[.@i],.@flags[.@i2]) )
+				setmapflag $@mvp_a_map$[.@i], .@flags[.@i2];
+		}
+		
+		if( $@mvp_a_drop[.@i] )
+		{
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nodrop) )
+				setmapflag $@mvp_a_map$[.@i], mf_nodrop;
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nomobloot) )
+				setmapflag $@mvp_a_map$[.@i], mf_nomobloot;
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nomvploot) )
+				setmapflag $@mvp_a_map$[.@i], mf_nomvploot;
+		}
+		else {
+			if( getmapflag($@mvp_a_map$[.@i], mf_nodrop) )
+				removemapflag $@mvp_a_map$[.@i], mf_nodrop;
+			if( getmapflag($@mvp_a_map$[.@i], mf_nomobloot) )
+				removemapflag $@mvp_a_map$[.@i], mf_nomobloot;
+			if( getmapflag($@mvp_a_map$[.@i], mf_nomvploot) )
+				removemapflag $@mvp_a_map$[.@i], mf_nomvploot;
+		}
+		
+		if( $@mvp_a_reward[.@i] )
+		{
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nomobloot) )
+				setmapflag $@mvp_a_map$[.@i], mf_nomobloot;
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nomvploot) )
+				setmapflag $@mvp_a_map$[.@i], mf_nomvploot;
+		}
+		else {
+			if( getmapflag($@mvp_a_map$[.@i], mf_nomobloot) )
+				removemapflag $@mvp_a_map$[.@i], mf_nomobloot;
+			if( getmapflag($@mvp_a_map$[.@i], mf_nomvploot) )
+				removemapflag $@mvp_a_map$[.@i], mf_nomvploot;
+		}
+		
+		if( $@mvp_a_exp[.@i] )
+		{
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nobaseexp) )
+				setmapflag $@mvp_a_map$[.@i], mf_nobaseexp;
+			if( !getmapflag($@mvp_a_map$[.@i], mf_nojobexp) )
+				setmapflag $@mvp_a_map$[.@i], mf_nojobexp;
+		}
+		else {
+			if( getmapflag($@mvp_a_map$[.@i], mf_nobaseexp) )
+				removemapflag $@mvp_a_map$[.@i], mf_nobaseexp;
+			if( getmapflag($@mvp_a_map$[.@i], mf_nojobexp) )
+				removemapflag $@mvp_a_map$[.@i], mf_nojobexp;
+		}
+	}
+	end;
+}
+
+prontera,146,169,5	script	Arena MvP#mvp_arena	4_M_ACROSS,{
+	set .@loop_1, 1;
+	copyarray .@arena_name$[0], $@mvp_a_name$[0], getarraysize($@mvp_a_name$);
+	copyarray .@arena_map$[0], $@mvp_a_map$[0], getarraysize($@mvp_a_map$);
+	copyarray .@arena_x[0], $@mvp_a_x[0], getarraysize($@mvp_a_x);
+	copyarray .@arena_y[0], $@mvp_a_y[0], getarraysize($@mvp_a_y);
+	copyarray .@arena_p[0], $@mvp_a_p[0], getarraysize($@mvp_a_p);
+	while(.@loop_1)
+	{
+		mes "^00BFFF[Recepcionista]^000000";
+		mes "Posso te mandar para um";
+		mes "lugar aonde você pode invocar";
+		mes "o MvP que desejar para testar";
+		mes "seus atributos, habilidades e equipamentos.";
+		next;
+		set .@build_menu$, "";
+		debugmes getarraysize(.@arena_name$);
+		for( set .@i, 0; .@i < getarraysize(.@arena_name$); set .@i, .@i + 1 )
+			set .@build_menu$, .@build_menu$ + "- Arena MvP " + .@arena_name$[.@i] + " " + (!getmapusers(.@arena_map$[.@i])?"^0000FF[vazia]":(getmapusers(.@arena_map$[.@i])>=.@arena_p[.@i]?"^FF0000[lotada]":"^0000FF[^FF0000"+getmapusers(.@arena_map$[.@i])+"^0000FF/"+.@arena_p[.@i]+"]")) + "^000000:";
+		
+		set .@choose, select(.@build_menu$+"^FF0000- Cancelar.^000000")-1;
+		
+		if( .@choose >= getarraysize(.@arena_name$) )
+			break;
+		
+		if( getmapusers(.@arena_map$[.@choose]) >= .@arena_p[.@choose] )
+		{
+			mes "^00BFFF[Recepcionista]^000000";
+			mes "A ^0000FFArena MvP " + .@arena_name$[.@choose] + "^000000 está lotada.";
+			next;
+		}
+		else {
+			mes "^00BFFF[Recepcionista]^000000";
+			mes "Tem certeza que deseja entrar na ^0000FFArena MvP " + .@arena_name$[.@choose] + "^000000?";
+			next;
+			switch( select("- Sim, por favor.", "^FFA500- Escolher outra.^000000", "^FF0000- Cancelar.^000000") )
+			{
+				case 1:
+					mes "^00BFFF[Recepcionista]^000000";
+					mes "Vou te mandar para ^0000FFArena MvP " + .@arena_name$[.@choose] + "^000000.";
+					close2;
+					if( getmapusers(.@arena_map$[.@choose]) >= .@arena_p[.@choose] )
+						dispbottom "Você demorou demais para entrar na Arena MvP " + .@arena_name$[.@choose] + " e agora ela está lotada.";
+					else
+						warp .@arena_map$[.@choose], .@arena_x[.@choose], .@arena_y[.@choose];
+					end;
+				case 2:
+					break;
+				case 3:
+					set .@loop_1,0;
+					break;
+			}
+		}
+	}
+	
+	mes "^00BFFF[Recepcionista]^000000";
+	mes "Tudo bem, volte quando desejar lutar com algum MvP.";
+	close;
+}
+
+// Invocadores de Monstros
+-	script	mob_spawn#main	-1,{
+	copyarray .@monster_id[0], $@mvp_a_id[0], getarraysize($@mvp_a_id);
+	.@Zeny = $@mvp_a_z[atoi(replacestr(strnpcinfo(2), "mvp_arena", ""))];
+	set .@loop_1, 1;
+	while(.@loop_1)
+	{
+		mes "^00BFFF[Invocador de Monstros]^000000";
+		if( .@Zeny )
+			mes "Posso invocar MvP's para os jogadores por ^0000FF" + .@Zeny + " Zenys^000000, em que posso ajudar?";
+		else
+			mes "Posso invocar MvP's para os jogadores, em que posso ajudar?";
+		next;
+		switch( select((Zeny>=.@Zeny?"- Invocar um MvP.":""), "^0000FF- Saír da Arena.^000000", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^00BFFF[Invocador de Monstros]^000000";
+					mes "Escolha o MvP que deseja invocar.";
+					next;
+					set .@build_menu$, "";
+					for( set .@i, 0; .@i < getarraysize(.@monster_id); set .@i, .@i + 1 )
+					{
+						if( getmonsterinfo(.@monster_id[.@i],0) == "null" )
+							set .@build_menu$, .@build_menu$ + ":";
+						else
+							set .@build_menu$, .@build_menu$ + "- " + getmonsterinfo(.@monster_id[.@i],0) + ".:";
+					}
+						
+					set .@choose, select(.@build_menu$+"^FF0000- Cancelar.^000000")-1;
+					
+					if( .@choose >= getarraysize(.@monster_id) )
+						break;
+						
+					mes "^00BFFF[Invocador de Monstros]^000000";
+					mes "Tem certeza que deseja invocar o MvP ^0000FF" + getmonsterinfo(.@monster_id[.@choose],0) + "^000000?";
+					next;
+					switch( select("- Sim, por favor.", "^FFA500- Escolher outro.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							mes "^00BFFF[Invocador de Monstros]^000000";
+							mes "Muito bem vou invocar o ^0000FF" + getmonsterinfo(.@monster_id[.@choose],0) + "^000000 para você.";
+							close2;
+							if( .@Zeny ) set Zeny, Zeny - .@Zeny;
+							monster strcharinfo(3), 45, 49, getmonsterinfo(.@monster_id[.@choose],0), .@monster_id[.@choose], 1, "mob_mvp_arena#"+strnpcinfo(2)+"::OnMonsterDie";
+							initnpctimer "mob_mvp_arena#"+strnpcinfo(2);
+							disablenpc strnpcinfo(0);
+							end;
+						case 2:
+							break;
+						case 3:
+							set .@loop_2,0;
+							break;
+					}
+				}
+				break;
+			case 2:
+				mes "^00BFFF[Invocador de Monstros]^000000";
+				mes "Tudo bem, volte quando desejar lutar com algum MvP!";
+				close2;
+				warp "prontera", 156, 176;
+				end;
+			case 3:
+				set .@loop_1, 0;
+				break;
+		}
+	}
+	mes "^00BFFF[Invocador de Monstros]^000000";
+	mes "Tudo bem, estarei aqui se precisar.";
+	close;
+}
+
+mvp_arena01,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena01	4_M_ACROSS
+mvp_arena02,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena02	4_M_ACROSS
+mvp_arena03,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena03	4_M_ACROSS
+mvp_arena04,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena04	4_M_ACROSS
+mvp_arena05,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena05	4_M_ACROSS
+mvp_arena06,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena06	4_M_ACROSS
+mvp_arena07,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena07	4_M_ACROSS
+mvp_arena08,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena08	4_M_ACROSS
+mvp_arena09,49,50,5	duplicate(mob_spawn#main)	Invocador#mvp_arena09	4_M_ACROSS
+
+// Eventos dos Monstros
+-	script	mob_mvp_arena#main	-1,{
+	end;
+
+OnEnd:
+	killmonsterall strnpcinfo(2);
+OnMonsterDie:
+	enablenpc "Invocador#"+strnpcinfo(2);
+	stopnpctimer;
+	end;
+	
+OnTimer10000:
+	stopnpctimer;
+	if( !getmapusers(strnpcinfo(4)) )
+		donpcevent strnpcinfo(0)+"::OnEnd";
+	else
+		initnpctimer;
+	end;
+}
+
+mvp_arena01,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena01	HIDDEN_NPC
+mvp_arena02,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena02	HIDDEN_NPC
+mvp_arena03,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena03	HIDDEN_NPC
+mvp_arena04,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena04	HIDDEN_NPC
+mvp_arena05,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena05	HIDDEN_NPC
+mvp_arena06,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena06	HIDDEN_NPC
+mvp_arena07,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena07	HIDDEN_NPC
+mvp_arena08,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena08	HIDDEN_NPC
+mvp_arena09,0,0,0	duplicate(mob_mvp_arena#main)	mob_mvp_arena#mvp_arena09	HIDDEN_NPC

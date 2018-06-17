@@ -1,0 +1,446 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Estilista                                                    .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena e derivações.                                        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Altera Cores de Roupas, Cabelos e Estilos de Cabelos.        .
+  *-----------------------------------------------------------------*/
+prontera,162,189,4	script	Estilista#main	4_GEFFEN_10,{
+
+	// Configurações.
+	setarray .@1rdjob_clother[0], 0, 4;			// Limite de cores de roupas para 1ª Classe.
+	setarray .@1rdjob_hair_style[0], 0, 27;		// Limite de estilo de cabelo para 1ª Classes.
+	setarray .@1rdjob_hair_color[0], 0, 8;		// Limite de cores de cabelo para 1ª Classes.
+	setarray .@2rdjob_clother[0], 0, 4;			// Limite de cores de roupas para 2ª&Avançadas Classe.
+	setarray .@2rdjob_hair_style[0], 0, 27;		// Limite de estilo de cabelo para 2ª Classes&Avançadas Classe.
+	setarray .@2rdjob_hair_color[0], 0, 8;		// Limite de cores de cabelo para 2ª Classes&Avançadas Classe.
+	setarray .@extjob_clother[0], 0, 4;			// Limite de cores de roupas para Classes extendidas.
+	setarray .@extjob_hair_style[0], 0, 27;		// Limite de estilo de cabelo para Classes extendidas.
+	setarray .@extjob_hair_color[0], 0, 8;		// Limite de cores de cabelo para Classes extendidas.
+	setarray .@transjob_clother[0], 0, 4;		// Limite de cores de roupas para Transclasses.
+	setarray .@transjob_hair_style[0], 0, 27;	// Limite de estilo de cabelo para Transclasses.
+	setarray .@transjob_hair_color[0], 0, 8;	// Limite de cores de cabelo para Transclasses.
+	setarray .@3rdjob_clother[0], 0, 4;			// Limite de cores de roupas para 3ª Classes. 
+	setarray .@3rdjob_hair_style[0], 0, 27;		// Limite de estilo de cabelo para 3ª Classes.
+	setarray .@3rdjob_hair_color[0], 0, 8;		// Limite de cores de cabelo para Transclasses.
+	setarray .@evextjob_clother[0], 0, 4;		// Limite de cores de roupas para Evoluções de Classes extendidas.
+	setarray .@evextjob_hair_style[0], 0, 27;	// Limite de estilo de cabelo para Evoluções de Classes extendidas.
+	setarray .@evextjob_hair_color[0], 0, 8;	// Limite de cores de cabelo para Transclasses.
+	
+	// Esses parametros são para ajustes de acordo com a classe.
+	set .@class, eaclass();
+	if( Class < 6 )
+	{
+		set .@min_clother, .@1rdjob_clother[0];
+		set .@max_clother, .@1rdjob_clother[1];
+		set .@min_hair, .@1rdjob_hair_style[0];
+		set .@max_hair, .@1rdjob_hair_style[1];
+		set .@min_haircolor, .@1rdjob_hair_color[0];
+		set .@max_haircolor, .@1rdjob_hair_color[1];
+	}
+	else if( Class >= 23 && Class <= 25 || Class >= 4045 && Class <= 4049 )
+	{
+		set .@min_clother, .@extjob_clother[0];
+		set .@max_clother, .@extjob_clother[1];
+		set .@min_hair, .@extjob_hair_style[0];
+		set .@max_hair, .@extjob_hair_style[1];
+		set .@min_haircolor, .@extjob_hair_color[0];
+		set .@max_haircolor, .@extjob_hair_color[1];
+	}
+	else if( Class >= 4211 && Class <= 4215 )
+	{
+		set .@min_clother, .@evextjob_clother[0];
+		set .@max_clother, .@evextjob_clother[1];
+		set .@min_hair, .@evextjob_hair_style[0];
+		set .@max_hair, .@evextjob_hair_style[1];
+		set .@min_haircolor, .@evextjob_hair_color[0];
+		set .@max_haircolor, .@evextjob_hair_color[1];
+	}
+	else if( .@class&EAJL_THIRD )
+	{
+		set .@min_clother, .@3rdjob_clother[0];
+		set .@max_clother, .@3rdjob_clother[1];
+		set .@min_hair, .@3rdjob_hair_style[0];
+		set .@max_hair, .@3rdjob_hair_style[1];
+		set .@min_haircolor, .@3rdjob_hair_color[0];
+		set .@max_haircolor, .@3rdjob_hair_color[1];
+	}
+	else if( Class != 23 && Class != 4045 && .@class&EAJL_2 )
+	{
+		set .@min_clother, .@2rdjob_clother[0];
+		set .@max_clother, .@2rdjob_clother[1];
+		set .@min_hair, .@2rdjob_hair_style[0];
+		set .@max_hair, .@2rdjob_hair_style[1];
+		set .@min_haircolor, .@2rdjob_hair_color[0];
+		set .@max_haircolor, .@2rdjob_hair_color[1];
+	}
+	else if( .@class&EAJ_UPPERMASK )
+	{
+		set .@min_clother, .@transjob_clother[0];
+		set .@max_clother, .@transjob_clother[1];
+		set .@min_hair, .@transjob_hair_style[0];
+		set .@max_hair, .@transjob_hair_style[1];
+		set .@min_haircolor, .@transjob_hair_color[0];
+		set .@max_haircolor, .@transjob_hair_color[1];
+	}
+	else {
+		set .@min_clother, .@3rdjob_clother[0];
+		set .@max_clother, .@3rdjob_clother[1];
+		set .@min_hair, .@3rdjob_hair_style[0];
+		set .@max_hair, .@3rdjob_hair_style[1];
+		set .@min_haircolor, .@3rdjob_hair_color[0];
+		set .@max_haircolor, .@3rdjob_hair_color[1];
+	}
+	
+	set .@loop_1, 1;
+	while(.@loop_1)
+	{
+		mes "^FF1493[Estilista]^000000";
+		mes (gettime(3)>= 6&&gettime(3)<= 12?"Bom-dia":(gettime(3)>=13&&gettime(3)<=18?"Boa-tarde":"Boa-noite"))+", sou a ^FF1493Estilista Anny^000000, posso trocar as cores da sua roupa ou dar um melhorar o visual do seu cabelo.";
+		next;
+		switch( select("- Mudar Cor da Roupa.", "- Mudar a Cor do Cabelo.", "- Mudar Estilo de Cabelo.", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				set .@last, clother_color;
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^FF1493[Estilista]^000000";
+					mes "Muito bem, a cor da sua roupa atual é ^0000FFestilo número " + (.@last+1) + "^000000.";
+					mes "Como você desejar tingir sua roupa?";
+					next;
+					switch( select("^0000FF- Digitar o número da Cor da Roupa.^000000", "^0000FF- Ver um por vez.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^FF1493[Estilista]^000000";
+								mes "Por favor, digite um número de uma cor entre ^0000FF" + (.@min_clother+1) + "~" + (.@max_clother+1) + "^000000.";
+								mes "^FF0000Se você digitar '0' você irá cancelar esta operação.^000000";
+								next;
+								input .@color;
+								if( !.@color )
+								{
+									set .@loop_3, 0;
+									break;
+								}
+								else if( .@color > (.@max_clother+1) )
+								{
+									mes "^FF1493[Estilista]^000000";
+									mes "Você tem que digitar um número de uma cor entre ^0000FF" + (.@min_clother+1) + "~" + (.@max_clother+1) + "^000000.";
+									mes "^0000FFSe você digitar '0' você irá cancelar esta operação.^000000";
+									next;
+								}
+								else {
+									set .@set, .@color-1;
+									setlook 7, .@set;
+									mes "^FF1493[Estilista]^000000";
+									mes "Veja como o ^0000FFestilo número " + .@color + "^000000 fico nas suas roupas, deseja manter ela?";
+									next;
+									switch( select("^0000FF- Digitar outra cor.", "^006400- Manter essa.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+									{
+										case 1:
+											break;
+										case 2:
+											set clother_color, .@set;
+											set .@loop_3, 0;
+											break;
+										case 3:
+											setlook 7, .@last;
+											set .@loop_3, 0;
+											break;
+										case 4:
+											setlook 7, .@last;
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+							}
+							break;
+						case 2:
+							set .@last, clother_color;
+							set .@progress, .@last;
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								setlook 7, .@progress;
+								mes "^FF1493[Estilista]^000000";;
+								mes "^0000FFEstilo número " + (.@progress+1) + "^000000.";
+								mes "Que tal essa? Deseja manter?";
+								next;
+								switch( select("^0000FF- Próximo.^000000", (.@progress>0?"^0000FF- Anterior.^000000":""), "^006400- Manter essa.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+								{
+									case 1:
+										set .@progress, ((.@progress+1)>.@max_clother?0:(.@progress+1));
+										break;
+									case 2:
+										set .@progress, .@progress-1;
+										break;
+									case 3:
+										set clother_color, .@set;
+										set .@loop_3, 0;
+										break;
+									case 4:
+										setlook 7, .@last;
+										set .@loop_3, 0;
+										break;
+									case 5:
+										setlook 7, .@last;
+										set .@loop_3, 0;
+										set .@loop_2, 0;
+										set .@loop_1, 0;
+										break;
+								}
+							}
+							break;
+						case 3:
+							set .@loop_2, 0;
+							break;
+						case 4:
+							set .@loop_2, 0;
+							set .@loop_1, 0;
+							break;
+					}
+				}
+				break;
+			case 2:
+				set .@last, hair_color;
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^FF1493[Estilista]^000000";
+					mes "Muito bem, a cor do seu cabelo atual é ^0000FFestilo número " + (.@last+1) + "^000000.";
+					mes "Como você desejar tingir seu cabelo?";
+					next;
+					switch( select("^0000FF- Digitar o número da Cor do Cabelo.^000000", "^0000FF- Ver um por vez.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^FF1493[Estilista]^000000";
+								mes "Por favor, digite um número de uma cor entre ^0000FF" + (.@min_haircolor+1) + "~" + (.@max_haircolor+1) + "^000000.";
+								mes "^FF0000Se você digitar '0' você irá cancelar esta operação.^000000";
+								next;
+								input .@color;
+								if( !.@color )
+								{
+									set .@loop_3, 0;
+									break;
+								}
+								else if( .@color > (.@max_haircolor+1) )
+								{
+									mes "^FF1493[Estilista]^000000";
+									mes "Você tem que digitar um número de uma cor entre ^0000FF" + (.@min_haircolor+1) + "~" + (.@max_haircolor+1) + "^000000.";
+									mes "^0000FFSe você digitar '0' você irá cancelar esta operação.^000000";
+									next;
+								}
+								else {
+									set .@set, .@color-1;
+									setlook 6, .@set;
+									mes "^FF1493[Estilista]^000000";
+									mes "Veja como o ^0000FFestilo número " + .@color + "^000000 fico no seu cabelo, deseja manter ela?";
+									next;
+									switch( select("^0000FF- Digitar outra cor.", "^006400- Manter essa.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+									{
+										case 1:
+											break;
+										case 2:
+											set hair_color, .@set;
+											set .@loop_3, 0;
+											break;
+										case 3:
+											setlook 6, .@last;
+											set .@loop_3, 0;
+											break;
+										case 4:
+											setlook 6, .@last;
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+							}
+							break;
+						case 2:
+							set .@last, hair_color;
+							set .@progress, .@last;
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								setlook 6, .@progress;
+								mes "^FF1493[Estilista]^000000";;
+								mes "^0000FFEstilo número " + (.@progress+1) + "^000000.";
+								mes "Que tal essa? Deseja manter?";
+								next;
+								switch( select("^0000FF- Próximo.^000000", (.@progress>0?"^0000FF- Anterior.^000000":""), "^006400- Manter essa.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+								{
+									case 1:
+										set .@progress, ((.@progress+1)>.@max_haircolor?0:(.@progress+1));
+										break;
+									case 2:
+										set .@progress, .@progress-1;
+										break;
+									case 3:
+										set hair_color, .@set;
+										set .@loop_3, 0;
+										break;
+									case 4:
+										setlook 6, .@last;
+										set .@loop_3, 0;
+										break;
+									case 5:
+										setlook 6, .@last;
+										set .@loop_3, 0;
+										set .@loop_2, 0;
+										set .@loop_1, 0;
+										break;
+								}
+							}
+							break;
+						case 3:
+							set .@loop_2, 0;
+							break;
+						case 4:
+							set .@loop_2, 0;
+							set .@loop_1, 0;
+							break;
+					}
+				}
+				break;
+			case 3:
+				set .@last, hair_style;
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^FF1493[Estilista]^000000";
+					mes "Muito bem, o seu cabelo atual é ^0000FFestilo número " + (.@last+1) + "^000000.";
+					mes "Como você desejar mudar seu cabelo?";
+					next;
+					switch( select("^0000FF- Digitar o número do Cabelo.^000000", "^0000FF- Ver um por vez.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^FF1493[Estilista]^000000";
+								mes "Por favor, digite um número de um estilo de cabelo entre ^0000FF" + (.@min_hair+1) + "~" + (.@max_hair+1) + "^000000.";
+								mes "^FF0000Se você digitar '0' você irá cancelar esta operação.^000000";
+								next;
+								input .@color;
+								if( !.@color )
+								{
+									set .@loop_3, 0;
+									break;
+								}
+								else if( .@color > (.@max_hair+1) )
+								{
+									mes "^FF1493[Estilista]^000000";
+									mes "Você tem que digitar um número de um estilo de cabelo entre ^0000FF" + (.@min_hair+1) + "~" + (.@max_hair+1) + "^000000.";
+									mes "^0000FFSe você digitar '0' você irá cancelar esta operação.^000000";
+									next;
+								}
+								else {
+									set .@set, .@color-1;
+									setlook 1, .@set;
+									mes "^FF1493[Estilista]^000000";
+									mes "Veja como o ^0000FFestilo número " + .@color + "^000000 fico no seu cabelo, deseja manter ela?";
+									next;
+									switch( select("^0000FF- Digitar outro estilo.", "^006400- Manter essa.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+									{
+										case 1:
+											break;
+										case 2:
+											set hair_style, .@set;
+											set .@loop_3, 0;
+											break;
+										case 3:
+											setlook 1, .@last;
+											set .@loop_3, 0;
+											break;
+										case 4:
+											setlook 1, .@last;
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+							}
+							break;
+						case 2:
+							set .@last, hair_style;
+							set .@progress, .@last;
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								setlook 1, .@progress;
+								mes "^FF1493[Estilista]^000000";;
+								mes "^0000FFEstilo número " + (.@progress+1) + "^000000.";
+								mes "Que tal esse? Deseja manter?";
+								next;
+								switch( select("^0000FF- Próximo.^000000", (.@progress>0?"^0000FF- Anterior.^000000":""), "^006400- Manter esse.^000000", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+								{
+									case 1:
+										set .@progress, ((.@progress+1)>.@max_hair?0:(.@progress+1));
+										break;
+									case 2:
+										set .@progress, .@progress-1;
+										break;
+									case 3:
+										set hair_style, .@set;
+										set .@loop_3, 0;
+										break;
+									case 4:
+										setlook 1, .@last;
+										set .@loop_3, 0;
+										break;
+									case 5:
+										setlook 1, .@last;
+										set .@loop_3, 0;
+										set .@loop_2, 0;
+										set .@loop_1, 0;
+										break;
+								}
+							}
+							break;
+						case 3:
+							set .@loop_2, 0;
+							break;
+						case 4:
+							set .@loop_2, 0;
+							set .@loop_1, 0;
+							break;
+					}
+				}
+				break;
+			case 4:
+				set .@loop_1, 0;
+				break;
+		}
+	}
+	
+	mes "^FF1493[Estilista]^000000";
+	mes "Volte quando desejar mudar seu visual.";
+	close;
+}

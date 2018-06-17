@@ -1,0 +1,1543 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Battleground Warfare (Kingdom Himinn)                        .
+  .-----------------------------------------------------------------.
+  . Author: Romulo SM (sbk_)                         Version: 1.0   .
+  .                                                                 .
+  . Compatible:                                                     .
+  .    eAthena, rAthena and derivations.                            .
+  .-----------------------------------------------------------------.
+  . Description:                                                    .
+  .    Simulates the Emperium War Second Edition of Himinn Castle.  .                                                      .
+  *-----------------------------------------------------------------*/
+
+// Kingdom Himinn Engine
+// -----------------------------------------------------------------
+bat_s02,1,1,0	script	start#bat_s02	CLEAR_NPC,{
+	end;
+	
+OnInit:
+	// Removing Players from Arena
+	mapwarp "bat_s02","bat_room",154,150;
+	
+	// Creating Queue and specific times for Arena
+	queue_create(14, "Kingdom Himinn", 0, 0, "start#bat_s02::OnReadyCheck");
+	set $@KingdomSEBG2_id1, bg_create_team(27, "bat_s02", 334, 166, 330, 68, 0, "start#bat_s02::OnGuillaumeQuit", "", "start#bat_s02::OnGuillWO");
+	set $@KingdomSEBG2_id2, bg_create_team(28, "bat_s02", 333, 16, 330, 68, 1, "start#bat_s02::OnCroixQuit", "", "start#bat_s02::OnCroixWO");
+	
+	// Expeling Players
+	bg_kick_team($@KingdomSEBG2_id1, 0);
+	bg_kick_team($@KingdomSEBG2_id2, 0);
+	
+	// Getting Started
+	set .global_announce, 0;
+	set .BlockStatus, 0;
+	setcell "bat_s02", 320, 79, 339, 60, cell_nobattleground, 1;
+	donpcevent "start#bat_s02::OnReadyCheck";
+	
+	// Set NPC's of Flags with the Symbol of the Army.
+	donpcevent "::OnBatS02Emblem";
+	end;
+	
+OnReadyCheck:
+	if( .BlockStatus )
+	{
+		sleep 5000;
+		donpcevent "start#bat_s02::OnReadyCheck";
+	}
+		
+	set .BlockStatus, 1;
+
+	set .@min_player, callfunc("bg_getarenainfo", 14, "min_player");
+	set .@max_player, callfunc("bg_getarenainfo", 14, "max_player");
+	set .@a_name$, callfunc("bg_getarenainfo", 14, "arena_name");
+	set .@min_player, (.@min_player*2);
+	
+	if( .@max_player > MAX_BG_MEMBERS )
+	{
+		bg_console "(BG_ID: 14) Maximum number of players in a team exceeds the established limit, setting the maximum number of players to " + MAX_BG_MEMBERS + ".";
+		set .@max_player, MAX_BG_MEMBERS;
+	}
+	
+	queue_get_players 14;
+	set .@playlist_team1, bg_team_size($@KingdomSEBG2_id1);
+	set .@playlist_team2, bg_team_size($@KingdomSEBG2_id2);
+	if( !.@queue_count )
+	{
+		set .BlockStatus, 0;
+		end;
+	}
+	else if( $@KingdomSEBG2 && $@KingdomSEBG2 < 2 && .@queue_count && (.@playlist_team1 < .@max_player || .@playlist_team2 < .@max_player) )
+	{
+		set .@guill, 0;
+		set .@croix, 0;
+		set .@count_g, 0;
+		set .@count_c, 0;
+		
+		// ---------------------------------------------------
+		// -              Equating the Armies                -
+		// ---------------------------------------------------
+		if( .@playlist_team1 < .@playlist_team2 )
+		{
+			set .@guill, .@playlist_team2-.@playlist_team1;
+			for( set .@i,0; .@i < .@guill; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomSEBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_g, .@count_g + 1;
+				message .@queue_player$[.@i], "You joined Guillaume's Army in a battle on " + .@a_name$ + " that is already happening, and will be teleported in 10 seconds.";
+			}
+			
+			deletearray .@queue_cid;
+			deletearray .@queue_aid;
+			deletearray .@queue_player$;
+			set .@queue_count, 0;
+			queue_get_players 14; // Reset
+			set .@playlist_team1, bg_team_size($@KingdomSEBG2_id1);
+		}
+		else if( .@playlist_team2 < .@playlist_team1 )
+		{
+			set .@croix, .@playlist_team1-.@playlist_team2;
+			for( set .@i,0; .@i < .@croix; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomSEBG2_id2, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_c, .@count_c + 1;
+				message .@queue_player$[.@i], "You joined Croix's Army in a battle on" + .@a_name$ + " that is already happening, and will be teleported in 10 seconds.";
+			}
+			
+			deletearray .@queue_cid;
+			deletearray .@queue_aid;
+			deletearray .@queue_player$;
+			set .@queue_count, 0;
+			queue_get_players 2; // Reset
+			set .@playlist_team2, bg_team_size($@KingdomSEBG2_id2);
+		}
+		// ---------------------------------------------------
+		// -             Expanding the Armies                -
+		// ---------------------------------------------------
+		if( .@queue_count && .@playlist_team1 == .@playlist_team2 && .@playlist_team1 < .@max_player && .@playlist_team2 < .@max_player )
+		{
+			set .@guill, .@max_player-.@playlist_team1;
+			set .@croix, .@max_player-.@playlist_team2;
+			
+			if( .@queue_count > (.@guill+.@croix) )
+				set .@queue_count, (.@guill+.@croix);
+				
+			if( .@queue_count%2 )
+				set .@queue_count, .@queue_count-1;
+			
+			set .@size, .@queue_count/2;
+			for( set .@i, 0; .@i < .@size; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomSEBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_g, .@count_g + 1;
+			}
+			
+			for( set .@i,.@size; .@i < .@queue_count; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomSEBG2_id2, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_c, .@count_c + 1;
+			}
+		}
+		
+		if( .@count_c || .@count_g )
+		{
+			announce "[Battleground]: " + (.@count_c+.@count_g) + " players are being sent to a battle that is going on in " + .@a_name$ + ", the Armies were balanced and expanded.", bc_all, "0xFFCE00";
+			sleep 3000;
+		}
+		
+		deletearray .@queue_cid;
+		deletearray .@queue_aid;
+		deletearray .@queue_player$;
+		set .@queue_count, 0;
+		queue_get_players 14; // Reset
+		
+		set .@queue_size, queue_size(14);
+		set .@team1_size, bg_team_size($@KingdomSEBG2_id1);
+		set .@team2_size, bg_team_size($@KingdomSEBG2_id2);
+		
+		if( .@team1_size < .@max_player || .@team2_size < .@max_player )
+		{
+			set .@size, (2*.@max_player)-(.@team1_size+.@team2_size)-.@queue_size;
+			announce "[Battleground]: There are still " + (.@size) + " spots for a battle going on in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+		}
+	}
+	else if( $@KingdomSEBG2 && !.global_announce && .@queue_count >= .@min_player )
+	{
+		announce "[Battleground]: The battle is complete, but there is a battle going on in " + .@a_name$ + ", all players standing in the queue must wait.", bc_all, "0xFFCE00";
+		set .global_announce, 1;
+	}
+	else if( .@queue_count < .@min_player )
+		announce "[Battleground]: There are " + (.@min_player-.@queue_count) + " players left in the battle in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+	else
+	{
+		// ---------------------------------------------------
+		// -                    Balancing                    -
+		// ---------------------------------------------------
+		if( .@queue_count > (.@max_player*2) )
+			set .@queue_count, (.@max_player*2);
+			
+		if( .@queue_count%2 )
+			set .@queue_count, .@queue_count-1;
+			
+		if( .@queue_count >= .@min_player )
+		{
+			for( set .@i,0; .@i < .@queue_count; set .@i, .@i + 2 )
+			{
+				// Entering Guillaume's Army
+				bg_join_team $@KingdomSEBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				message .@queue_player$[.@i], "You joined Guillaume's Army, you will be teleported in 10 seconds.";
+				
+				// Entering Croix's Army
+				bg_join_team $@KingdomSEBG2_id2, 1, .@queue_aid[.@i+1];
+				queue_leave 0, .@queue_aid[.@i+1];
+				message .@queue_player$[.@i+1], "You joined the Croix's Army, you will be teleported in 10 seconds.";
+			}
+		}
+		
+		bg_refresh_patent($@KingdomSEBG2_id1);
+		bg_refresh_patent($@KingdomSEBG2_id2);
+		set .global_announce, 0;
+		set $@KingdomSEBG2, 1;
+		announce "[Battleground]: Both Armies, are complete good luck in the battles at " + .@a_name$ + ".", bc_all, "0xFFCE00";
+		set $@KingdomSEBG2_CroixScore, 0;
+		set $@KingdomSEBG2_GuillScore, 0;
+		bg_updatescore "bat_s02",0,0;
+		if( !rand(0,1) ) {
+			set $@KingdomSEBG2_TeamAttack, $@KingdomSEBG2_id2;
+			set $@KingdomSEBG2_TeamDefender, $@KingdomSEBG2_id1;
+		}
+		else {
+			set $@KingdomSEBG2_TeamAttack, $@KingdomSEBG2_id1;
+			set $@KingdomSEBG2_TeamDefender, $@KingdomSEBG2_id2;
+		}
+		bg_set_respawn $@KingdomSEBG2_TeamDefender, 120, 272;
+		donpcevent "start#bat_s02::OnEnable";
+		donpcevent "Battleground#queue_main::OnStopTimer";
+		sleep 3000;
+		initnpctimer;
+		
+		if( .@queue_count < (.@max_player*2) )
+		{
+			sleep 3000;
+			set .@count, (2*.@max_player)-.@queue_count;
+			announce "[Battleground]: There are still " + .@queue_count + " spots in the battles in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+		}
+		sleep 10000; // 10 seconds and reloads the respawn to the defaults
+		bg_set_respawn $@KingdomSEBG2_TeamDefender, 330, 68;
+	}
+	set .BlockStatus, 0;
+	end;
+
+OnEnable:
+	disablenpc "Lieutenant#bat_s02_a";
+	disablenpc "Lieutenant#bat_s02_b";
+	donpcevent "emperium#bat_s02::OnKill";
+	donpcevent "emperium#bat_s02::OnEnable";
+	donpcevent "Control Device01#bat_s02::OnEnable";
+	donpcevent "Control Device02#bat_s02::OnEnable";
+	donpcevent "Control Device03#bat_s02::OnEnable";
+	donpcevent "1st Guardian Stone#bat_s02::OnEnable";
+	donpcevent "2nd Guardian Stone#bat_s02::OnEnable";
+	donpcevent "RL0#bat_s02::OnDisable";
+	donpcevent "RL1#bat_s02::OnDisable";
+	donpcevent "RL2#bat_s02::OnDisable";
+	donpcevent "RL3#bat_s02::OnDisable";
+	donpcevent "df1#bat_s02::OnDisable";
+	donpcevent "df2#bat_s02::OnDisable";
+	donpcevent "gard1#bat_s02::OnReset";
+	donpcevent "gard2#bat_s02::OnReset";
+	donpcevent "time#bat_s02::OnEnable";
+	donpcevent "countdown#bat_s02::OnEnable";
+	donpcevent "time_event#bat_s02::OnEnable";
+	setarray $@KingdomSEBG2_agit[0],2,2,1,1,2,0;
+	if( $@KingdomSEBG2_TeamDefender == $@KingdomSEBG2_id1 )
+		donpcevent "::OnBatS02EmblemGuill";
+	else
+		donpcevent "::OnBatS02EmblemCroix";
+	end;
+	
+OnReset:
+	enablenpc "Lieutenant#bat_s02_a";
+	enablenpc "Lieutenant#bat_s02_b";
+	donpcevent "emperium#bat_s02::OnKill";
+	donpcevent "Control Device01#bat_s02::OnDisable";
+	donpcevent "Control Device02#bat_s02::OnDisable";
+	donpcevent "Control Device03#bat_s02::OnDisable";
+	donpcevent "1st Guardian Stone#bat_s02::OnDisable";
+	donpcevent "2nd Guardian Stone#bat_s02::OnDisable";
+	donpcevent "RL0#bat_s02::OnDisable";
+	donpcevent "RL1#bat_s02::OnDisable";
+	donpcevent "RL2#bat_s02::OnDisable";
+	donpcevent "RL3#bat_s02::OnDisable";
+	donpcevent "df1#bat_s02::OnDisable";
+	donpcevent "df2#bat_s02::OnDisable";
+	donpcevent "gard1#bat_s02::OnReset";
+	donpcevent "gard2#bat_s02::OnReset";
+	donpcevent "time#bat_s02::OnStop";
+	donpcevent "::OnBatS02EmblemNone";
+	setarray $@KingdomSEBG2_agit[0],2,2,1,1,2,0;
+	bg_warp $@KingdomSEBG2_id1,"bat_s02",334,166;
+	bg_warp $@KingdomSEBG2_id2,"bat_s02",333,16;
+	end;
+	
+OnReload:
+	donpcevent "emperium#bat_s02::OnKill";
+	donpcevent "emperium#bat_s02::OnEnable";
+	donpcevent "Control Device01#bat_s02::OnEnable";
+	donpcevent "Control Device02#bat_s02::OnEnable";
+	donpcevent "Control Device03#bat_s02::OnEnable";
+	donpcevent "1st Guardian Stone#bat_s02::OnEnable";
+	donpcevent "2nd Guardian Stone#bat_s02::OnEnable";
+	donpcevent "RL0#bat_s02::OnDisable";
+	donpcevent "RL1#bat_s02::OnDisable";
+	donpcevent "RL2#bat_s02::OnDisable";
+	donpcevent "RL3#bat_s02::OnDisable";
+	donpcevent "df1#bat_s02::OnDisable";
+	donpcevent "df2#bat_s02::OnDisable";
+	donpcevent "gard1#bat_s02::OnReset";
+	donpcevent "gard2#bat_s02::OnReset";
+	setarray $@KingdomSEBG2_agit[0],2,2,1,1,2,0;
+	if( $@KingdomSEBG2_TeamDefender == $@KingdomSEBG2_id2 ) {
+		donpcevent "::OnBatS02EmblemCroix";
+		bg_warp $@KingdomSEBG2_id1,"bat_s02",330,68;
+		bg_warp $@KingdomSEBG2_id2,"bat_s02",120,272;
+	}
+	else {
+		donpcevent "::OnBatS02EmblemGuill";
+		bg_warp $@KingdomSEBG2_id1,"bat_s02",120,272;
+		bg_warp $@KingdomSEBG2_id2,"bat_s02",330,68;
+	}
+	end;
+	
+OnGuillaumeQuit:
+	callfunc "bg_clear_score", getcharid(0);
+	callfunc "bg_ranking", getcharid(0), 14, 0, 0, 1, 0, $@KingdomSEBG2_CroixScore;
+	donpcevent "start#bat_s02::OnReadyCheck";
+	end;
+	
+OnCroixQuit:
+	callfunc "bg_clear_score", getcharid(0);
+	callfunc "bg_ranking", getcharid(0), 14, 0, 1, 1, 0, $@KingdomSEBG2_CroixScore;
+	donpcevent "start#bat_s02::OnReadyCheck";
+	end;
+	
+OnGuillWO:
+	if( queue_size(14) )
+		end;
+	
+	// Sign the Victory
+	set $@KingdomSEBG2, 2;
+	set $@KingdomSEBG2_Victory, 2;
+	
+	// Computes Ranking and awards rewards
+	callfunc "bg_finish", 14, $@KingdomSEBG2_id1, $@KingdomSEBG2_id2, $@KingdomSEBG2_Victory, $@KingdomSEBG2_GuillScore, $@KingdomSEBG2_CroixScore;
+	
+	// Inicia Eventos de Finalização
+	mapannounce "bat_s02", "Lieutenant Swandery: Guillaume's cowards fled. We won this one! Wow!",bc_map,"0xFFCE00";
+	enablenpc "Lieutenant#bat_s02_a";
+	enablenpc "Lieutenant#bat_s02_b";
+	donpcevent "start#bat_s02_Out::OnBegin";
+	sleep 2000;
+	donpcevent "start#bat_s02::OnReset";
+	end;
+	
+OnCroixWO:
+	if( queue_size(14) )
+		end;
+	
+	// Sign the Victory
+	set $@KingdomSEBG2, 2;
+	set $@KingdomSEBG2_Victory, 1;
+	
+	// Computes Ranking and awards rewards
+	callfunc "bg_finish", 14, $@KingdomSEBG2_id1, $@KingdomSEBG2_id2, $@KingdomSEBG2_Victory, $@KingdomSEBG2_GuillScore, $@KingdomSEBG2_CroixScore;
+	
+	// Starts Ending Events
+	mapannounce "bat_s02", "Lieutenant Axl Rose: Croix's cowards fled. We won this one! Wow!",bc_map,"0xFFCE00";
+	enablenpc "Lieutenant#bat_s02_a";
+	enablenpc "Lieutenant#bat_s02_b";
+	donpcevent "start#bat_s02_Out::OnBegin";
+	sleep 2000;
+	donpcevent "start#bat_s02::OnReset";
+	end;
+
+// Player Check in the Arena.
+// -------------------------------------------------------
+OnTimer60000:
+	stopnpctimer;
+	if( !getmapusers("bat_s02") )
+	{
+		set $@KingdomSEBG2, 0;
+		bg_kick_team $@KingdomSEBG2_id1;
+		bg_kick_team $@KingdomSEBG2_id2;
+		donpcevent "start#bat_s02_Out::OnStop";
+		
+		if( $@BG_MODE )
+			donpcevent "BattleGround#queue_main::OnReload";
+		else
+			donpcevent "start#bat_s02::OnReadyCheck";
+	}
+	else
+		initnpctimer;
+	end;
+}
+
+// Emperium
+// -------------------------------------------------------
+bat_s02,1,2,0	script	emperium#bat_s02	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@KingdomSEBG2_TeamDefender, "bat_s02", 120, 272, "Emperium", 1288, "Kingdom Himinn", "emperium#bat_s02::OnMobDead";
+	end;
+	
+OnKill:
+	killmonster "bat_s02","emperium#bat_s02::OnMobDead";
+	end;
+	
+OnMobDead:
+	if( $@KingdomSEBG2_TeamAttack == $@KingdomSEBG2_id1 )
+	{
+		set $@KingdomSEBG2_GuillScore, $@KingdomSEBG2_GuillScore+1;
+		set $@KingdomSEBG2_TeamAttack, $@KingdomSEBG2_id2;
+		set $@KingdomSEBG2_TeamDefender, $@KingdomSEBG2_id1;
+		bg_updatescore "bat_s02", $@KingdomSEBG2_GuillScore, $@KingdomSEBG2_CroixScore;
+		donpcevent "start#bat_s02::OnReload";
+		mapannounce "bat_s02", "The emperium has been shattered by Guillaume's Army!",bc_map,"0xFFCE00";
+		sleep 2000;
+		mapannounce "bat_s02", "Captain of Guillaume, rebuilding Guardian Stones increases in defense of the Castle.",bc_map,"0xFFCE00";
+	}
+	else {
+		set $@KingdomSEBG2_CroixScore, $@KingdomSEBG2_CroixScore+1;
+		set $@KingdomSEBG2_TeamAttack, $@KingdomSEBG2_id1;
+		set $@KingdomSEBG2_TeamDefender, $@KingdomSEBG2_id2;
+		bg_updatescore "bat_s02", $@KingdomSEBG2_GuillScore, $@KingdomSEBG2_CroixScore;
+		donpcevent "start#bat_s02::OnReload";
+		mapannounce "bat_s02", "The emperium has been shattered by Croix's Army!",bc_map,"0xFFCE00";
+		sleep 2000;
+		mapannounce "bat_s02", "Captain of Croix, rebuilding Guardian Stones increases in defense of the Castle.",bc_map,"0xFFCE00";
+	}
+	end;
+}
+
+// Castle Guardians
+// -------------------------------------------------------
+bat_s02,123,306,3	script	Ef#bat_s02	4_M_LGTGUARD,{
+	if (getcharid(4) == $@KingdomSEBG2_TeamDefender) {
+		if (strcharinfo(0) != bg_get_data($@KingdomSEBG2_TeamDefender,3)) {
+			mes "[Ef]";
+			mes "As guardian of this";
+			mes "stronghold, I answer only";
+			mes "to the Captain "+bg_get_data($@KingdomSEBG2_TeamDefender, 3)+" of " + bg_get_data($@KingdomSEBG1_TeamDefender, 4) + "'s Army";
+			mes "that controls this place.";
+			close;
+		}
+		else {
+			mes "[Ef]";
+			mes "Greetings, Captain "+strcharinfo(0)+".";
+			mes "What are your orders?";
+			next;
+			switch(select("Increase Stronghold Defense:Situational Briefing:Cancel")) {
+			case 1:
+				if (!$@KingdomSEBG2_agit[5]) {
+					mes "[Ef]";
+					mes "I shall endeavor to summon";
+					mes "a Guardian through a Guardian";
+					mes "Stone. However, keep in mind";
+					mes "that this will not work if the";
+					mes "Guardian Stone is destroyed.";
+					set $@KingdomSEBG2_agit[5], 1;
+					if (!$@KingdomSEBG2_agit[0])
+						donpcevent "gard1#bat_s02::OnEnable";
+					if (!$@KingdomSEBG2_agit[1])
+						donpcevent "gard2#bat_s02::OnEnable";
+					close;
+				}
+				else {
+					mes "[Ef]";
+					mes "You've already commanded";
+					mes "me to summon a Guardian";
+					mes "to defend the stronghold.";
+					close;
+				}
+			case 2:
+				mes "[Ef]";
+				mes "Our defense status is...";
+				setarray .@status$[0],"^4D4DFFOperational","^FF0000Destroyed","^008000Repairing";
+				mes "1st Guardian Stone: "+.@status$[$@KingdomSEBG2_agit[0]]+"^000000";
+				mes "2nd Guardian Stone: "+.@status$[$@KingdomSEBG2_agit[1]]+"^000000";
+				mes "1º Portão da Fortaleza: "+.@status$[$@KingdomSEBG2_agit[2]]+"^000000";
+				mes "2º Portão da Fortaleza: "+.@status$[$@KingdomSEBG2_agit[3]]+"^000000";
+				mes "3º Portão da Fortaleza: "+.@status$[$@KingdomSEBG2_agit[4]]+"^000000";
+				close;
+			case 3:
+				mes "[Ef]";
+				mes "I'll be standing by,";
+				mes "awaiting your orders.";
+				close;
+			}
+			
+		}
+	}
+	else {
+		mes "[Ef]";
+		mes "Who are you? Scoundrel!";
+		mes "Leave this stronghold now!";
+		close;
+	}
+
+OnInit:
+	setarray $@KingdomSEBG2_agit[0],0,0,0,0,0,0;
+	end;
+}
+
+// Guardian Stones (2)
+// -------------------------------------------------------
+-	script	Guardian Stone#bat_s02	FAKE_NPC,{
+	set .@num, atoi(charat(strnpcinfo(1),0));
+	if (getcharid(4) == $@KingdomSEBG2_TeamDefender) {
+		mes "^3355FFYou will need the";
+		mes "following materials to";
+		mes "rebuild a destroyed";
+		mes "Guardian Stone.^000000";
+		next;
+		mes "1 Oridecon";
+		mes "1 Elunium";
+		mes "30 Stones";
+		mes "5 Blue Gemstones";
+		mes "5 Yellow Gemstones";
+		mes "5 Red Gemstones";
+		next;
+		mes "^3355FFDo you want to continue?^000000";
+		next;
+		if(select("No:Continue") == 1) {
+			mes "^3355FFWork canceled.^000000";
+			close;
+		}
+		if ((countitem(984) > 0) && (countitem(985) > 0) && (countitem(7049) > 29) && (countitem(717) > 4) && (countitem(715) > 4) && (countitem(716) > 4)) {
+			mes "^3355FFArrange Stones, Elunium, and";
+			mes "Oridecon, in that order, in the";
+			mes "center. Then you must arrange";
+			mes "the enchanted Gemstones to";
+			mes "rebuild the Guardian Stone.^000000";
+			next;
+			setarray .@stone$[0],"Elunium","Oridecon","Stones";
+			set .@i, select("Elunium:Oridecon:Stone")-1;
+			if (.@i == 2) set .@nice, .@nice + 10;
+			mes "^3355FF"+.@stone$[.@i]+" has been";
+			mes "placed in the center.^000000";
+			next;
+			set .@i, select("Elunium:Oridecon:Stone")-1;
+			if (.@i == 0) set .@nice,.@nice+10;
+			mes "^3355FFYou have lined the";
+			mes "outside of the center";
+			mes "with some "+.@stone$[.@i]+".^000000";
+			next;
+			set .@i, select("Elunium:Oridecon:Stone")-1;
+			if (.@i == 1) set .@nice,.@nice+10;
+			mes "^3355FFYou covered the";
+			mes "rest of the materials";
+			mes "with some "+.@stone$[.@i]+".^000000";
+			next;
+			mes "^3355FFNow you need to arrange";
+			mes "the enchanted Gemstones";
+			mes "accordingly. You can identify";
+			mes "their Magic properties by";
+			mes "their casting effect.^000000";
+			next;
+			setarray .@effect[0],56,54,225;
+			setarray .@color$[0],"Red","Yellow","Blue";
+			while(1) {
+				if (.@roof0 > 7) break;
+				set .@i, rand(3);
+				specialeffect .@effect[.@i];
+				mes "^3355FFThe Gemstones must";
+				mes "be arranged in the correct";
+				mes "order according to their";
+				mes "magic properties and power.^000000";
+				next;
+				set .@j, select("Red Gemstone:Yellow Gemstone:Blue Gemstone")-1;
+				mes "^3355FFYou placed the "+.@color$[.@j]+" Gemstone.^000000";
+				if (.@i == .@j) {
+					mes "^3355FFHowever, the Guardian Stone";
+					mes "Repair System failed because";
+					mes "of a magic power conflict.^000000";
+					close;
+				}
+				set .@nice, .@nice+10;
+				set .@roof0, .@roof0+1;
+				specialeffect EF_STEAL;
+				next;
+			}
+			if (.@nice > 90) {
+				if (!$@KingdomSEBG2_agit[(.@num-1)]) {
+					mes "^3355FFThe Guardian Stone";
+					mes "Repair System has";
+					mes "already completed.^000000";
+					close;
+				}
+				else {
+					mes "^3355FFThe Gemstones have been";
+					mes "arranged, and the Guardian";
+					mes "Stone is successfully repaired.^000000";
+					delitem 984,1; //Oridecon
+					delitem 985,1; //Elunium
+					delitem 7049,30; //Stone
+					delitem 717,5; //Blue_Gemstone
+					delitem 715,5; //Yellow_Gemstone
+					delitem 716,5; //Red_Gemstone
+					close2;
+					donpcevent "df"+.@num+"#bat_s02::OnEnable";
+					specialeffect EF_ICECRASH;
+					disablenpc strnpcinfo(0);
+					set $@KingdomSEBG2_agit[(.@num-1)],0;
+					set .@df_all, $@KingdomSEBG2_agit[0]+$@KingdomSEBG2_agit[1];
+					set .@score, bg_get_score(26);
+					bg_set_score 26, (.@score+1); // Set Score
+					if (!.@df_all) {
+						mapannounce strnpcinfo(4),"Both Guardian Stones have been erected, bolstering this stronghold's defenses!",bc_map,"0x00ff00";
+						donpcevent "RL0#bat_s02::OnEnable";
+					}
+					else mapannounce strnpcinfo(4),"The "+strnpcinfo(1)+" has been repaired successfully.",bc_map,"0x00ff00";
+					if ($@KingdomSEBG2_agit[5] == 1)
+						donpcevent "gard"+.@num+"#bat_s02::OnEnable";
+					end;
+				}
+			}
+			else {
+				mes "^3355FFAfter all of that work...";
+				mes "It looks like you failed";
+				mes "to fix the Guardian Stone,";
+				mes "and lost some materials.^000000";
+				delitem 7049,10; //Stone
+				delitem 717,2; //Blue_Gemstone
+				delitem 715,2; //Yellow_Gemstone
+				delitem 716,2; //Red_Gemstone
+				close;
+			}
+		}
+		else {
+			mes "^3355FFYou don't have enough";
+			mes "materials to repair";
+			mes "the Guardian Stone.^000000";
+			close;
+		}
+	}
+	end;
+
+OnInit:
+OnDisable:
+	disablenpc strnpcinfo(0);
+	end;
+
+OnEnable:
+	enablenpc strnpcinfo(0);
+	specialeffect EF_MAPPILLAR2;
+	end;
+}
+
+bat_s02,27,36,0	duplicate(Guardian Stone#bat_s02)	1st Guardian Stone#bat_s02	CLEAR_NPC
+bat_s02,208,75,0	duplicate(Guardian Stone#bat_s02)	2nd Guardian Stone#bat_s02	CLEAR_NPC
+
+// Control Devices (3)
+// -------------------------------------------------------
+-	script	Control#bat_s02	FAKE_NPC,{
+	set .@num, atoi(charat(strnpcinfo(1),15));
+	if (getcharid(4) == $@KingdomSEBG2_TeamDefender) {
+		if (strcharinfo(0) == bg_get_data($@KingdomSEBG2_TeamDefender,3)) {
+			if ($@KingdomSEBG2_agit[(.@num+1)] == 2) {
+				mes "^3355FFDemolished Fortress";
+				mes "Gates can be repaired,";
+				mes "but you will need to gather";
+				mes "the following materials.^000000";
+				next;
+				mes "^4D4DFF10 Steel^000000,";
+				mes "^4D4DFF30 Trunks^000000,";
+				mes "^4D4DFF5 Oridecon^000000, and";
+				mes "^4D4DFF10 Emveretarcon^000000.";
+				next;
+				select("Continue");
+				if ((countitem(1019) > 29) && (countitem(999) > 9) && (countitem(1011) > 9) && (countitem(984) > 4)) {
+					mes "^3355FFYou will need Trunks to";
+					mes "repair the support frame,";
+					mes "Oridecon to enhance the";
+					mes "gate's endurance, and";
+					mes "Emveretarcon to basically";
+					mes "hold everything together.^000000";
+					next;
+					set .@ro_of01, rand(10,15);
+					while(1) {
+						if (.@ro_of02 == .@ro_of01) break;
+						else {
+							switch(rand(1,4)) {
+							case 1:
+								mes "^3355FFThe support frame";
+								mes "is badly damaged:";
+								mes "fixing this part";
+								mes "is a top priority.^000000";
+								next;
+								switch(select("Trunk:Steel:Emveretarcon:Oridecon")) {
+								case 1:
+									mes "^3355FFThe frame has been";
+									mes "reinforced with wood.^000000";
+									set .@rp_temp, .@rp_temp+1;
+									set .@ro_of02, .@ro_of02+1;
+									specialeffect2 EF_REPAIRWEAPON;
+									next;
+									break;
+								case 2:
+									mes "^3355FFYou tried using steel,";
+									mes "but it's not working very";
+									mes "well. You'll have to try";
+									mes "something else.^000000";
+									close;
+								case 3:
+									mes "^3355FFYou tried using emveretarcon";
+									mes "to reinforce the gate, but it's";
+									mes "not working well at all.";
+									mes "You'll have to start over.^000000";
+									close;
+								case 4:
+									mes "^3355FFYou tried using oridecon,";
+									mes "but it's not working very";
+									mes "well. You'll have to try";
+									mes "something else.^000000";
+									close;
+								}
+								break;
+							case 2:
+								mes "^3355FFIt looks like the gate's";
+								mes "overall endurance needs to";
+								mes "be reinforced with something.^000000";
+								next;
+								switch(select("Trunk:Steel:Emveretarcon:Oridecon")) {
+								case 1:
+									mes "^3355FFYou tried using wood";
+									mes "to reinforce the gate.^000000";
+									set .@ro_of02,.@ro_of02+1;
+									next;
+									break;
+								case 2:
+									mes "^3355FFYou tried using steel";
+									mes "to reinforce the gate, but";
+									mes "it's not working well at all.";
+									mes "You'll have to start over.^000000";
+									close;
+								case 3:
+									mes "^3355FFYou tried using emveretarcon";
+									mes "to reinforce the gate, but it's";
+									mes "not working well at all.";
+									mes "You'll have to start over.^000000";
+									close;
+								case 4:
+									mes "^3355FFYou hammered the";
+									mes "oridecon: it looks";
+									mes "like this will work.^000000";
+									set .@rp_temp, .@rp_temp+1;
+									set .@ro_of02, .@ro_of02+1;
+									specialeffect2 EF_REPAIRWEAPON;
+									next;
+									break;
+								}
+								break;
+							case 3:
+								mes "^3355FFThe damage to the gate";
+								mes "has caused all these";
+								mes "cracks. You'll have to";
+								mes "weld them solid somehow.^000000";
+								next;
+								switch(select("Trunk:Steel:Emveretarcon:Oridecon")) {
+								case 1:
+									mes "^3355FFYou tried using wood to fix";
+									mes "this problem, but it seems";
+									mes "to have made it worse.";
+									mes "You'll have to start all over.^000000";
+									close;
+								case 2:
+									mes "^3355FFYou used steel to weld";
+									mes "all the cracks: the gate is";
+									mes "is starting to look more solid.^000000";
+									set .@rp_temp, .@rp_temp+1;
+									set .@ro_of02, .@ro_of02+1;
+									specialeffect2 EF_REPAIRWEAPON;
+									next;
+									break;
+								case 3:
+									mes "^3355FFYou tried using emveretarcon";
+									mes "to reinforce the gate, but it's";
+									mes "not working well at all.";
+									mes "You'll have to start over.^000000";
+									close;
+								case 4:
+									mes "^3355FFYou tried using oridecon,";
+									mes "but it's not working very";
+									mes "well. You'll have to try";
+									mes "something else.^000000";
+									close;
+								}
+								break;
+							case 4:
+								mes "^3355FFNow you need to make";
+								mes "sure that the gate is held";
+								mes "together pretty solidly.^000000";
+								next;
+								switch(select("Trunk:Steel:Emveretarcon:Oridecon")) {
+								case 1:
+									mes "^3355FFYou tried using wood to fix";
+									mes "this problem, but it seems";
+									mes "to have made it worse.";
+									mes "You'll have to start all over.^000000";
+									close;
+								case 2:
+									mes "^3355FFYou tried using steel,";
+									mes "but it's not working very";
+									mes "well. You'll have to try";
+									mes "something else.^000000";
+									close;
+								case 3:
+									mes "^3355FFYou successfully used";
+									mes "the emveretarcon to repair";
+									mes "much of the gate's damage.^000000";
+									set .@rp_temp, .@rp_temp+1;
+									set .@ro_of02, .@ro_of02+1;
+									specialeffect2 EF_REPAIRWEAPON;
+									next;
+									break;
+								case 4:
+									mes "^3355FFYou tried using oridecon,";
+									mes "but it's not working very";
+									mes "well. You'll have to try";
+									mes "something else.^000000";
+									close;
+								}
+							}
+						}
+					}
+					mes "^3355FFWell, it looks like";
+					mes "you're just about done";
+					mes "with repairing the gate.^000000";
+					next;
+					if (.@rp_temp == .@ro_of01) {
+						mes "^3355FFThe Fortress Gate has";
+						mes "been successfully repaired!^000000";
+						delitem 1019,30; //Wooden_Block
+						delitem 999,10; //Steel
+						delitem 1011,10; //Emveretarcon
+						delitem 984,5; //Oridecon
+						close2;
+						setd "$@RL_2_"+.@num+"_cid", getcharid(0);
+						donpcevent "RL"+.@num+"#bat_s02::OnEnable";
+						disablenpc strnpcinfo(0);
+						if (.@num == 1) set .@str$, "1st";
+						else if (.@num == 2) set .@str$, "2nd";
+						else if (.@num == 3) set .@str$, "3rd";
+						mapannounce "bat_s02","The "+.@str$+" Fortress Gate has been reconstructed!",bc_map,"0x00ff00";
+						if (.@num == 1) set $@KingdomSEBG2_agit[2],0;
+						else {
+							setarray $@KingdomSEBG2_agit[.@num],2,0;
+							donpcevent "Control Device0"+(.@num-1)+"#bat_s02::OnEnable";
+						}
+						end;
+					}
+					else {
+						mes "^3355FFThe wall has been breached,";
+						mes "and the attempt to repair the";
+						mes "Fortress Gate has failed.";
+						mes "You lost some of your";
+						mes "repair resources...^000000";
+						delitem 984,2; //Oridecon
+						delitem 999,4; //Steel
+						delitem 1019,14; //Wooden_Block
+						delitem 1011,3; //Emveretarcon
+						close;
+					}
+				}
+				else {
+					mes "^3355FFYou can't attempt to repair";
+					mes "the Fortress Gate if you don't";
+					mes "have all the needed materials.^000000";
+					close;
+				}
+			}
+		}
+	}
+	end;
+
+OnInit:
+OnDisable:
+	disablenpc strnpcinfo(0);
+	end;
+
+OnEnable:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+bat_s02,124,52,0	duplicate(Control#bat_s02)	Control Device01#bat_s02	HIDDEN_NPC
+bat_s02,128,157,0	duplicate(Control#bat_s02)	Control Device02#bat_s02	HIDDEN_NPC
+bat_s02,109,247,0	duplicate(Control#bat_s02)	Control Device03#bat_s02	HIDDEN_NPC
+
+// Guardian Summoners (2)
+// -------------------------------------------------------
+-	script	gard#bat_s02	FAKE_NPC,{
+OnEnable:
+	// .@x[i],.@y[i]: Normal coordinates, #0-21.
+	// .@w[x],.@w[y]: Special coordinates if 'defence' is under 11.
+	setarray .@w[0],108,32,128,42,187,15;	// Contains an extra pair, for whatever reason.
+	setarray .x[0],111,109,65,110,88,64,47,109,111,112,120, 130,129,151,187,128,152,187,128,130,130,151;
+	setarray .y[0], 18, 44,22, 40,20,40,43, 48, 18, 32, 37,  22, 47, 18, 15, 42, 43, 15, 42, 22, 28, 18;
+	if (charat(strnpcinfo(1),4) == "2")
+		set .@z, 11;
+
+	set .@defence, 100;
+	callsub OnSummon,.@z;
+	if (.@defence > 70) set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),5;
+	else if (.@defence > 50) set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),4;
+	else if (.@defence > 30) set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),3;
+	else if (.@defence > 10) set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),2;
+	if (.@w[4] && .@z)
+		bg_monster $@KingdomSEBG2_TeamDefender, "bat_s02", .@w[4], .@w[5], "Guardian Soldier", 1899, "Kingdom Himinn", strnpcinfo(0)+"::OnGuardianDied";
+	else if (.@defence < 11) {
+		set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),2;
+		set .@i, (.@z)?2:0;
+		bg_monster $@KingdomSEBG2_TeamDefender, "bat_s02", .@w[.@i], .@w[.@i+1], "Guardian Soldier", 1899, "Kingdom Himinn", strnpcinfo(0)+"::OnGuardianDied";
+	}
+	else for( set .@i,1; .@i<getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)); set .@i,.@i+1)
+		callsub OnSummon,.@i+.@z;
+	copyarray getd(".x_"+strnpcinfo(2)+"[0]"),.@x[0],22;
+	copyarray getd(".y_"+strnpcinfo(2)+"[0]"),.@y[0],22;
+	setd ".timer_"+charat(strnpcinfo(1),4)+strnpcinfo(2),4+.@z;
+	setarray .count$[5],"1st","2nd","3rd","4th","5th";
+	initnpctimer;
+	end;
+
+OnTimer300000:
+OnTimer900000:
+OnTimer1800000:
+OnTimer2700000:
+OnTimer3600000:
+	if (charat(strnpcinfo(1),4) == "2") end;
+	set .@var$, ".timer_"+charat(strnpcinfo(1),4)+strnpcinfo(2);
+	setd .@var$, getd(.@var$)+1;
+	set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2))+1;
+	callsub OnSummon,getd(.@var$);
+	setarray .count$[5],"1st","2nd","3rd","4th","5th";
+	mapannounce "bat_s02","The "+.count$[getd(.@var$)]+" Guardian has been summoned from the Gate House.",bc_map,"0xff4500";
+	if (getd(.@var$) == 9) {
+		setd .@var$,0;
+		stopnpctimer;
+	}
+	end;
+
+OnTimer600000:
+OnTimer1200000:
+OnTimer2100000:
+OnTimer3000000:
+OnTimer3900000:
+	if (!(charat(strnpcinfo(1),4) == "2")) end;
+	set .@var$, ".timer_"+charat(strnpcinfo(1),4)+strnpcinfo(2);
+	setd .@var$, getd(.@var$)+1;
+	set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2))+1;
+	callsub OnSummon,getd(.@var$);
+	if (getd(.@var$) == 20) {
+		setd .@var$,0;
+		stopnpctimer;
+	}
+	end;
+
+OnSummon:
+	bg_monster $@KingdomSEBG2_TeamDefender, "bat_s02", getd(".x_"+strnpcinfo(2)+"["+getarg(0)+"]"), getd(".y_"+strnpcinfo(2)+"["+getarg(0)+"]"), "Guardião Soldado", 1899, "Kingdom Himinn", strnpcinfo(0)+"::OnGuardianDied";
+	return;
+
+OnGuardianDied:
+	if (charat(strnpcinfo(1),4) == "2")
+		set .@z, 11;
+	set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2))-1;
+	if (getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)) < 2) {
+		set getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2)),getd(".MyMobCount_"+charat(strnpcinfo(1),4)+strnpcinfo(2))+1;
+		callsub OnSummon,10+.@z;
+	}
+	end;
+
+OnReset:
+	stopnpctimer;
+	killmonster "bat_s02",strnpcinfo(0)+"::OnGuardianDied";
+	deletearray getd(".x_"+strnpcinfo(2)+"[0]"),22;
+	deletearray getd(".y_"+strnpcinfo(2)+"[0]"),22;
+	end;
+}
+
+-	duplicate(gard#bat_s02)	gard1#bat_s02	FAKE_NPC
+-	duplicate(gard#bat_s02)	gard2#bat_s02	FAKE_NPC
+
+// Guardian Stone Summoners (2)
+// -------------------------------------------------------
+-	script	df#bat_s02	FAKE_NPC,{
+OnEnable:
+	setarray .@i[0],27,35,207,75;
+	set .@num, atoi(charat(strnpcinfo(1),2));
+	set .@j, (.@num == 1)?0:2;
+	bg_monster $@KingdomSEBG2_TeamDefender,"bat_s02",.@i[.@j],.@i[.@j+1],((.@num == 1)?"1st":"2nd")+" Guardian Stone",1906+.@num,"Kingdom Himinn", strnpcinfo(0)+"::OnGuardianStoneDied";
+	end;
+
+OnDisable:
+	killmonster "bat_s02",strnpcinfo(0)+"::OnGuardianStoneDied";
+	set $@KingdomSEBG2_agit[(atoi(charat(strnpcinfo(1),2))-1)],1;
+	stopnpctimer;
+	end;
+
+OnGuardianStoneDied:
+	set .@num, atoi(charat(strnpcinfo(1),2));
+	set $@KingdomSEBG2_agit["+(.@num-1)+"],1;
+	if ($@KingdomSEBG2_agit[0] == 1 || $@KingdomSEBG2_agit[0] == 2) {
+		set .@destroyed, .@destroyed + 1;
+	}
+	if ($@KingdomSEBG2_agit[1] == 1 || $@KingdomSEBG2_agit[1] == 2) {
+		set .@destroyed, .@destroyed + 1;
+	}
+	if (.@destroyed == 2) {
+		mapannounce "bat_s02","All of the Guardian Stones have been destroyed!",bc_map,"0x00ff00";
+		donpcevent "RL0#"+strnpcinfo(2)+"::OnDisable";
+	}
+	else mapannounce "bat_s02","The "+((.@num == 1)?"1st":"2nd")+" Guardian Stone has been destroyed!",bc_map,"0x00ff00";
+	donpcevent "gard"+.@num+"#"+strnpcinfo(2)+"::OnReset";
+	initnpctimer;
+	end;
+
+OnTimer300000:
+	set .@num, atoi(charat(strnpcinfo(1),2));
+	donpcevent ((.@num == 1)?"1st":"2nd")+" Guardian Stone#bat_s02::OnEnable";
+	set $@KingdomSEBG2_agit["+(atoi(charat(strnpcinfo(1),2))-1)+"],2;
+	stopnpctimer;
+	end;
+}
+
+-	duplicate(df#bat_s02)	df1#bat_s02	FAKE_NPC
+-	duplicate(df#bat_s02)	df2#bat_s02	FAKE_NPC
+
+// Barrier Summoners (4)
+// -------------------------------------------------------
+-	script	RL#bat_s02	FAKE_NPC,{
+OnEnable:
+	set .@num, atoi(charat(strnpcinfo(1),2));
+	if (.@num == 0) {
+		setarray .@wall[0],114,48,13,6,0;
+		setarray .@x[0],115,117,119,121,123,125;
+		setarray .@y[0], 49, 49, 49, 49, 49, 49;
+	}
+	else if (.@num == 1) {
+		setarray .@wall[0],114,51,13,6,1;
+		setarray .@x[0],115,117,119,121,123,125;
+		setarray .@y[0], 50, 50, 50, 50, 50, 50;
+	}
+	else if (.@num == 2) {
+		setarray .@wall[0],114,154,13,6,1;
+		setarray .@x[0],115,117,119,121,123,125;
+		setarray .@y[0],153,153,153,153,153,153;
+	}
+	else {
+		setarray .@wall[0],116,241,11,6,1;
+		setarray .@x[0],116,118,120,122;
+		setarray .@y[0],240,240,240,240;
+	}
+	if (.@num == 3) set getd(".MyMobCount_"+.@num+strnpcinfo(2)),4;
+	else if (.@num) set getd(".MyMobCount_"+.@num+strnpcinfo(2)),6;
+	setwall "bat_s02",.@wall[0],.@wall[1],.@wall[2],.@wall[3],.@wall[4],substr(strnpcinfo(2),0,1)+strnpcinfo(2)+"_"+strnpcinfo(1);
+	set .@j, (getd(".MyMobCount_"+.@num+strnpcinfo(2)))?getd(".MyMobCount_"+.@num+strnpcinfo(2)):getarraysize(.@x);
+	for ( set .@i,0; .@i<.@j; set .@i,.@i+1 )
+		bg_monster $@KingdomSEBG2_TeamDefender,"bat_s02",.@x[.@i],.@y[.@i]," ",1905,"Kingdom Himinn",strnpcinfo(0)+"::OnBarrierDestroyed";
+	
+	// Update Player Score
+	set .@char_id, getd("$@RL_2_"+.@num+"_cid");
+	if( .@char_id ) {
+		set .@score, .@j + bg_get_score(31,.@char_id);
+		bg_set_score 31, .@score, .@char_id;
+	}
+	end;
+
+OnBarrierDestroyed:
+	set .@num, atoi(charat(strnpcinfo(1),2));
+	if (!.@num) end;
+	set getd(".MyMobCount_"+.@num+strnpcinfo(2)),getd(".MyMobCount_"+.@num+strnpcinfo(2))-1;
+	if (getd(".MyMobCount_"+.@num+strnpcinfo(2)) == 0) {
+		set $@KingdomSEBG2_agit[(.@num+1)],1;
+		setarray .@count$[0],"1st","2nd","3rd";
+		mapannounce "bat_s02","The "+.@count$[.@num-1]+" Fortress Gate is destroyed.",bc_map,"0x00ff00";
+		delwall substr(strnpcinfo(2),0,1)+strnpcinfo(2)+"_"+strnpcinfo(1);
+	}
+	end;
+
+OnDisable:
+	delwall substr(strnpcinfo(2),0,1)+strnpcinfo(2)+"_"+strnpcinfo(1);
+	killmonster "bat_s02",strnpcinfo(0)+"::OnBarrierDestroyed";
+	end;
+}
+
+-	duplicate(RL#bat_s02)	RL0#bat_s02	FAKE_NPC
+-	duplicate(RL#bat_s02)	RL1#bat_s02	FAKE_NPC
+-	duplicate(RL#bat_s02)	RL2#bat_s02	FAKE_NPC
+-	duplicate(RL#bat_s02)	RL3#bat_s02	FAKE_NPC
+
+// General Flags
+// -------------------------------------------------------
+bat_s02,106,302,0	script	LF-01#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","First Gate House",19,26,"Second Gate House",219,90; }
+bat_s02,109,302,0	script	LF-02#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Defense Area 1-1",89,43,"Defense Area 1-2",141,45; }
+bat_s02,112,302,0	script	LF-03#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Defense Area 2-1",137,54,"Defense Area 2-2",102,54; }
+bat_s02,115,302,0	script	LF-04#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Defense Area 2-3",94,147,"Defense Area 2-4",163,140; }
+bat_s02,118,302,0	script	LF-05#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Defense Area 2-3",87,220,"Defense Area 2-4",151,220; }
+bat_s02,121,302,0	script	LF-06#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Defense Area 3-1",100,242,"Defense Area 3-2",136,242; }
+bat_s02,124,302,0	script	LF-07#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Center 1 Area",120,168,"Center 2 Area",119,211; }
+bat_s02,127,302,0	script	LF-08#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Area 1-1",89,43,"Area 2-1",94,147,"Area 3-1",100,242; }
+bat_s02,130,302,0	script	LF-09#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Area 1-2",141,45,"Area 2-3",163,140,"Area 3-2",136,243; }
+bat_s02,133,302,0	script	LF-10#bat_s02	HIDDEN_NPC,{ callfunc "BGSE02_LinkFlag","Convenience Facility",275,244; }
+bat_s02,17,45,0	script	Himinn#bat_s02_01	HIDDEN_NPC,{
+	callfunc "BGSE02_LinkFlag","Emperium Center",120,290;
+	end;
+	
+OnBatS02EmblemGuill:
+	bg_set_npc $@KingdomSEBG2_id1;
+	end;
+
+OnBatS02EmblemCroix:
+	bg_set_npc $@KingdomSEBG2_id2;
+	end;
+	
+OnBatS02EmblemNone:
+	bg_set_npc 0;
+	end;
+}
+
+bat_s02,207,95,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_02	HIDDEN_NPC
+bat_s02,99,77,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_03	HIDDEN_NPC
+bat_s02,140,77,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_04	HIDDEN_NPC
+
+bat_s02,112,212,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_05	HIDDEN_NPC
+bat_s02,127,212,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_06	HIDDEN_NPC
+bat_s02,113,238,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_07	HIDDEN_NPC
+bat_s02,126,238,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_08	HIDDEN_NPC
+bat_s02,95,247,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_09	HIDDEN_NPC
+bat_s02,144,247,0	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_10	HIDDEN_NPC
+
+// Flags
+// -------------------------------------------------------
+bat_s02,111,46,4	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_a_01	GUILD_FLAG
+bat_s02,129,46,4	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_a_02	GUILD_FLAG
+bat_s02,109,150,4	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_a_03	GUILD_FLAG
+bat_s02,130,150,4	duplicate(Himinn#bat_s02_01)	Himinn#bat_s02_a_04	GUILD_FLAG
+
+// Guillaume Flags
+// -------------------------------------------------------
+bat_s02,331,174,4	script	Guillaume Base#bat_s02_01	GUILD_FLAG,{
+	end;
+	
+OnBatS02Emblem:
+	bg_set_npc $@KingdomSEBG2_id1;
+	end;
+}
+bat_s02,336,174,4	duplicate(Guillaume Base#bat_s02_01)	Guillaume Base#bat_s02_02	GUILD_FLAG
+
+// Croix Flags
+// -------------------------------------------------------
+bat_s02,331,24,4	script	Croix Base#bat_s02_01	GUILD_FLAG,{
+	end;
+	
+OnBatS02Emblem:
+	bg_set_npc $@KingdomSEBG2_id2;
+	end;
+}
+bat_s02,336,24,4	duplicate(Croix Base#bat_s02_01)	Croix Base#bat_s02_02	GUILD_FLAG
+
+function	script	BGSE02_LinkFlag	{
+	if( !getcharid(4) || getcharid(4) != $@KingdomSEBG2_TeamDefender ) end;
+	if (getarg(0) == "Emperium Center") {
+		mes "^3355FFThis is the Stronghold";
+		mes "Teleport Service. Would";
+		mes "you like to teleport to";
+		mes "the Emperium Center?^000000";
+		if(select("Teleport:Cancel") == 1)
+			warp strnpcinfo(4),getarg(1),getarg(2);
+		close;
+	}
+	mes "^3355FFThis is the Stronghold";
+	mes "Teleport Service. Please";
+	mes "choose a destination";
+	mes "within the stronghold.^000000";
+	for ( set .@i,0; .@i<getargcount(); set .@i,.@i+3 )
+		set .@menu$, .@menu$ + getarg(.@i)+":";
+	set .@menu$, .@menu$ + "Cancel";
+	set .@i, select(.@menu$)-1;
+	if (.@i != getargcount()/3)
+		warp strnpcinfo(4),getarg(.@i*3+1),getarg(.@i*3+2);
+	close;
+}
+
+// Neutral Flags
+// -------------------------------------------------------
+bat_s02,325,72,4	script	Kingdom Himinn#bat_s02_n01	GUILD_FLAG,{
+	mes "^FF0000[Kingdom Himinn]^000000";
+	mes "This Battleground is a simulation of the Second War of Emperium in Himinn Castle.";
+	mes " ";
+	mes "This point is neutral and also the starting point, no player can face while in this area.";
+	close;
+	
+OnBatS02Emblem:
+	bg_set_npc $@KingdomSEBG2_id1;
+	end;
+}
+
+bat_s02,334,72,4	script	Kingdom Himinn#bat_s02_n02	GUILD_FLAG,{
+	mes "^FF0000[Kingdom Himinn]^000000";
+	mes "This Battleground is a simulation of the Second War of Emperium in Himinn Castle.";
+	mes " ";
+	mes "This point is neutral and also the starting point, no player can face while in this area.";
+	close;
+	
+OnBatS02Emblem:
+	bg_set_npc $@KingdomSEBG2_id2;
+	end;
+}
+
+// Warps
+// -------------------------------------------------------
+bat_s02,275,240,0	warp	warp#bat_s02-1	1,1,bat_s02,119,8
+bat_s02,329,77,0	warp	warp#bat_s02-2	1,1,bat_s02,119,8
+bat_s02,119,4,0	warp	warp#bat_s02-3	1,1,bat_s02,330,68
+
+// Battle Therapist
+// -------------------------------------------------------
+bat_s02,1,3,1	script	time#bat_s02	CLEAR_NPC,{
+OnEnable:
+	donpcevent "Battle Therapist#bat_s02_a::OnEnable";
+	donpcevent "Battle Therapist#bat_s02_b::OnEnable";
+	end;
+
+OnStop:
+	donpcevent "Battle Therapist#bat_s02_a::OnStop";
+	donpcevent "Battle Therapist#bat_s02_b::OnStop";
+	end;
+}
+
+bat_s02,334,171,3	script	Battle Therapist#bat_s02_a	4_F_SISTER,{
+	specialeffect2 EF_HEAL;
+	mes "[Battle Therapist]";
+	mes "Just close your eyes";
+	mes "and take a deep breath.";
+	mes "You can free yourself from pain.";
+	close;
+
+OnTimer25000:
+	specialeffect EF_SANCTUARY;
+	end;
+
+OnTimer26500:
+	stopnpctimer;
+	donpcevent "Battle Therapist#bat_s02_a::OnEnable";
+	end;
+
+OnEnable:
+	initnpctimer;
+	enablenpc "Battle Therapist#bat_s02_a";
+	end;
+
+OnStop:
+	disablenpc "Battle Therapist#bat_s02_a";
+	stopnpctimer;
+	end;
+}
+
+bat_s02,333,21,3	script	Battle Therapist#bat_s02_b	4_F_SISTER,{
+	specialeffect2 EF_HEAL;
+	mes "[Battle Therapist]";
+	mes "Just close your eyes";
+	mes "and take a deep breath.";
+	mes "You can free yourself from pain.";
+	close;
+
+OnTimer25000:
+	specialeffect EF_SANCTUARY;
+	end;
+
+OnTimer26500:
+	stopnpctimer;
+	donpcevent "Battle Therapist#bat_s02_b::OnEnable";
+	end;
+
+OnEnable:
+	initnpctimer;
+	enablenpc "Battle Therapist#bat_s02_b";
+	end;
+
+OnStop:
+	disablenpc "Battle Therapist#bat_s02_b";
+	stopnpctimer;
+	end;
+}
+
+// Countdown
+// -------------------------------------------------------
+bat_s02,1,4,3	script	countdown#bat_s02	CLEAR_NPC,{
+OnInit:
+	stopnpctimer;
+	end;
+
+OnEnable:
+	stopnpctimer;
+	initnpctimer;
+	end;
+
+OnStop:
+	stopnpctimer;
+	end;
+
+OnTimer7000:
+	mapannounce "bat_s02", "Lieutenant Axl Rose : Great Týr! This battle is ours already!",bc_map,"0xFF9900";
+	end;
+
+OnTimer8000:
+	mapannounce "bat_s02", "Lieutenant Swandery : Let us show them all our power.",bc_map,"0xFF99CC";
+	end;
+
+OnTimer1800000:
+	mapannounce "bat_s02", "Marollo VII : Guillaume Marollo, Croix Marollo! And his followers!",bc_map,"0x99CC00";
+	end;
+
+OnTimer1803000:
+	mapannounce "bat_s02", "Marollo VII : Both armies are very competitive, so it is difficult to judge which group is superior.",bc_map,"0x99CC00";
+	end;
+
+OnTimer1808000:
+	mapannounce "bat_s02", "Marollo VII : I think it would be better to end the battle, and we call it a tie.",bc_map,"0x99CC00";
+	end;
+
+OnTimer1822000:
+	mapannounce "bat_s02", "Marollo VII : Keep faith and loyalty for Freyja, define this battle now!",bc_map,"0x99CC00";
+	end;
+
+OnTimer1825000:
+	mapannounce "bat_s02", "Axl Rose, Swandery : Yes Sir.",bc_map,"0x99CC00";
+	stopnpctimer;
+	end;
+}
+
+bat_s02,1,5,3	script	time_event#bat_s02	CLEAR_NPC,{
+OnInit:
+	stopnpctimer;
+	end;
+
+OnEnable:
+	set .Kingdom_Timer, 0;
+	stopnpctimer;
+	initnpctimer;
+	end;
+
+OnStop:
+	stopnpctimer;
+	end;
+	
+OnTimer60000:
+	set .Kingdom_Timer, .Kingdom_Timer+1;
+	set .@event_timer, callfunc("bg_getarenainfo", 14, "event_timer");
+	if( .Kingdom_Timer >= .@event_timer )
+	{
+		set $@KingdomSEBG2, 2;
+		if( $@KingdomSEBG2_GuillScore < $@KingdomSEBG2_CroixScore )
+		{
+			mapannounce "bat_s02", "Marollo VII: The Croix's Army is victorious for its Battle performance!",bc_map,"0x99CC00";
+			set $@KingdomSEBG2_Victory, 2;
+		}
+		else if( $@KingdomSEBG2_GuillScore > $@KingdomSEBG2_CroixScore )
+		{
+			mapannounce "bat_s02", "Marollo VII: The Guillaume's Army is victorious for its Battle performance!",bc_map,"0x99CC00";
+			set $@KingdomSEBG2_Victory, 1;
+		}
+		else
+		{
+			if( $@KingdomSEBG2_TeamDefender == $@KingdomSEBG2_id1 )
+			{
+				set .@name$, "Guillaume";
+				set $@KingdomSEBG2_Victory, 1;
+			}
+			else {
+				set .@name$, "Croix";
+				set $@KingdomSEBG2_Victory, 2;
+			}
+			
+			mapannounce "bat_s02", "Marollo VII: The " + .@name$ + "'s is the victor for its incredible defense!",bc_map,"0x99CC00";
+		}
+		
+		// Computes Ranking and awards rewards
+		callfunc "bg_finish", 14, $@KingdomSEBG2_id1, $@KingdomSEBG2_id2, $@KingdomSEBG2_Victory, $@KingdomSEBG2_GuillScore, $@KingdomSEBG2_CroixScore;
+		
+		donpcevent "start#bat_s02::OnReset";
+		donpcevent "countdown#bat_s02::OnStop";
+		donpcevent "start#bat_s02_Out::OnBegin";
+	}
+	else {
+		stopnpctimer;
+		initnpctimer;
+	}
+	end;
+}
+
+-	script	start#bat_s02_Out	FAKE_NPC,{
+	end;
+
+OnBegin:
+	initnpctimer;
+	end;
+	
+OnStop:
+	stopnpctimer;
+	end;
+
+OnTimer1000:
+	mapannounce "bat_s02", "Please talk to the Lieutenant to leave the battlefield.",bc_map,"0x00ff00";
+	end;
+
+OnTimer3000:
+	mapannounce "bat_s02", "In 30 seconds, the Lieutenant will dispense with the grouping.",bc_map,"0x00ff00";
+	end;
+
+OnTimer5000:
+	mapannounce "bat_s02", "Speak to the Lieutenant to leave the battlefield immediately. Please be careful.",bc_map,"0x00ff00";
+	end;
+
+OnTimer55000:
+	mapannounce "bat_s02", "You will be sent back.",bc_map,"0x00ff00";
+	end;
+
+OnTimer60000:
+	stopnpctimer;
+	set $@KingdomSEBG2_GuillScoree,0;
+	set $@KingdomSEBG2_CroixScore,0;
+	set $@KingdomSEBG2_Victory, 0;
+	bg_kick_team $@KingdomSEBG2_id1;
+	bg_kick_team $@KingdomSEBG2_id2;
+	disablenpc "Lieutenant#bat_s02_a";
+	disablenpc "Lieutenant#bat_s02_b";
+	mapwarp "bat_s02","bat_room",154,150;
+	maprespawnguildid "bat_s02",0,3; // Just in case someone else
+	end;
+}
+
+// Lieutenant
+// -----------------------------------------------------------------
+bat_s02,334,171,3	script	Lieutenant#bat_s02_a	4_M_KY_HEAD,{
+	mes "[Axl Rose]";
+	if( getcharid(4) == $@KingdomSEBG2_id2 )
+	{
+		mes "What?? Some of the Croix Army soldiers are doing it at Guillaume's camp!!";
+		mes "A soldier will lead you to his group.";
+		close2;
+		warp "bat_s02", 333, 16;
+		end;
+	}
+	else if( getcharid(4) == $@KingdomSEBG2_id1 )
+	{
+		if( $@KingdomSEBG2_Victory == 0 )
+		{
+			mes "The Battle is not yet soldered, go right to your post, Guillaume's Army needs you!";
+			close;
+		}
+		else if( $@KingdomSEBG2_Victory == 1 )
+		{
+			mes "Bless the Guillaume Army!";
+			mes strcharinfo(0) + ", let's enjoy our glorious victory!";
+		}
+		else if( $@KingdomSEBG2_Victory == 2 ) {
+			mes "You lost, but you dedicated yourself to this battle for Guillaume Marollo!";
+			mes "Consider this defeat as a lesson, and next time you will come out victorious.";
+		}
+		else {
+			mes "This indeed was a great Battle!";
+			mes "Not everyone can come out victorious, consider this tie as a lesson and next time we will be victorious.";
+		}
+		close2;
+		bg_leave;
+	}
+	else {
+		mes "A Civilian on our battlefield?";
+		mes "We'll take you to a safe place!";
+		close2;
+	}
+	warp "prontera", 156, 176;
+	end;
+
+OnInit:
+	disablenpc "Lieutenant#bat_s02_a";
+	end;
+}
+
+bat_s02,333,21,3	script	Lieutenant#bat_s02_b	4_M_CRU_HEAD,{
+	mes "[Swandery]";
+	if( getcharid(4) == $@KingdomSEBG2_id1 )
+	{
+		mes "What?? One of Guillaume's Army soldiers is doing at Croix's camp!!";
+		mes "A soldier will lead you to his group.";
+		close2;
+		warp "bat_s02", 334, 166;
+		end;
+	}
+	else if( getcharid(4) == $@KingdomSEBG2_id2 )
+	{
+		if( $@KingdomSEBG2_Victory == 0 )
+		{
+			mes "The Battle is not yet soldered, go right to your post, the Croix Army needs you!";
+			close;
+		}
+		else if( $@KingdomSEBG2_Victory == 1 ) {
+			mes "Oh " + strcharinfo(0) + ", do not be sed.";
+			mes "Even if we did not win, we did our best.";
+			mes "Do not forget this battle, we will win the next.";
+		}
+		else if( $@KingdomSEBG2_Victory == 2 )
+		{
+			mes "Bless the Croix Army!";
+			mes strcharinfo(0) + ", let's enjoy our glorious victory!";
+		}
+		else {
+			mes "This indeed was a great Battle!";
+			mes "Not everyone can come out victorious, do not forget this battle!";
+			mes "We'll win the next one.";
+		}
+		close2;
+		bg_leave;
+	}
+	else {
+		mes "A Civilian on our battlefield?";
+		mes "We'll take you to a safe place!";
+		close2;
+	}
+	warp "prontera", 156, 176;
+	end;
+
+OnInit:
+	disablenpc "Lieutenant#bat_s02_b";
+	end;
+}
+
+// MapFlags
+// -----------------------------------------------------------------
+bat_s02	mapflag	nowarp
+bat_s02	mapflag	nowarpto
+bat_s02	mapflag	nomemo
+bat_s02	mapflag	noteleport
+bat_s02	mapflag	nosave
+bat_s02	mapflag	noreturn
+bat_s02	mapflag	nobranch
+bat_s02	mapflag	nopenalty
+bat_s02	mapflag	battleground	2

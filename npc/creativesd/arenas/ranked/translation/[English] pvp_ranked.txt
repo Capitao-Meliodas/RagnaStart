@@ -1,0 +1,331 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Arena PvP Ranqueada                                          .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compátivel:	eAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Arenas Balançeada de acordo com os Grupos de Rank.           .
+  *-----------------------------------------------------------------*/
+  prontera,162,192,4	script	PvP Ranked#ranked_01	4_M_EIN_SOLDIER,{
+	// Arenas Settings by Rank
+	//
+	// Array Structure
+	//	RankID_Min, RankID_Max, <Min_BaseLevel>, <Max_BaseLevel>, <Max_User>, "<mapname>", <coord_x>, <coord_y>
+	//
+	//	RankID_Min: Minimum rank to enter the Arena. (0: Unranked)
+	//	RankID_Max: Maximum rank to enter the Arena.
+	//	Min_BaseLevel: Minimum Base Level to enter the Arena.
+	//	Max_BaseLevel: Maximum Base Level to enter the Arena.
+	//	Max_User: Maximum users that can be in the Arena.
+	//	mapname: Map where players will be teleported.
+	//	coord_x: Coordinate X where players will be teleported. (0: Random)
+	//	coord_y: Coordinate Y where players will be teleported. (0: Random)
+	//
+	// * Arena PvP
+	setarray .@PvPRank_Arenas$[0],
+		0, 0, 1, 175, 0, "pvp_y_1-1", 156, 191,		// Unranked
+		1, 3, 1, 175, 0, "pvp_y_2-1", 156, 191,		// Rank 1~3
+		4, 6, 1, 175, 0, "pvp_y_3-1", 156, 191,		// Rank 4~6
+		7, 9, 1, 175, 0, "pvp_y_4-1", 156, 191,		// Rank 7~9
+		10, 12, 1, 175, 0, "pvp_y_5-1", 156, 191,	// Rank 10~12
+		13, 15, 1, 175, 0, "pvp_y_6-1", 156, 191	// Rank 13~15
+	;
+	//
+	// * Arena GvG
+	setarray .@GvGRank_Arenas$[0],
+		0, 0, 1, 175, 0, "guild_vs1-1", 0, 0,		// Unranked
+		1, 3, 1, 175, 0, "guild_vs1-2", 0, 0,		// Rank 1~3
+		4, 6, 1, 175, 0, "guild_vs1-3", 0, 0,		// Rank 4~6
+		7, 9, 1, 175, 0, "guild_vs1-4", 0, 0,		// Rank 7~9
+		10, 12, 1, 175, 0, "guild_vs2-1", 0, 0,		// Rank 10~12
+		13, 15, 1, 175, 0, "guild_vs2-2", 0, 0		// Rank 13~15
+	;
+	//
+	// * Arena Party vs Party
+	setarray .@PvP2Rank_Arenas$[0],
+		0, 0, 1, 175, 0, "pvp_y_1-2", 128, 145,		// Unranked
+		1, 3, 1, 175, 0, "pvp_y_2-2", 128, 145,		// Rank 1~3
+		4, 6, 1, 175, 0, "pvp_y_3-2", 128, 145,		// Rank 4~6
+		7, 9, 1, 175, 0, "pvp_y_4-2", 128, 145,		// Rank 7~9
+		10, 12, 1, 175, 0, "pvp_y_5-2", 128, 145,	// Rank 10~12
+		13, 15, 1, 175, 0, "pvp_y_6-2", 128, 145	// Rank 13~15
+	;
+	
+	cutin "ein_soldier", 2;
+	set .@loop_1,1;
+	while(.@loop_1)
+	{
+		set .@mode, getbattleflag("ranked_account");
+		mes "^8B4513[Official PvP]^000000";
+		mes "Welcome to Arena PvP highest ranking players!";
+		mes "How can I help?";
+		next;
+		switch( select("- Player vs Player.", "- Guild vs Guild.", "- Party vs Party.", "^FF0000- Cancel.^000000") )
+		{
+			case 1:
+				callsub sub_Warper, "PvP Arena", .@PvPRank_Arenas$, getarraysize(.@PvPRank_Arenas$), 0;
+				break;
+			case 2:
+				callsub sub_Warper, "GvG Arena", .@GvGRank_Arenas$, getarraysize(.@GvGRank_Arenas$), 1;
+				break;
+			case 3:
+				callsub sub_Warper, "Party vs Party Arena", .@PvP2Rank_Arenas$, getarraysize(.@PvP2Rank_Arenas$), 2;
+				break;
+			case 4:
+				set .@loop_1,0;
+				break;
+		}
+	}
+	
+	mes "^8B4513[Official PvP]^000000";
+	mes "Very well, come back when you wish to enter the ^0000FFPvP Arena Ranked^000000.";
+	close2;
+	cutin "", 255;
+	end;
+	
+sub_Warper:
+	deletearray .@Arenas$;
+	copyarray .@Arenas$, getarg(1), getarg(2);
+	set .@loop_2,1;
+	while(.@loop_2)
+	{
+		set .@n,0;
+		set .@buildmenu$, "";
+		mes "^8B4513[Official PvP]^000000";
+		mes "Choose the ^0000FF" + getarg(0) + "^000000 you want to access:";
+		next;
+		for( set .@i,0; .@i < getarraysize(.@Arenas$); set .@i, .@i + 8 )
+		{
+			set .@rank_name$, atoi(.@Arenas$[.@i]) ? getrankinfo(atoi(.@Arenas$[.@i]),1) : "Não Ranqueados";
+			set .@buildmenu$, .@buildmenu$ + "^0000FF- " + .@rank_name$ + "";
+						
+			if( atoi(.@Arenas$[.@i+1]) && atoi(.@Arenas$[.@i]) != atoi(.@Arenas$[.@i+1]) )
+			{
+				set .@rank_name$, getrankinfo(atoi(.@Arenas$[.@i+1]),1);
+				set .@buildmenu$, .@buildmenu$ + " ao " + .@rank_name$;
+			}
+						
+			set .@buildmenu$, .@buildmenu$+"^000000 ^FF0000[" + getmapusers(.@Arenas$[.@i+5]);
+						
+			if( atoi(.@Arenas$[.@i+4]) > 0 )
+				set .@buildmenu$, .@buildmenu$ + "/" + atoi(.@Arenas$[.@i+4]);
+						
+			set .@buildmenu$, .@buildmenu$ + "]^000000.";
+			set .@buildmenu$, .@buildmenu$ + ":";
+			set .@n,.@n+1;
+		}
+		
+		set .@buildmenu$, .@buildmenu$ + "^FFA500- Go Back.:^FF0000- Cancel.^000000";
+		set .@choose, select(.@buildmenu$)-1;
+					
+		if( .@choose == .@n )
+			break;
+					
+		if( .@choose > .@n )
+		{
+			set .@loop_1,0;
+			break;
+		}
+
+		set .@idx, .@choose*8;
+		set .@type, .@mode?1:0;
+		set .@rank_id, getcharrankinfo(.@mode);
+		set .@rank_min, atoi(.@Arenas$[.@idx]);
+		set .@rank_max, atoi(.@Arenas$[.@idx+1]);
+		set .@rank_name$, .@rank_min ? getrankinfo(.@rank_min,1) : "Unranked";
+		set .@base_min, atoi(.@Arenas$[.@idx+2]);
+		set .@base_max, atoi(.@Arenas$[.@idx+3]);
+		set .@max_user, atoi(.@Arenas$[.@idx+4]);
+		set .@mapname$, .@Arenas$[.@idx+5];
+		set .@coord_x, atoi(.@Arenas$[.@idx+6]);
+		set .@coord_y, atoi(.@Arenas$[.@idx+7]);
+					
+		if( .@rank_max && .@rank_min != .@rank_max )
+			set .@rank_name$, .@rank_name$ + " to " + getrankinfo(.@rank_max,1);
+					
+		if( BaseLevel < .@base_min || BaseLevel > .@base_max ) {
+			mes "^8B4513[Official PvP]^000000";
+			mes "Only Players with ^FF0000Level " + .@base_min + "~" + .@base_max + "^000000 can access this Arena!";
+			next;
+		}
+		else if( .@rank_id < .@rank_min || .@rank_id > .@rank_max ) {
+			mes "^8B4513[Official PvP]^000000";
+			mes "Only Players with ^FF0000" + .@rank_name$ + "^000000 can access this Arena.";
+			next;
+		}
+		else if( getarg(3) == 0 && getcharid(1) ) {
+			mes "^8B4513[Official PvP]^000000";
+			mes "You must leave your ^FF0000Party^000000 to enter this Arena.";
+			next;
+		}
+		else if( getarg(3) == 1 && getcharid(2) <= 0 ) {
+			mes "^8B4513[Official PvP]^000000";
+			mes "Only ^FF0000Guild^000000 Players can access this Arena.";
+			next;
+		}
+		else if( getarg(3) == 1 && getcharid(1) <= 0 ) {
+			mes "^8B4513[Official PvP]^000000";
+			mes "Only ^FF0000Party^000000 Players can access this Arena.";
+			next;
+		}
+		else {
+			mes "^8B4513[Official PvP]^000000";
+			mes "Are you sure you want to enter ^0000FF" + getarg(0) + " " + .@rank_name$ + "^000000?";
+			next;
+			switch( select("- Yes, please.", "^FFA500- Go Back.", "^FF0000- Cancel.^000000") )
+			{
+				case 1:
+					if( .@max_user && getmapusers(.@mapname$) > .@max_user )
+					{
+						mes "^8B4513[Official PvP]^000000";
+						mes "The ^0000FF" + .@rank_name$ + "^000000 is full, try again later.";
+						next;
+						break;
+					}
+					cutin "", 255;
+					warp .@mapname$, .@coord_x, .@coord_y;
+					end;
+				case 2:
+					break;
+				case 3:
+					set .@loop_1, 0;
+					set .@loop_2, 0;
+					break;
+			}
+		}
+	}
+	return;
+	
+OnInit:
+	waitingroom "PvP Ranked",0;
+	end;
+}
+
+// Mapflags
+pvp_y_1-1	mapflag	ranked
+pvp_y_1-1	mapflag	pvp
+pvp_y_1-1	mapflag	pvp_noparty
+pvp_y_1-1	mapflag	pvp_noguild
+pvp_y_1-1	mapflag	nowarp
+pvp_y_1-1	mapflag	nowarpto
+
+pvp_y_2-1	mapflag	ranked
+pvp_y_2-1	mapflag	pvp
+pvp_y_2-1	mapflag	pvp_noparty
+pvp_y_2-1	mapflag	pvp_noguild
+pvp_y_2-1	mapflag	nowarp
+pvp_y_2-1	mapflag	nowarpto
+
+pvp_y_3-1	mapflag	ranked
+pvp_y_3-1	mapflag	pvp
+pvp_y_3-1	mapflag	pvp_noparty
+pvp_y_3-1	mapflag	pvp_noguild
+pvp_y_3-1	mapflag	nowarp
+pvp_y_3-1	mapflag	nowarpto
+
+pvp_y_4-1	mapflag	ranked
+pvp_y_4-1	mapflag	pvp
+pvp_y_4-1	mapflag	pvp_noparty
+pvp_y_4-1	mapflag	pvp_noguild
+pvp_y_4-1	mapflag	nowarp
+pvp_y_4-1	mapflag	nowarpto
+
+pvp_y_5-1	mapflag	ranked
+pvp_y_5-1	mapflag	pvp
+pvp_y_5-1	mapflag	pvp_noparty
+pvp_y_5-1	mapflag	pvp_noguild
+pvp_y_5-1	mapflag	nowarp
+pvp_y_5-1	mapflag	nowarpto
+
+pvp_y_6-1	mapflag	ranked
+pvp_y_6-1	mapflag	pvp
+pvp_y_6-1	mapflag	pvp_noparty
+pvp_y_6-1	mapflag	pvp_noguild
+pvp_y_6-1	mapflag	nowarp
+pvp_y_6-1	mapflag	nowarpto
+
+guild_vs1-1	mapflag	ranked
+guild_vs1-1	mapflag	gvg
+guild_vs1-1	mapflag	pvp_noparty
+guild_vs1-1	mapflag	nowarp
+guild_vs1-1	mapflag	nowarpto
+
+guild_vs1-2	mapflag	ranked
+guild_vs1-2	mapflag	gvg
+guild_vs1-2	mapflag	pvp_noparty
+guild_vs1-2	mapflag	nowarp
+guild_vs1-2	mapflag	nowarpto
+
+guild_vs1-3	mapflag	ranked
+guild_vs1-3	mapflag	gvg
+guild_vs1-3	mapflag	pvp_noparty
+guild_vs1-3	mapflag	nowarp
+guild_vs1-3	mapflag	nowarpto
+
+guild_vs1-4	mapflag	ranked
+guild_vs1-4	mapflag	gvg
+guild_vs1-4	mapflag	pvp_noparty
+guild_vs1-4	mapflag	nowarp
+guild_vs1-4	mapflag	nowarpto
+
+guild_vs2-1	mapflag	ranked
+guild_vs2-1	mapflag	gvg
+guild_vs2-1	mapflag	pvp_noparty
+guild_vs2-1	mapflag	nowarp
+guild_vs2-1	mapflag	nowarpto
+
+guild_vs2-2	mapflag	ranked
+guild_vs2-2	mapflag	gvg
+guild_vs2-2	mapflag	pvp_noparty
+guild_vs2-2	mapflag	nowarp
+guild_vs2-2	mapflag	nowarpto
+
+pvp_y_1-2	mapflag	ranked
+pvp_y_1-2	mapflag	pvp
+pvp_y_1-2	mapflag	pvp_noguild
+pvp_y_1-2	mapflag	nowarp
+pvp_y_1-2	mapflag	nowarpto
+
+pvp_y_2-2	mapflag	ranked
+pvp_y_2-2	mapflag	pvp
+pvp_y_2-2	mapflag	pvp_noguild
+pvp_y_2-2	mapflag	nowarp
+pvp_y_2-2	mapflag	nowarpto
+
+pvp_y_3-2	mapflag	ranked
+pvp_y_3-2	mapflag	pvp
+pvp_y_3-2	mapflag	pvp_noguild
+pvp_y_3-2	mapflag	nowarp
+pvp_y_3-2	mapflag	nowarpto
+
+pvp_y_4-2	mapflag	ranked
+pvp_y_4-2	mapflag	pvp
+pvp_y_4-2	mapflag	pvp_noguild
+pvp_y_4-2	mapflag	nowarp
+pvp_y_4-2	mapflag	nowarpto
+
+pvp_y_5-2	mapflag	ranked
+pvp_y_5-2	mapflag	pvp
+pvp_y_5-2	mapflag	pvp_noguild
+pvp_y_5-2	mapflag	nowarp
+pvp_y_5-2	mapflag	nowarpto
+
+pvp_y_6-2	mapflag	ranked
+pvp_y_6-2	mapflag	pvp
+pvp_y_6-2	mapflag	pvp_noguild
+pvp_y_6-2	mapflag	nowarp
+pvp_y_6-2	mapflag	nowarpto

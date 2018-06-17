@@ -1,0 +1,1267 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    War of Treasure (Guerra do Tesouro)                          .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compatível:	rAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Os Clãs devem se enfrentar para conquistar os Baús do        .
+  .  do Tesouro.                                                    .
+  *-----------------------------------------------------------------*/
+-	script	wot#main	FAKE_NPC,{
+OnDefaults:
+	// Reset padrão (Não altere aqui)
+	deletearray $@WOT_Rune_Rewards$;
+	deletearray $@WOT_Guard_Rewards$;
+	deletearray $@WOT_Treasure_Rewards$;
+	deletearray $@WOT_Currency;
+	deletearray $@WOT_Coord;
+OnInit:
+	// GroupId para gerenciar o evento.
+	// Ligar/Desligar
+	set $@WOT_GroupID, 99;
+	
+	// Habilitar o Ranking WOT?
+	// Mesmo desativando o Sistema computa o ranking.
+	//	0: Desativa exibição do Ranking
+	//	1: Apenas o rank de Jogadores.
+	//	2: Apenas o rank de Clãs.
+	//	3: Rank de Jogadores e Clãs.
+	set $@WOT_Ranking, 3;
+	
+	// Mínimo de Clãs para começar o evento.
+	// O mínimo é 1 (um), nunca ponha 0 (zero).
+	set $@WOT_MinGuild, 2;
+	
+	// Máximo de Clãs que podem entrar no evento.
+	// 0 (zero) Desativa esta opção.
+	set $@WOT_MaxGuild, 5;
+	
+	// Mínimo de Jogadores para começar o evento.
+	// O mínimo é 1 (um), nunca ponha 0 (zero).
+	set $@WOT_MinPlayer, 1;
+	
+	// Máximo de Jogadores que podem entrar no evento.
+	// 0 (zero) Desativa esta opção.
+	set $@WOT_MaxPlayer, 10;
+	
+	// Nível mínimo de Base para entrar no evento.
+	set $@WOT_BaseLevel, 50;
+	
+	// Tempo de espera para os jogadores entrarem no evento (em minutos).
+	set $@WOT_Waiting, 5;
+	
+	// Tempo de Batalha GvG (em minutos) que os jogadores irão ter antes das Arcas serem invocadas.
+	// O mínimo é 2 (um), nunca 1 (um) ou menos.
+	set $@WOT_GvGBattleTimer, 16;
+	
+	// Ativar o Modo Rúnico?
+	// Caso você ative esta opção, na metade do tempo da Batalha GvG (irá parar o tempo configurado), duas Runas Guardiãs
+	// e 8 Guardiões de Emboscada serão invocados, os jogadores devem eliminar as duas Runas Guardiãs
+	// para prosseguir com o Evento. Após isso o tempo de GvG Battle irá continuar contando.
+	//
+	// Mais abaixo é possível configurar recompensas nas Runas e Guardiões, caso deseje.
+	//
+	//	0: Não
+	//	1: Sim
+	set $@WOT_RuneMode, 1;
+	
+	// Desativar a GvG quando o Modo Rúnico estiver ativado?
+	//	0: Não
+	//	1: Sim
+	set $@WOT_RuneGvGOff, 0;
+	
+	// Habilitar recompensas em Runas Guardiãs eliminada?
+	// 0: Desativa.
+	// 1: Todas recompensas configuradas serão entregues.
+	// 2: Uma recompensa aleatória será entregue.
+	set $@WOT_RuneReward_Enable, 1;
+	
+	// Itens que as Runas Guardiãs irão entregar aos jogadores que eliminá-la.
+	// setarray $@WOT_Rune_Rewards$[0], "<item_id/var>", <type>, <amount>, "<name>",...
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	//
+	setarray $@WOT_Rune_Rewards$[0],
+		41001, 0, 10, getitemname(41001)
+	;
+	
+	// Habilitar recompensas em Guardião de Emboscada eliminado?
+	// 0: Desativa.
+	// 1: Todas recompensas configuradas serão entregues.
+	// 2: Uma recompensa aleatória será entregue.
+	set $@WOT_GuardReward_Enable, 1;
+	
+	// Itens que os Guardiões irão entregar aos jogadores que eliminá-la.
+	// setarray $@WOT_Guard_Rewards$[0], "<item_id/var>", <type>, <amount>, "<name>",...
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	//
+	setarray $@WOT_Guard_Rewards$[0],
+		41001, 0, 1, getitemname(41001)
+	;
+	
+	// Ids dos Baús do Tesouro
+	// Serão invocados aleatoriamente.
+	//
+	// setarray $@WOT_Treasure[0], <mob_id1>, <mob_id2>, <mob_id3>...;
+	setarray $@WOT_Treasure[0], 1324, 1328, 1332, 1336, 1340, 1344, 1348, 1352, 1356, 1360;
+	
+	// Desativar habilidades quando os Tesouros forem invocados?
+	//	0: Não
+	//	1: Sim
+	set $@WOT_Treasure_Skills, 1;
+	
+	// Habilitar Drop natural dos Tesouros?
+	//	0: Não
+	//	1: Sim
+	set $@WOT_Treasure_Drops, 1;
+	
+	// Habilitar recompensas em Baús do Tesouro eliminado?
+	// 0: Desativa.
+	// 1: Todas recompensas configuradas serão entregues.
+	// 2: Uma recompensa aleatória será entregue.
+	set $@WOT_TreasureReward_Enable, 1;
+	
+	// Itens que os Baús irão entregar aos jogadores que eliminá-la.
+	// setarray $@WOT_Treasure_Rewards$[0], "<item_id/var>", <type>, <amount>, "<name>",...
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	//
+	setarray $@WOT_Treasure_Rewards$[0],
+		41001, 0, 100, getitemname(41001)
+	;
+	
+	// Habilitar a loja da WOT?
+	set $@WOT_Shop_Enable, 0;
+	
+	// Moeda que a loja irá utilizar, e o tipo. (apenas visual)
+	// setarray $@WOT_Currency$, "<item_id/var>", "<name>", <type>;
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	setarray $@WOT_Currency$, 41001, getitemname(41001), 0;
+	
+	// Itens que vendem na loja.
+	// Os itens e preços deve estar na Loja WOT (wot#shop) na linha 1200.
+	
+	// Não altere apartir desta linha!!
+	// Coordinates Spawn
+	setarray $@WOT_Coord[0], 64, 136, 136, 136, 53, 43, 146, 43, 39, 88, 160, 88;
+	mapwarp "wot_castle", "prontera", 156, 191;
+	end;
+	
+OnStart:
+	// The event is happening!
+	if( $@WOT_FLAG )
+		end;
+		
+	initnpctimer;
+	set $@WOT_FLAG, 1;
+	set .TimerCount, 0;
+	announce "[War of Treasure]: O Evento está aberto, corram para arena!", bc_yellow|bc_all;
+	donpcevent "::OnWotOn";
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	set .TimerCount, .TimerCount+1;
+	if( .TimerCount >= $@WOT_Waiting || ($@WOT_MaxPlayer && getmapusers("wot_castle") >= $@WOT_MaxPlayer) ) {
+		donpcevent "::OnWotOff";
+		if( countguildmap("wot_castle") < $@WOT_MinGuild ) {
+			announce "[War of Treasure]: O Evento foi cancelado por ter Clã suficiente!", bc_yellow|bc_all;
+			donpcevent "wot#main::OnEnd";
+		}
+		else if( getmapusers("wot_castle") < $@WOT_MinPlayer ) {
+			set $@WOT_FLAG, 0;
+			announce "[War of Treasure]: O Evento foi cancelado por falta de jogadores!", bc_yellow|bc_all;
+			donpcevent "wot#main::OnEnd";
+		}
+		else {
+			// Start Events
+			set $@WOT_FLAG, 2;
+			gvgon "wot_castle";
+			disablenpc "#wot_exit";
+			announce "[War of Treasure]: O Evento está completo, boa sorte participantes!", bc_yellow|bc_all;
+			if( countguildmap("wot_castle") > 1 ) {
+				donpcevent "wot#gvg::OnStart";
+				sleep 3000;
+				mapannounce "wot_castle", "[War of Treasure]: A Batalha GvG começou!", bc_yellow|bc_all;
+			}
+			else {
+				if( $@WOT_RuneMode && $WOT_FLAG != 3 )
+					donpcevent "wot#mobs::OnRuneSummon";
+				else if( $@WOT_FLAG != 4 )
+					donpcevent "wot#mobs::OnTreasureSummon";
+			}
+		}
+	}
+	else {
+		initnpctimer;
+		set .@count, $@WOT_Waiting-.TimerCount;
+		announce "[War of Treasure]: Em " + .@count + " minuto(s) o Evento irá começar!", bc_yellow|bc_all;
+	}
+	end;
+	
+OnFail:
+	set $WOT_GUILD_ID1, 0;
+	set $WOT_GUILD_ID2, 0;
+	announce "[War of Treasure]:  Os Clãs falharam e não houve vencedores!", bc_yellow|bc_all;
+	sleep 3000;
+	donpcevent "wot#main::OnEnd";
+	end;
+	
+OnFinish:
+	set $@WOT_FLAG,5;
+	sleep 3000;
+	enablenpc "#wot_exit";
+	mapannounce "wot_castle", "[War of Treasure]: O Evento terminou! Entrem no portal inferior do mapa para deixar a Arena.", bc_yellow|bc_all;
+	sleep 3000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 30 segundos a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 15000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 15 segundos a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 10000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 5 segundos a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 4 segundos a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 3 segundos a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 2 segundos a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 1 segundo a Arena do evento será esvaziada automaticamente!", bc_yellow|bc_all, "0xFFFF00";
+	sleep 1000;
+	donpcevent "wot#main::OnEnd";
+	end;
+	
+OnStopGM:
+	// Stop by GameMaster
+	if( $@WOT_FLAG == 1 )
+		donpcevent "::OnWotOff";
+	announce "[War of Treasure]: O Evento foi encerrado pela equipe de GamerMaster!", bc_yellow|bc_all;
+	sleep 3000;
+	donpcevent "wot#main::OnEnd";
+	end;
+	
+OnEnd:
+	// End Events
+	stopnpctimer;
+	set $@WOT_FLAG,0;
+	gvgoff "wot_castle";
+	killmonsterall "wot_castle", 1;
+	removemapflag "wot_castle", mf_noskill;
+	removemapflag "wot_castle", mf_nomobloot;
+	removemapflag "wot_castle", mf_nomvploot;
+	enablenpc "#wot_exit";
+	donpcevent "::OnWotOff";
+	donpcevent "::OnWotFlagEmblem";
+	donpcevent "wot#warps::OnDisable";
+	donpcevent "wot#warps::OnKickDisable";
+	donpcevent "wot#gvg::OnEnd";
+	donpcevent "wot#main::OnDefaults";
+	sleep 3000;
+	announce "[War of Treasure]: Evento encerrado, obrigado a todos participantes!", bc_yellow|bc_all;
+	end;
+
+OnPCLogoutEvent:
+	set .@map$, strcharinfo(3);
+	set .@CID, getcharid(0);
+	set .@GID, getcharid(2);
+	if( .@map$ == "wot_castle" ) {
+		// Ranking
+		if( $@WOT_FLAG > 1 )
+			callfunc "set_wot_rank", .@CID, .@RID, 5, 1;
+			
+		sleep 3000;
+		if( $@WOT_FLAG > 1 && getmapusers("wot_castle") <= 0 )
+			donpcevent "wot#main::OnFail";
+		else if( $@WOT_FLAG == 2 && countguildmap("wot_castle") == 1 ) {
+			if( $@WOT_RuneMode && $@WOT_FLAG != 3 )
+				donpcevent "wot#mobs::OnRuneSummon";
+			else if( $@WOT_FLAG != 4 )
+				donpcevent "wot#mobs::OnTreasureSummon";
+		}
+		else if( ($@WOT_FLAG == 2 || $@WOT_FLAG == 3) && countguildmap("wot_castle") == 1 )
+			donpcevent "wot#mobs::OnTreasureSummon";
+	}
+	end;
+	
+OnPCDieEvent:
+	set .@map$, strcharinfo(3);
+	set .@RID, killerrid;
+	
+	if( .@map$ == "wot_castle" ) {
+		warp "prontera", 156, 191;
+		
+		// Ranking
+		if( $@WOT_FLAG > 1 ) {
+			// Killed by the guardians
+			if( .@RID == 1296 || .@RID == 1287 ) {
+				// Set Rank
+				callfunc "set_wot_rank", getcharid(0), getcharid(2), 3, 1;
+			}
+			// killed by the players
+			else if( .@RID ) {
+				set .@CID, getcharid(0, rid2name(.@RID));
+				set .@GID, getcharid(2, rid2name(.@RID));
+				if( .@CID && .@GID ) {
+					// Set Rank
+					callfunc "set_wot_rank", .@CID, .@GID, 4, 1;
+					callfunc "set_wot_rank", getcharid(0), getcharid(2), 5, 1;
+				}
+			}
+		}
+		
+		if( $@WOT_FLAG > 1 && getmapusers("wot_castle") <= 0 )
+			donpcevent "wot#main::OnFail";
+		else if( $@WOT_FLAG == 2 && countguildmap("wot_castle") == 1 ) {
+			if( $@WOT_RuneMode && $@WOT_FLAG != 3 )
+				donpcevent "wot#mobs::OnRuneSummon";
+			else if( $@WOT_FLAG != 4 )
+				donpcevent "wot#mobs::OnTreasureSummon";
+		}
+		else if( ($@WOT_FLAG == 2 || $@WOT_FLAG == 3) && countguildmap("wot_castle") == 1 )
+			donpcevent "wot#mobs::OnTreasureSummon";
+		
+		// Wait 3 seconds to be able to revive the player and heal him again.
+		sleep2 3000;
+		alive;
+		percentheal 100,100;
+	}
+	end;
+}
+
+// GvG Battle
+-	script	wot#gvg	FAKE_NPC,{
+OnStart:
+	gvgon "wot_castle";
+	set .Timer,0;
+	initnpctimer;
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	set .Timer,.Timer+1;
+	set .@half, $@WOT_GvGBattleTimer/2;
+	if( $@WOT_RuneMode && .Timer == .@half )
+		donpcevent "wot#mobs::OnRuneSummon";
+	else if( .Timer >= $@WOT_GvGBattleTimer )
+		donpcevent "wot#mobs::OnTreasureSummon";
+	else
+		initnpctimer; // Reset Timer
+	end;
+	
+OnEnd:
+	stopnpctimer;
+	end;
+}
+
+// Mobs Events
+-	script	wot#mobs	FAKE_NPC,{
+OnTreasureSummon:
+	freeloop(1);
+	set $@WOT_FLAG, 4;
+	killmonsterall "wot_castle", 1;
+	donpcevent "wot#warps::OnKickEnable";
+	donpcevent "wot#gvg::OnEnd";
+	
+	set .@size, getarraysize($@WOT_Coord[0])/2;
+	set .@a, rand(0,(.@size-1));
+	while(1)
+	{
+		set .@a, rand(0,(.@size-1));
+		if( .@a != .@b )
+			break;
+	}
+	
+	set .@size, getarraysize($@WOT_Treasure);
+	if( .@size > 1 ) {
+		set .@c, rand(0,(.@size-1));
+		while(1)
+		{
+			set .@d, rand(0,(.@size-1));
+			if( .@c != .@d )
+				break;
+		}
+	}
+	else {
+		set .@c, 0;
+		set .@d, 0;
+	}
+	
+	// Announce 10 seconds
+	mapannounce "wot_castle", "[War of Treasure]: Em 10 segundos os Baús do Tesouro serão invocados!",bc_yellow|bc_map;
+	sleep 5000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 4 segundos os Baús do Tesouro serão invocados!",bc_yellow|bc_map;
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 3 segundos os Baús do Tesouro serão invocados!",bc_yellow|bc_map;
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 2 segundos os Baús do Tesouro serão invocados!",bc_yellow|bc_map;
+	sleep 1000;
+	mapannounce "wot_castle", "[War of Treasure]: Em 1 segundo os Baús do Tesouro serão invocados!",bc_yellow|bc_map;
+	sleep 1000;
+	
+	// Disable Kick Warps and Enable Warps
+	donpcevent "wot#warps::OnKickDisable";
+	donpcevent "wot#warps::OnEnable";
+	
+	// Special Mapflags
+	if( $@WOT_Treasure_Skills )
+		setmapflag "wot_castle", mf_noskill;
+	else
+		removemapflag "wot_castle", mf_noskill;
+		
+	if( $@WOT_Treasure_Drops ) {
+		setmapflag "wot_castle", mf_nomobloot;
+		setmapflag "wot_castle", mf_nomvploot;
+	}
+	else {
+		removemapflag "wot_castle", mf_nomobloot;
+		removemapflag "wot_castle", mf_nomvploot;
+	}
+	
+	// Spawn Trasure's Cheste
+	set .@a, .@a*2;
+	set .@b, .@b*2;
+	monster "wot_castle", $@WOT_Coord[.@a], $@WOT_Coord[.@a+1], "1º Baú do Tesouro", $@WOT_Treasure[.@c], 1, "wot#mobs::OnTreasureDie01";
+	monster "wot_castle", $@WOT_Coord[.@b], $@WOT_Coord[.@b+1], "2º Báu do Tesouro", $@WOT_Treasure[.@d], 1, "wot#mobs::OnTreasureDie02";
+	
+	// Announce
+	mapannounce "wot_castle", "[War of Treasure]: Os Baús do Tesouro foram invocados!",bc_yellow|bc_map;
+	freeloop(0);
+	end;
+	
+OnRuneSummon:
+	freeloop(1);
+	set $@WOT_FLAG, 3;
+	set .@size, getarraysize($@WOT_Coord[0])/2;
+	set .@a, rand(0,(.@size-1));
+	while(1)
+	{
+		set .@b, rand(0,(.@size-1));
+		if( .@a != .@b )
+			break;
+	}
+	
+	// Rune Stones
+	set .@c, .@a*2;
+	set .@d, .@b*2;
+	monster "wot_castle", $@WOT_Coord[.@c], $@WOT_Coord[.@c+1], "1ª Runa Guardiã", 1907, 1, "wot#mobs::OnRuneDie01";
+	monster "wot_castle", $@WOT_Coord[.@d], $@WOT_Coord[.@d+1], "2ª Runa Guardiã", 1908, 1, "wot#mobs::OnRuneDie02";
+	
+	// Disable Kick warps
+	donpcevent "wot#warps::OnKickDisable";
+	
+	// Enable Rune Stones Warps
+	enablenpc "wot#warp_" + (.@a+1) + "-1";
+	enablenpc "wot#warp_" + (.@a+1) + "-2";
+	enablenpc "wot#warp_" + (.@b+1) + "-1";
+	enablenpc "wot#warp_" + (.@b+1) + "-2";
+	
+	// Ambush Guardians
+	set .@g,0;
+	for( set .@i, 0; .@i < .@size; set .@i,.@i+1 ) {
+		if( .@a != .@i && .@b != .@i ) {
+			set $@WOT_GUARD[.@g], .@i;
+			set .@g, .@g + 1;
+			set .@c, .@i*2;
+			monster "wot_castle", $@WOT_Coord[.@c], $@WOT_Coord[.@c+1], "Guardião", 1286, 1, "wot#mobs::OnGuardDie0"+ (.@i+1);
+			monster "wot_castle", $@WOT_Coord[.@c], $@WOT_Coord[.@c+1], "Guardião", 1287, 1, "wot#mobs::OnGuardDie0"+ (.@i+1);
+			enablenpc "wot#warp_" + (.@i+1) + "-1";
+		}
+	}
+	
+	// Announce
+	if( $@WOT_RuneGvGOff ) {
+		gvgoff "wot_castle";
+		mapannounce "wot_castle", "[War of Treasure]: Os Portões foram liberados!",bc_yellow|bc_map;
+		sleep 3000;
+		mapannounce "wot_castle", "[War of Treasure]: As Runas Guardiãs foram invocadas, os Clãs devem se aliar para eliminá-las para que o Tesouro possa ser invocado.",bc_yellow|bc_map;
+		sleep 3000;
+		mapannounce "wot_castle", "[War of Treasure]: Clãs cuidado para não caírem em emboscada de Guardiões.",bc_yellow|bc_map;
+	}
+	else {
+		mapannounce "wot_castle", "[War of Treasure]: Os Portões foram liberados!",bc_yellow|bc_map;
+		sleep 3000;
+		mapannounce "wot_castle", "[War of Treasure]: As Runas Guardiãs foram invocadas, os Clãs devem eliminá-las para que o Tesouro possa ser invocado.",bc_yellow|bc_map;
+	}
+	freeloop(0);
+	end;
+
+OnTreasureDie01:
+	callsub subTreasure, 1;
+	end;
+	
+OnTreasureDie02:
+	callsub subTreasure, 2;
+	end;
+
+OnRuneDie01:
+	callsub subRune, 1;
+	end;
+	
+OnRuneDie02:
+	callsub subRune, 2;
+	end;
+	
+OnGuardDie01:
+	callsub subGuard, 1;
+	end;
+	
+OnGuardDie02:
+	callsub subGuard, 2;
+	end;
+	
+OnGuardDie03:
+	callsub subGuard, 3;
+	end;
+
+OnGuardDie04:
+	callsub subGuard, 4;
+	end;
+	
+OnGuardDie05:
+	callsub subGuard, 5;
+	end;
+	
+OnGuardDie06:
+	callsub subGuard, 6;
+	end;
+	
+subTreasure:
+	freeloop(1);
+	set .@GID, getcharid(2);
+	set .@count, mobcount("wot_castle", "wot#mobs::OnTreasureDie01") + mobcount("wot_castle", "wot#mobs::OnTreasureDie02");
+	
+	// Set Rank
+	callfunc "set_wot_rank", getcharid(0), .@GID, 0, 1;
+	
+	// Rewards
+	set .@size, (getarraysize($@WOT_Treasure_Rewards$)/4);
+	if( $@WOT_TreasureReward_Enable && .@size ) {
+		if( $@WOT_RuneReward_Enable == 2 ) {
+			set .@i, rand(0,(.@size-1));
+			set .@i, .@i*4;
+			set .@amount, atoi($@WOT_Treasure_Rewards$[.@i+2]);
+			set .@type, atoi($@WOT_Treasure_Rewards$[.@i+1]);
+			if( .@type == 1 ) {
+				setd $@WOT_Treasure_Rewards$[.@i], getd($@WOT_Treasure_Rewards$[.@i]) + .@amount;
+				dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Treasure_Rewards$[.@i+3] + " por abrir uma Baú do Tesouro.";
+			}
+			else {
+				set .@item_id, atoi($@WOT_Treasure_Rewards$[.@i]);
+				if( checkweight(.@item_id, .@amount) ) {
+					getitem .@item_id, .@amount;
+					dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Treasure_Rewards$[.@i+3] + " por abrir um Baú do Tesouro.";
+				}
+			}
+		}
+		else {
+			for( set .@i,0; .@i < getarraysize($@WOT_Treasure_Rewards$); set .@i, .@i + 4 ) {
+				set .@amount, atoi($@WOT_Treasure_Rewards$[.@i+2]);
+				set .@type, atoi($@WOT_Treasure_Rewards$[.@i+1]);
+				
+				if( atoi($@WOT_Treasure_Rewards$[.@i+1]) == 1 )
+					setd $@WOT_Treasure_Rewards$[.@i], getd($@WOT_Treasure_Rewards$[.@i]) + $@WOT_Treasure_Rewards$[.@i+2];
+				else {
+					set .@item_id, atoi($@WOT_Treasure_Rewards$[.@i]);
+					if( checkweight(.@item_id, .@amount) == 0 )
+						continue;
+				}
+				dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Treasure_Rewards$[.@i+3] + " por abrir um Baú do Tesouro.";
+			}
+		}
+	}
+	
+	// Change Emblem
+	donpcevent "::OnWotFlagEmblem";
+	
+	// Announce and Check
+	mapannounce "wot_castle", "[War of Treasure]: O Jogador [" + strcharinfo(0) + "] do Clã [" + getguildname(.@GID) + "] abriu o " + getarg(0) + "º Baú do Tesouro.",bc_yellow|bc_map;
+	if( .@count <= 0 )
+		donpcevent "wot#main::OnFinish";
+	freeloop(0);
+	return;
+
+subRune:
+	freeloop(1);
+	set .@GID, getcharid(2);
+	set .@count, mobcount("wot_castle", "wot#mobs::OnRuneDie01") + mobcount("wot_castle", "wot#mobs::OnRuneDie02");
+	
+	// Set Rank
+	callfunc "set_wot_rank", getcharid(0), .@GID, 1, 1;
+	
+	// Rewards
+	set .@size, (getarraysize($@WOT_Rune_Rewards$)/4);
+	if( $@WOT_RuneReward_Enable && .@size ) {
+		if( $@WOT_RuneReward_Enable == 2 ) {
+			set .@i, rand(0,(.@size-1));
+			set .@i, .@i*4;
+			set .@amount, atoi($@WOT_Rune_Rewards$[.@i+2]);
+			set .@type, atoi($@WOT_Rune_Rewards$[.@i+1]);
+			if( .@type == 1 ) {
+				setd $@WOT_Rune_Rewards$[.@i], getd($@WOT_Rune_Rewards$[.@i]) + .@amount;
+				dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Rune_Rewards$[.@i+3] + ".";
+			}
+			else {
+				set .@item_id, atoi($@WOT_Rune_Rewards$[.@i]);
+				if( checkweight(.@item_id, .@amount) ) {
+					getitem .@item_id, .@amount;
+					dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Rune_Rewards$[.@i+3] + ".";
+				}
+			}
+		}
+		else {
+			for( set .@i,0; .@i < getarraysize($@WOT_Rune_Rewards$); set .@i, .@i + 4 ) {
+				set .@amount, atoi($@WOT_Rune_Rewards$[.@i+2]);
+				set .@type, atoi($@WOT_Rune_Rewards$[.@i+1]);
+				
+				if( atoi($@WOT_Rune_Rewards$[.@i+1]) == 1 )
+					setd $@WOT_Rune_Rewards$[.@i], getd($@WOT_Rune_Rewards$[.@i]) + $@WOT_Rune_Rewards$[.@i+2];
+				else {
+					set .@item_id, atoi($@WOT_Rune_Rewards$[.@i]);
+					if( checkweight(.@item_id, .@amount) == 0 )
+						continue;
+				}
+				dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Rune_Rewards$[.@i+3] + ".";
+			}
+		}
+	}
+	
+	if( .@count ) {
+		mapannounce "wot_castle", "[War of Treasure]: O Jogador [" + strcharinfo(0) + "] do Clã [" + getguildname(.@GID) + "] eliminou a " + getarg(0) + "ª Runa Guardiã.",bc_yellow|bc_map;
+		sleep 1000;
+		mapannounce "wot_castle", "[War of Treasure]: Vocês devem eliminar a " + (getarg(0)==1?2:1) + "ª Runa Guardiã.",bc_yellow|bc_area;
+	}
+	else {
+		// Kill Monsters
+		killmonsterall "wot_castle";
+		mapannounce "wot_castle", "[War of Treasure]: O Jogador [" + strcharinfo(0) + "] do Clã [" + getguildname(.@GID) + "] eliminou a " + getarg(0) + "ª Runa Guardiã.",bc_yellow|bc_map;
+		sleep 1000;
+		// Enable Warps
+		for( set .@i,1; .@i <= 6; set .@i, .@i + 1 ) {
+			disablenpc "wot#warp_" + .@i + "-1";
+			enablenpc "wot#warp_" + .@i + "-2";
+		}
+		mapannounce "wot_castle", "[War of Treasure]: Os portais de saída foram liberado, a War of Treasure irá continuar em 10 segundos.",bc_yellow|bc_area;
+		sleep 5000;
+		if( countguildmap("wot_castle") > 1 ) {
+			mapannounce "wot_castle", "[War of Treasure]: A War of Treasure irá continuar em 5 segundos, todos jogadores que não saíram dos portais serão teleportados.",bc_yellow|bc_area;
+			sleep 1000;
+			donpcevent "wot#warps::OnKickEnable";
+			sleep 4000;
+			mapannounce "wot_castle", "[War of Treasure]: A War of Treasure irá continuar em 4 segundos.",bc_yellow|bc_area;
+			sleep 1000;
+			mapannounce "wot_castle", "[War of Treasure]: A War of Treasure irá continuar em 3 segundos.",bc_yellow|bc_area;
+			sleep 1000;
+			mapannounce "wot_castle", "[War of Treasure]: A War of Treasure irá continuar em 2 segundos.",bc_yellow|bc_area;
+			sleep 1000;
+			mapannounce "wot_castle", "[War of Treasure]: A War of Treasure irá continuar em 1 segundo.",bc_yellow|bc_area;
+			sleep 1000;
+			gvgon "wot_castle";
+			initnpctimer "wot#gvg";
+			mapannounce "wot_castle", "[War of Treasure]: A War of Treasure continua e " + ($@WOT_GvGBattleTimer-getvariableofnpc(.Timer, "wot#gvg")) + " minuto(s) os baús serão invocados, boa sorte Clã.",bc_yellow|bc_area;
+		}
+		else {
+			donpcevent "wot#mobs::OnTreasureSummon";
+		}
+	}
+	freeloop(0);
+	return;
+	
+subGuard:
+	freeloop(1);
+	set .@GID, getcharid(2);
+	set .@count, mobcount("wot_castle", "wot#mobs::OnGuardDie0" + getarg(0));
+	
+	// Set Rank
+	callfunc "set_wot_rank", getcharid(0), .@GID, 2, 1;
+	
+	// Rewards
+	set .@size, (getarraysize($@WOT_Guard_Rewards$)/4);
+	if( $@WOT_GuardReward_Enable && .@size ) {
+		if( $@WOT_GuardReward_Enable == 2 ) {
+			set .@i, rand(0,(.@size-1));
+			set .@i, .@i*4;
+			set .@amount, atoi($@WOT_Guard_Rewards$[.@i+2]);
+			set .@type, atoi($@WOT_Guard_Rewards$[.@i+1]);
+			if( .@type == 1 ) {
+				setd $@WOT_Guard_Rewards$[.@i], getd($@WOT_Guard_Rewards$[.@i]) + .@amount;
+				dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Guard_Rewards$[.@i+3] + ".";
+			}
+			else {
+				set .@item_id, atoi($@WOT_Guard_Rewards$[.@i]);
+				if( checkweight(.@item_id, .@amount) ) {
+					getitem .@item_id, .@amount;
+					dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Guard_Rewards$[.@i+3] + ".";
+				}
+			}
+		}
+		else {
+			for( set .@i,0; .@i < getarraysize($@WOT_Guard_Rewards$); set .@i, .@i + 4 ) {
+				set .@amount, atoi($@WOT_Guard_Rewards$[.@i+2]);
+				set .@type, atoi($@WOT_Guard_Rewards$[.@i+1]);
+				
+				if( atoi($@WOT_Guard_Rewards$[.@i+1]) == 1 )
+					setd $@WOT_Guard_Rewards$[.@i], getd($@WOT_Guard_Rewards$[.@i]) + $@WOT_Guard_Rewards$[.@i+2];
+				else {
+					set .@item_id, atoi($@WOT_Guard_Rewards$[.@i]);
+					if( checkweight(.@item_id, .@amount) == 0 )
+						continue;
+				}
+				dispbottom "Parabéns!! Você recebeu como recompensa " + .@amount + "x " + $@WOT_Guard_Rewards$[.@i+3] + ".";
+			}
+		}
+	}
+	
+	if( .@count ) {
+		mapannounce "wot_castle", "[War of Treasure]: O Jogador [" + strcharinfo(0) + "] do Clã [" + getguildname(.@GID) + "] eliminou um dos Guardiões que havia feito uma emboscada.",bc_yellow|bc_map;
+		sleep 1000;
+		mapannounce "wot_castle", "[War of Treasure]: Eliminem o outro guardião para o portal ser liberado.",bc_yellow|bc_area;
+	}
+	else {
+		enablenpc "wot#warp_" + getarg(0) + "-2";
+		mapannounce "wot_castle", "[War of Treasure]: O Jogador [" + strcharinfo(0) + "] do Clã [" + getguildname(.@GID) + "] eliminou o último Guardião que havia feito uma emboscada.",bc_yellow|bc_map;
+		sleep 1000;
+		mapannounce "wot_castle", "[War of Treasure]: O Portal foi liberado aos jogadores presos na armadilha.",bc_yellow|bc_area;
+	}
+	freeloop(0);
+	return;
+}
+
+// Warps
+-	script	wot#warps	FAKE_NPC,{
+OnInit:
+	donpcevent "wot#warps::OnDisable";
+	donpcevent "wot#warps::OnKickDisable";
+	end;
+	
+OnDisable:
+	disablenpc "wot#warp_1-1";
+	disablenpc "wot#warp_1-2";
+	disablenpc "wot#warp_2-1";
+	disablenpc "wot#warp_2-2";
+	disablenpc "wot#warp_3-1";
+	disablenpc "wot#warp_3-2";
+	disablenpc "wot#warp_4-1";
+	disablenpc "wot#warp_4-2";
+	disablenpc "wot#warp_5-1";
+	disablenpc "wot#warp_5-2";
+	disablenpc "wot#warp_6-1";
+	disablenpc "wot#warp_6-2";
+	end;
+	
+OnEnable:
+	enablenpc "wot#warp_1-1";
+	enablenpc "wot#warp_1-2";
+	enablenpc "wot#warp_2-1";
+	enablenpc "wot#warp_2-2";
+	enablenpc "wot#warp_3-1";
+	enablenpc "wot#warp_3-2";
+	enablenpc "wot#warp_4-1";
+	enablenpc "wot#warp_4-2";
+	enablenpc "wot#warp_5-1";
+	enablenpc "wot#warp_5-2";
+	enablenpc "wot#warp_6-1";
+	enablenpc "wot#warp_6-2";
+	end;
+	
+OnKickDisable:
+	disablenpc "wot#kick_1";
+	disablenpc "wot#kick_2";
+	disablenpc "wot#kick_3";
+	disablenpc "wot#kick_4";
+	disablenpc "wot#kick_5";
+	disablenpc "wot#kick_6";
+	end;
+	
+OnKickEnable:
+	enablenpc "wot#kick_1";
+	enablenpc "wot#kick_2";
+	enablenpc "wot#kick_3";
+	enablenpc "wot#kick_4";
+	enablenpc "wot#kick_5";
+	enablenpc "wot#kick_6";
+	end;
+}
+
+wot_castle,86,104,0	warp	wot#warp_1-1	1,1,wot_castle,64,131
+wot_castle,63,127,0	warp	wot#warp_1-2	1,1,wot_castle,87,100
+wot_castle,113,104,0	warp	wot#warp_2-1	1,1,wot_castle,135,131
+wot_castle,135,126,0	warp	wot#warp_2-2	1,1,wot_castle,112,100
+
+wot_castle,85,73,0	warp	wot#warp_3-1	1,1,wot_castle,57,47
+wot_castle,60,50,0	warp	wot#warp_3-2	1,1,wot_castle,87,77
+
+wot_castle,114,73,0	warp	wot#warp_4-1	1,1,wot_castle,142,47
+wot_castle,139,50,0	warp	wot#warp_4-2	1,1,wot_castle,112,77
+
+wot_castle,77,88,0	warp	wot#warp_5-1	1,1,wot_castle,44,87
+wot_castle,48,87,0	warp	wot#warp_5-2	1,1,wot_castle,82,87
+
+wot_castle,122,88,0	warp	wot#warp_6-1	1,1,wot_castle,155,88
+wot_castle,151,88,0	warp	wot#warp_6-2	1,1,wot_castle,116,86
+
+wot_castle,63,134,0,	script	wot#kick_1	-1,20,20,{
+OnTouch:
+	warp "wot_castle", 87, 100;
+	end;
+}
+
+wot_castle,135,134,0,	script	wot#kick_2	-1,20,20,{
+OnTouch:
+	warp "wot_castle", 112, 100;
+	end;
+}
+
+wot_castle,53,44,0	script	wot#kick_3	-1,20,20,{
+OnTouch:
+	warp "wot_castle", 87, 77;
+	end;
+}
+
+wot_castle,145,44,0	script	wot#kick_4	-1,20,20,{
+OnTouch:
+	warp "wot_castle", 112, 77;
+	end;
+}
+
+wot_castle,40,87,0	script	wot#kick_5	-1,20,20,{
+OnTouch:
+	warp "wot_castle", 82, 87;
+	end;
+}
+
+wot_castle,159,88,0	script	wot#kick_6	-1,20,20,{
+OnTouch:
+	warp "wot_castle", 116, 86;
+	end;
+}
+
+wot_castle,99,24,0	script	#wot_exit	WARPNPC,1,1,{
+OnTouch:
+	warp "prontera", 156, 191;
+	end;
+}
+
+// Flags
+wot_castle,94,101,4	script	War of Treasure#flag_1-1	GUILD_FLAG,{
+	mes "^0000FF[War of Treasure]^000000";
+	if( .GID <= 0 )
+		mes "Esta bandeira irá representar o Clã com melhor desempenho na ^FF0000War of Treasure^000000.";
+	else {
+		mes "Esta bandeira representa o Clã com melhor desempenho na ^FF0000War of Treasure^000000.";
+		mes "O Clã ^0000FF" + .Name$ + "^000000 está dominando a ^FF0000War of Teasure^000000.";
+	}
+	close;
+
+OnInit:
+	set .DefaultRuneMode, $@WOT_RuneMode;
+OnWotFlagEmblem:
+	if( .DefaultRuneMode )
+		query_sql "SELECT `w`.`guild_id`, `g`.`name` FROM `wot_rank_guild` AS w, `guild` AS g WHERE `w`.`guild_id`=`g`.`guild_id` ORDER BY `w`.`treasure` DESC, `w`.`runestone` DESC, (`w`.`player_kill`-`w`.`player_death`) DESC, (`w`.`guardian_kill`-`w`.`guardian_death`) DESC LIMIT 1", .@GID, .@Name$;
+	else
+		query_sql "SELECT `w`.`guild_id`, `g`.`name` FROM `wot_rank_guild` AS w, `guild` AS g WHERE `w`.`guild_id`=`g`.`guild_id` ORDER BY `w`.`treasure` DESC, (`w`.`player_kill`-`w`.`player_death`) DESC LIMIT 1", .@GID, .@Name$;
+	set .GID, .@GID;
+	set .Name$, .@Name$;
+	flagemblem .GID;
+	end;
+}
+
+wot_castle,92,73,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-2	GUILD_FLAG
+wot_castle,69,137,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-3	GUILD_FLAG
+wot_castle,141,137,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-4	GUILD_FLAG
+wot_castle,55,50,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-5	GUILD_FLAG
+wot_castle,151,46,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-6	GUILD_FLAG
+wot_castle,38,93,4	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-7	GUILD_FLAG
+wot_castle,161,93,4	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_1-8	GUILD_FLAG
+wot_castle,105,101,4	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-1	GUILD_FLAG
+wot_castle,95,73,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-2	GUILD_FLAG
+wot_castle,69,133,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-3	GUILD_FLAG
+wot_castle,141,133,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-4	GUILD_FLAG
+wot_castle,60,45,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-5	GUILD_FLAG
+wot_castle,151,41,3	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-6	GUILD_FLAG
+wot_castle,42,93,4	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-7	GUILD_FLAG
+wot_castle,157,93,4	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_2-8	GUILD_FLAG
+
+// Event Room Flag
+event_room,115,118,4	duplicate(War of Treasure#flag_1-1)	War of Treasure#flag_3-1	GUILD_FLAG
+
+// Warper NPC
+event_room,115,114,4	script	War of Treasure#warp	4_M_JOB_KNIGHT2,{
+	set .@talk, 0;
+	set .@loop_1,1;
+	while(.@loop_1) {
+		mes "^FF8C00[War of Treasure]^000000";
+		if( !.@talk ) mes "Bem-vindo a ^0000FFGuerra do Tesouro^000000!";
+		mes "Em que posso ajudar?";
+		set .@talk,1;
+		next;
+		switch( select(
+			(getgmlevel()>=$@WOT_GroupID?($@WOT_FLAG?"^FF0000- Desligar Evento.^000000":"^0000FF- Ligar Evento.^000000"):""),
+			($@WOT_FLAG==1?"- Entrar no Evento.":""),
+			($@WOT_Shop_Enable?"^0000FF- Loja WOT.^000000":""),
+			($@WOT_Ranking?"^8A2BE2- Ranking.^000000":""),
+			"^FFA500- Informações.^000000",
+			"^FF0000- Cancelar.^000000"
+		) ) {
+			// Ligar/Desligar Evento
+			case 1:
+				mes "^FF8C00[War of Treasure]^000000";
+				if( $@WOT_FLAG ) {
+					donpcevent "wot#main::OnStopGM";
+					sleep2 2000;
+					if( !$@WOT_FLAG )
+						mes "O Evento foi ^FF0000desligado^000000 com sucesso!";
+					else
+						mes "Houve uma falha ao ^FF0000desligar^000000 o Evento!";
+				}
+				else {
+					donpcevent "wot#main::OnStart";
+					sleep2 2000;
+					if( $@WOT_FLAG )
+						mes "O Evento foi ^0000FFligado^000000 com sucesso!";
+					else
+						mes "Houve uma falha ao ^FF0000ligar^000000 o Evento!";
+				}
+				next;
+				break;
+			// Entrar no Evento
+			case 2:
+				mes "^FF8C00[War of Treasure]^000000";
+				if( $@WOT_BaseLevel && BaseLevel < $@WOT_BaseLevel )
+					mes "Você precisar ter no mínimo ^FF0000Nível " + $@WOT_BaseLevel + " de Base^000000 para entrar no evento.";
+				else if( getcharid(2) <= 0 )
+					mes "É necessário estar em um ^FF0000Clã^000000 para participar do evento.";
+				else if( $@WOT_MaxGuild && countguildmap("wot_castle") >= $@WOT_MaxGuild )
+					mes "Não pode entrar mais Clã no evento por que o ^FF0000limite máximo^000000 já foi alcançado.";
+				else if( $@WOT_MaxPlayer && getmapusers("wot_castle") >= $@WOT_MaxPlayer )
+					mes "O evento está lotado, você pode tentar no próximo.";
+				else {
+					announce "[War of Treasure]: " + strcharinfo(0) + " entrou no evento, boa sorte!", bc_yellow|bc_all;
+					warp "wot_castle", 99, 29;
+					end;
+				}
+				next;
+				set .@loop_1,0;
+				break;
+			// Loja WOT
+			case 3:
+				// Get Points
+				if( atoi($@WOT_Currency$[2]) ) 
+					set .@amount, getd($@WOT_Currency$[0]);
+				else
+					set .@amount, countitem(atoi($@WOT_Currency$[0]));
+					
+				mes "^FF8C00[War of Treasure]^000000";
+				mes "Você possuí ^FF0000" + .@amount + "x " + $@WOT_Currency$[1] + "^000000.";
+				mes "Muito bem, vou abrir a ^0000FFLoja WOT^000000 para você.";
+				close2;
+				announce "A Loja utiliza '" + $@WOT_Currency$[1] + "' como moeda!", bc_self, "0x00ffff";
+				callshop "wot#shop", 1;
+				end;
+			// Ranking WOT
+			case 4:
+				set .@loop_2,1;
+				while(.@loop_2) {
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "O ^0000FFRank exibie os 5 melhores em desempenho^000000.";
+					mes "Por favor, selecione o Ranking que deseja visualizar.";
+					next;
+					switch( select(($@WOT_Ranking&2?"- Rank de Clãs.":""), ($@WOT_Ranking&1?"- Rank de Jogadores.":""), "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						// Rank de Clãs
+						case 1:
+							deletearray .@guild_id;
+							if( .DefaultRuneMode )
+								query_sql "SELECT `w`.`guild_id`, `w`.`treasure`, `w`.`runestone`, `w`.`guardian_kill`, `w`.`guardian_death`, `w`.`player_kill`, `w`.`player_death`, `g`.`name` FROM `wot_rank_guild` AS w, `guild` AS g WHERE `w`.`guild_id`=`g`.`guild_id` ORDER BY `w`.`treasure` DESC, `w`.`runestone` DESC, (`w`.`player_kill`-`w`.`player_death`) DESC, (`w`.`guardian_kill`-`w`.`guardian_death`) DESC LIMIT 5", .@guild_id, .@treasure, .@runestone, .@gkill, .@gdeath, .@pkill, .@pdeath, .@name$;
+							else
+								query_sql "SELECT `w`.`guild_id`, `w`.`treasure`, `w`.`player_kill`, `w`.`player_death`, `g`.`name` FROM `wot_rank_guild` AS w, `guild` AS g WHERE `w`.`guild_id`=`g`.`guild_id` ORDER BY (`w`.`player_kill`-`w`.`player_death`) DESC LIMIT 5", .@guild_id, .@treasure, .@pkill, .@pdeath, .@name$;
+							
+							if( getarraysize(.@guild_id) <= 0 ) {
+								mes "Nenhum Clã está qualificado no ^0000FFRank de Clãs da WOT^000000.";
+								next;
+							}
+							else {
+								for( set .@i, 0; .@i < getarraysize(.@guild_id); set .@i, .@i + 1 ) {
+									mes "^8A2BE2 ~ Rank War of Treasure ~^000000";
+									mes "^0000FFPosição:^000000 " +(.@i+1);
+									mes "^0000FFClã:^000000 " + .@name$[.@i];
+									mes "^0000FFBaús:^000000 " + .@treasure[.@i];
+									if( .DefaultRuneMode ) {
+										mes "^0000FFRunas Guardiãs:^000000 " + .@runestone[.@i];
+										mes "^0000FFEliminação em Guardiões:^000000 " + .@gkill[.@i];
+										mes "^0000FFMortes por Guardiões:^000000 " + .@gdeath[.@i];
+										mes "^0000FFProporção:^000000 " + (.@gkill[.@i]-.@gdeath[.@i]);
+									}
+									mes "^0000FFEliminção em Jogadores:^000000 " + .@pkill[.@i];
+									mes "^0000FFMortes por Jogadores:^000000 " + .@pdeath[.@i];
+									mes "^0000FFProporção:^000000 " + (.@pkill[.@i]-.@pdeath[.@i]);
+									next;
+								}
+							}
+							break;
+						// Rank de Jogadores
+						case 2:
+							deletearray .@char_id;
+							if( .DefaultRuneMode )
+								query_sql "SELECT `w`.`char_id`, `w`.`treasure`, `w`.`runestone`, `w`.`guardian_kill`, `w`.`guardian_death`, `w`.`player_kill`, `w`.`player_death`, `c`.`name`, `g`.`name` FROM `wot_rank_player` AS w, `char` AS c, `guild` AS g WHERE `w`.`char_id`=`c`.`char_id` AND `c`.`guild_id`=`g`.`guild_id` ORDER BY `w`.`treasure` DESC, `w`.`runestone` DESC, (`w`.`player_kill`-`w`.`player_death`) DESC, (`w`.`guardian_kill`-`w`.`guardian_death`) DESC LIMIT 5", .@char_id, .@treasure, .@runestone, .@gkill, .@gdeath, .@pkill, .@pdeath, .@name$, .@gname$;
+							else
+								query_sql "SELECT `w`.`char_id`, `w`.`treasure`, `w`.`player_kill`, `w`.`player_death`, `c`.`name`, `g`.`name` FROM `wot_rank_player` AS w, `char` AS c, `guild` AS g WHERE `w`.`char_id`=`c`.`char_id` AND `c`.`guild_id`=`g`.`guild_id` ORDER BY (`w`.`player_kill`-`w`.`player_death`) DESC LIMIT 5", .@char_id, .@treasure, .@pkill, .@pdeath, .@name$, .@gname$;
+							
+							if( getarraysize(.@char_id) <= 0 ) {
+								mes "Nenhum Jogador está qualificado no ^0000FFRank de Clãs da WOT^000000.";
+								next;
+							}
+							else {
+								for( set .@i, 0; .@i < getarraysize(.@char_id); set .@i, .@i + 1 ) {
+									mes "^8A2BE2 ~ Rank War of Treasure ~^000000";
+									mes "^0000FFPosição:^000000 " +(.@i+1);
+									mes "^0000FFJogador:^000000 " + .@name$[.@i];
+									mes "^0000FFClã:^000000 " + .@gname$[.@i];
+									mes "^0000FFBaús:^000000 " + .@treasure[.@i];
+									if( .DefaultRuneMode ) {
+										mes "^0000FFRunas Guardiãs:^000000 " + .@runestone[.@i];
+										mes "^0000FFEliminação em Guardiões:^000000 " + .@gkill[.@i];
+										mes "^0000FFMortes por Guardiões:^000000 " + .@gdeath[.@i];
+										mes "^0000FFProporção:^000000 " + (.@gkill[.@i]-.@gdeath[.@i]);
+									}
+									mes "^0000FFEliminção em Jogadores:^000000 " + .@pkill[.@i];
+									mes "^0000FFMortes por Jogadores:^000000 " + .@pdeath[.@i];
+									mes "^0000FFProporção:^000000 " + (.@pkill[.@i]-.@pdeath[.@i]);
+									next;
+								}
+							}
+							break;
+						case 3:
+							set .@loop_2,0;
+							break;
+						case 4:
+							set .@loop_1,0;
+							set .@loop_2,0;
+							break;
+					}
+				}
+				break;
+			// Informações
+			case 5:
+				mes "^FF8C00[War of Treasure]^000000";
+				mes "Bem este evento é para os Clãs que desejam testar o desempenho dos seus membros em time!";
+				mes "Preste atenção na explicação que vou te dar, pronto?";
+				next;
+				set .@n, 1;
+				mes "^FF8C00[War of Treasure]^000000";
+				mes .@n + "º Você precisa estar em um ^0000FFClã^000000 para participar, ou caso contrário não irá conseguir entrar no evento.";
+				next;
+				set .@n, .@n + 1;
+				mes "^FF8C00[War of Treasure]^000000";
+				mes .@n + "º Você precisa ter no ^0000FFMínimo Nível " + $@WOT_BaseLevel + " de Base^000000 para entrar no evento.";
+				next;
+				set .@n, .@n + 1;
+				mes "^FF8C00[War of Treasure]^000000";
+				if( $@WOT_MaxGuild ) {
+					mes .@n + "º É necessário no ^0000FFmínimo " + $@WOT_MinGuild + "^000000 Clãs para começar o evento,";
+					mes "e só é permitido o ^0000FFmáximo " + $@WOT_MaxGuild + "^000000 Clãs.";
+				}
+				else
+					mes .@n + "º Também é permitido no ^0000FFmínimo " + $@WOT_MinPlayer + "^000000 jogadores no evento.";
+				next;
+				set .@n, .@n + 1;
+				mes "^FF8C00[War of Treasure]^000000";
+				if( $@WOT_MaxPlayer ) {
+					mes .@n + "º Também é necessário no ^0000FFmínimo " + $@WOT_MinPlayer + "^000000 jogadores para começar o evento,";
+					mes "e só é permitido o ^0000FFmáximo " + $@WOT_MaxPlayer + "^000000 jogadores.";
+				}
+				else if( $@WOT_MinPlayer > 1 )
+					mes .@n + "º Também é permitido no ^0000FFmínimo " + $@WOT_MinPlayer + "^000000 jogadores no evento.";
+				next;
+				set .@n, .@n + 1;
+				if( $@WOT_RuneMode ) {
+					mes "^FF8C00[War of Treasure]^000000";
+					mes .@n + "º O Evento segue ^0000FF4 etapas^000000.";
+					mes "Vou estar explicando as etapas para você, mais resumindo:";
+					mes "^FF0000 1ª Etapa:^000000 GvG.";
+					mes "^FF0000 2ª Etapa:^000000 Runas Guardiãs.";
+					mes "^FF0000 3ª Etapa:^000000 GvG.";
+					mes "^FF0000 4ª Etapa:^000000 Baús do Tesouro.";
+					next;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "A 1ª e 3ª etapa os Clãs devem se enfrentar como em um GvG.";
+					next;
+					mes "^FF8C00[War of Treasure]^000000";
+					if( $@WOT_RuneGvGOff ) {
+						mes "A 2ª etapa os Clãs devem se aliar para eliminar as ^0000FFRunas Guardiãs^000000 que impede que os Tesouros sejam invocado.";
+						mes "Nesse período o ^FF0000GvG^000000 estará desligado.";
+					}
+					else
+						mes "A 2ª etapa os Clãs devem eliminar as ^0000FFRunas Guardiãs^000000 que impede que os Tesouros sejam invocados.";
+					next;
+					if( $@WOT_RuneReward_Enable ) {
+						mes "^FF8C00[War of Treasure]^000000";
+						mes "As Runas irã recompensar o jogador que a eliminar.";
+						next;
+					}
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "Existe ^0000FFseis portais^000000 no mapa, que levaram a uma sala invocação.";
+					mes "Mais sempre esteja atento, apenas dois portais levam a Runa Guardiãs.";
+					next;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "Os outros ^FF0000quatro portais^000000 te levam a uma emboscada com dois Guardiões.";
+					mes "Você só conseguirá sair daquela sala caso as Runas Guardiãs sejam eliminadas ou os Guardiões.";
+					next;
+					if( $@WOT_GuardReward_Enable ) {
+						mes "^FF8C00[War of Treasure]^000000";
+						mes "Os Guardiões de Emboscada irão recompensar o jogador que o eliminar.";
+						next;
+					}
+					set .@half, $@WOT_GvGBattleTimer/2;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "Neste caso o ^0000FFtempo de GvG^000000 é divido em duas etapas (dois tempos) de ^0000FF" + .@half + " minuto(s)^000000.";
+					next;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "Por fim, a 4ª e última etapa é a invocação dos ^0000FFBaús do Tesouro^000000,";
+					if( $@WOT_Treasure_Skills )
+						mes "a GvG sempre estará ligada.";
+					else
+						mes "a GvG sempre estará ligada e habilidades bloqueadas.";
+				}
+				else {
+					mes "^FF8C00[War of Treasure]^000000";
+					mes .@n + "º O Evento segue ^0000FF2 etapas^000000.";
+					mes "Vou estar explicando as etapas para você, mais resumindo:";
+					mes "^FF0000 1ª Etapa:^000000 GvG.";
+					mes "^FF0000 2ª Etapa:^000000 Baús do Tesouro.";
+					next;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "A 1ª etapa os Clãs devem se enfrentar como em um GvG por ^0000FF" + $@WOT_GvGBattleTimer + " minuto(s)^000000.";
+					next;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes "E a 2ª e última etapa é a invocação dos ^0000FFBaús do Tesouro^000000,";
+					if( $@WOT_Treasure_Skills )
+						mes "a GvG sempre estará ligada e habilidades bloqueadas.";
+					else
+						mes "a GvG sempre estará ligada.";
+				}
+				next;
+				if( $@WOT_TreasureReward_Enable ) {
+					set .@n, .@n + 1;
+					mes "^FF8C00[War of Treasure]^000000";
+					mes .@n + "º Cada ^0000FFBaú eliminado^000000 irá te recompensar.";
+					next;
+				}
+				mes "^FF8C00[War of Treasure]^000000";
+				mes "Espero que tenha entendido tudo, agora é só participar!";
+				next;
+				break;
+			// Cancelar
+			default:
+				set .@loop_1,0;
+				break;
+		}
+	}
+	mes "^FF8C00[War of Treasure]^000000";
+	mes "Tudo bem, volte se precisar de algo!";
+	close;
+
+OnWotOn:
+	waitingroom "Aberto Evento", 0;
+	end;
+	
+OnWotOff:
+	delwaitingroom;
+	end;
+	
+OnInit:
+	set .DefaultRuneMode, $@WOT_RuneMode;
+	end;
+}
+
+// Loja WOT
+-	pointshop	wot#shop	FAKE_NPC,WOT_POINTS,501:1,502:2
+
+// Functions
+// Insert Values Wot Ranking
+//	callfunc "set_wot_rank", <char_id>, <guild_id>, <type>, <value>;
+function	script	set_wot_rank	{
+	if( getarg(0) <= 0 && getarg(1) <= 0 )
+		return;
+	
+	if( getarg(0) > 0 ) {
+		query_sql "SELECT COUNT(*) FROM `wot_rank_player` WHERE `char_id`='" + getarg(0) + "'", .@countp;
+		if( .@countp <= 0 )
+			query_sql "INSERT INTO `wot_rank_guild` (`char_id`) VALUES (" + getarg(0)+ ")";
+	}
+	
+	if( getarg(1) > 0 ) {
+		query_sql "SELECT COUNT(*) FROM `wot_rank_guild` WHERE `guild_id`='" + getarg(1) + "'", .@countg;
+		if( .@countg <= 0 )
+			query_sql "INSERT INTO `wot_rank_guild` (`guild_id`) VALUES (" + getarg(1)+ ")";
+	}
+	
+	// Switch Type
+	switch(getarg(2))
+	{
+		// Treasure chests broken
+		case 0:
+			if( getarg(0) > 0 ) query_sql "UPDATE `wot_rank_player` SET `treasure`=`treasure`+'" + getarg(3) + "' WHERE `char_id`='" + getarg(0) + "'";
+			if( getarg(1) > 0 ) query_sql "UPDATE `wot_rank_guild` SET `treasure`=`treasure`+'" + getarg(3) + "' WHERE `guild_id`='" + getarg(1) + "'";
+			break;
+		// Rune Stones broken
+		case 1:
+			if( getarg(0) > 0 ) query_sql "UPDATE `wot_rank_player` SET `runestone`=`runestone`+'" + getarg(3) + "' WHERE `char_id`='" + getarg(0) + "'";
+			if( getarg(1) > 0 ) query_sql "UPDATE `wot_rank_guild` SET `runestone`=`runestone`+'" + getarg(3) + "' WHERE `guild_id`='" + getarg(1) + "'";
+			break;
+		// Ambush Guardian Kill
+		case 2:
+			if( getarg(0) > 0 ) query_sql "UPDATE `wot_rank_player` SET `guardian_kill`=`guardian_kill`+'" + getarg(3) + "' WHERE `char_id`='" + getarg(0) + "'";
+			if( getarg(1) > 0 ) query_sql "UPDATE `wot_rank_guild` SET `guardian_kill`=`guardian_kill`+'" + getarg(3) + "' WHERE `guild_id`='" + getarg(1) + "'";
+			break;
+		// Ambush Guardian Death
+		case 3:
+			if( getarg(0) > 0 ) query_sql "UPDATE `wot_rank_player` SET `guardian_death`=`guardian_death`+'" + getarg(3) + "' WHERE `char_id`='" + getarg(0) + "'";
+			if( getarg(1) > 0 ) query_sql "UPDATE `wot_rank_guild` SET `guardian_death`=`guardian_death`+'" + getarg(3) + "' WHERE `guild_id`='" + getarg(1) + "'";
+			break;
+		// Player Kill
+		case 4:
+			if( getarg(0) > 0 ) query_sql "UPDATE `wot_rank_player` SET `player_kill`=`player_kill`+'" + getarg(3) + "' WHERE `char_id`='" + getarg(0) + "'";
+			if( getarg(1) > 0 ) query_sql "UPDATE `wot_rank_guild` SET `player_kill`=`player_kill`+'" + getarg(3) + "' WHERE `guild_id`='" + getarg(1) + "'";
+			break;
+		// Player Death
+		case 5:
+			if( getarg(0) > 0 ) query_sql "UPDATE `wot_rank_player` SET `player_death`=`player_death`+'" + getarg(3) + "' WHERE `char_id`='" + getarg(0) + "'";
+			if( getarg(1) > 0 ) query_sql "UPDATE `wot_rank_guild` SET `player_death`=`player_death`+'" + getarg(3) + "' WHERE `guild_id`='" + getarg(1) + "'";
+			break;
+		default:
+			break;
+	}
+	return;
+}
+
+// MapFlags
+wot_castle	mapflag	nowarp
+wot_castle	mapflag	nowarpto
+wot_castle	mapflag	nosave
+wot_castle	mapflag	noreturn
+wot_castle	mapflag	noteleport
+wot_castle	mapflag	nomemo
+wot_castle	mapflag	monster_noteleport

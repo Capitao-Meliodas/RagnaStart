@@ -1,0 +1,107 @@
+// Guild Flag (Outside Castle)
+//============================================================
+-	script	Arima#1::OutsideFlagsG5	722,{
+
+	set .@GID, GetCastleData("gefg_cas05",1);
+
+	if (.@GID == 0) {
+		mes " [ Decreto do Reino de Midgard ]";
+		mes " ";
+		mes "1. Conforme o pacto do Reino de Midgard e o Feudo de Luina, declaro que este Castelo não possui um Senhor.";
+		mes " ";
+		mes "2. Aquele que superar terríveis desafios e destruir o Emperium, receberá a posse do castelo com o apoio do nosso rei.";
+		close;
+	}
+	if (getcharid(2) == .@GID) {
+		mes "[ Echoing Voice ]";
+		mes "Bravo guerreiro...";
+		mes "Você deseja retornar ao seu lugar de honra?";
+		next;
+		if(select("Retornar para o castelo do Clã.:Sair.") == 1) {
+			close2;
+			if (getcharid(2) == GetCastleData("gefg_cas05",1)) {
+				warp "gefg_cas05",168,31;
+				end;
+			}
+			end;
+		}
+		close;
+	}
+	mes "[ Decreto do Reino de Midgard ]";
+	mes " ";
+	mes "1. Seguindo o decreto do Reino de Midgard.";
+	mes "Nós declaramos que esse castelo pertence ao clã ^ff0000"+GetGuildName(.@GID)+"^000000.";
+	mes " ";
+	mes "2. O líder do clã ^ff0000"+GetGuildName(.@GID)+"^000000 se chama";
+	mes "^ff0000"+GetGuildMaster(.@GID)+"^000000";
+  	mes "Se alguém se opõe a esse decreto, que prove sua força e honra com uma espada em suas mãos.";
+	close;
+
+OnRecvCastleG05:
+	FlagEmblem GetCastleData("gefg_cas05",1);
+	end;
+}
+
+gef_fild13,302,87,7	duplicate(OutsideFlagsG5)	Arima#1-2	722
+gef_fild13,313,83,0	duplicate(OutsideFlagsG5)	Arima#2	722
+gef_fild13,252,51,2	duplicate(OutsideFlagsG5)	Arima#3	722
+gef_fild13,26,147,2	duplicate(OutsideFlagsG5)	Arima#4	722
+
+// Bandeira da guilda (dentro do castelo)
+//============================================================
+-	script	Arima#5::InsideFlagsG5	722,{
+	end;
+
+OnRecvCastleG05:
+	FlagEmblem GetCastleData("gefg_cas05",1);
+	end;
+}
+
+gefg_cas05,77,185,7	duplicate(InsideFlagsG5)	Arima#5-2	722
+gefg_cas05,92,181,0	duplicate(InsideFlagsG5)	Arima#6	722
+gefg_cas05,83,158,1	duplicate(InsideFlagsG5)	Arima#7	722
+gefg_cas05,62,144,7	duplicate(InsideFlagsG5)	Arima#8	722
+gefg_cas05,62,66,4	duplicate(InsideFlagsG5)	Arima#9	722
+gefg_cas05,69,66,4	duplicate(InsideFlagsG5)	Arima#10	722
+
+// Bandeira da guilda (cidade)
+//============================================================
+geffen,131,123,6	duplicate(InsideFlagsG5)	Arima#11	722
+
+// Funcionaria Kafra
+//============================================================
+gefg_cas05,61,52,5	duplicate(guildkafra)	Funcionaria Kafra#gefg_cas05	117
+
+// Mordomo
+//============================================================
+gefg_cas05,70,52,3	duplicate(cm)	Byohre#gefg_cas05	55
+
+// Saída do quarto do tesouro
+//============================================================
+gefg_cas05,149,107,0	script	#lever_G05	111,{
+	mes " ";
+	mes "Há uma pequena alavanca. Você vai puxar";
+	next;
+	if(select("Sim.:Não.") == 1) {
+		close2;
+		warp "gefg_cas05",70,53;
+		end;
+	}
+	close;
+}
+
+// Calabouço da Guilda
+//============================================================
+gefg_cas05,65,22,0	duplicate(gdlever)	#gefg_cas05	111
+
+// Gerador de baus do Tesouro
+//============================================================
+gefg_cas05,144,110,0	duplicate(Gld_Trea_Spawn)	Tesouro#gefg_cas05	-1
+
+// Gerente de agit
+//============================================================
+gefg_cas05,194,184,0	duplicate(Gld_Agit_Manager)	Agit#gefg_cas05	-1
+
+// Guardiões
+//============================================================
+gefg_cas05,70,52,3	duplicate(Gld_Guard_Template)	Guardian#gefg_cas05	-1

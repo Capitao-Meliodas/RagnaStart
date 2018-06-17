@@ -1,0 +1,147 @@
+y_airport,143,43,5	script	Equipe do Dirigível#y_air1a::y_airport1	90,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao Aeroporto de Juno, onde oferecemos voos domésticos para Einbroch, Lighthalzen e Hugel,";
+	mes "e voos internacionais para Izlude e Rachel.";
+	mes "Como posso ser útil?";
+	next;
+	if (select("Embarcar no Dirigível:Cancelar.") == 1) {
+		mes "[Equipe do Dirigível]";
+		mes "A taxa de embarque para todos";
+		mes "os voos é de 1.200 zeny. Se você";
+		mes "usar um Ticket Gratuito para Dirigível,";
+		mes "a taxa de embarque será dispensada. Então, você gostaria de partir?";
+		next;
+		if (select("Sim:Não") == 1) {
+			if (countitem(7311) > 0) {
+				delitem 7311,1; //Free_Flying_Ship_Ticket
+				warp "y_airport",148,51;
+				end;
+			}
+			if (Zeny >= 1200) {
+				set Zeny, Zeny - 1200;
+				warp "y_airport",148,51;
+				end;
+			}
+			mes "[Equipe do Dirigível]";
+			mes "Me desculpe, mas você não";
+			mes "tem 1,200 zeny para pagar";
+			mes "a taxa de embarque.";
+			close;
+		}
+	}
+	mes "[Equipe do Dirigível]";
+	mes "Obrigado e";
+	mes "Tenha um bom dia~";
+	close;
+}
+
+y_airport,158,43,5	duplicate(y_airport1)	Equipe do Dirigível#y_air1b	90
+y_airport,126,43,5	duplicate(y_airport1)	Equipe do Dirigível#y_air1c	90
+
+y_airport,143,49,3	script	Equipe de Recepção#y_air2a::y_airport2	90,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao aeroporto de Juno. Se você acabou de chegar do";
+	mes "seu vôo, deixe-me guiá-lo para o terminal principal. Caso contrário, por favor";
+	mes "embarque no Dirigível para ir ao destino pretendido.";
+	next;
+	if (select("Exit to main terminal:Cancel") == 1) {
+		mes "[Equipe do Dirigível]";
+		mes "Uma vez no terminal principal, você terá que pagar a taxa novamente";
+		mes "para embarcar no Dirigível. Você só deve sair se a cidade de";
+		mes "Juno for seu destino final. Deseja";
+		mes "sair para o terminal principal?";
+		next;
+		if (select("Sim:Não") == 1) {
+			warp "y_airport",142,40;
+			end;
+		}
+	}
+	mes "[Equipe do Dirigível]";
+	mes "Certo, obrigado";
+	mes "pelo seu apoio,";
+	mes "e espero que você tenha";
+	mes "um voo agradável~";
+	close;
+}
+
+y_airport,126,51,3	duplicate(y_airport2)	Equipe de Recepção#y_air2b	90
+y_airport,158,50,3	duplicate(y_airport2)	Equipe de Recepção#y_air2c	90
+
+y_airport,145,63,5	script	Voos Domésticos	91,{
+	mes "[Equipe de Embarque]";
+	mes "Você gostaria de embarcar no";
+	mes "Dirigível que vai para Einbroch,";
+	mes "Lighthalzen e Hugel? Se assim desejar,";
+	mes "deixe-me guiá-lo até a";
+	mes "área de embarque do Dirigível.";
+	next;
+	if (select("Sim:Não") == 1) {
+		warp "yuno",59,244;
+		end;
+	}
+	mes "[Equipe de Embarque]";
+	mes "Muito bem, então.";
+	mes "Obrigado pelo seu";
+	mes "patrocínio, e espero que";
+	mes "você aproveite a sua viagem~";
+	close;
+}
+
+y_airport,140,63,5	script	Voos Internacionais	91,{
+	mes "[Equipe de Embarque]";
+	mes "Você gostaria de embarcar no";
+	mes "Dirigível que vai para";
+	mes "Juno, Izlude e Rachel?";
+	mes "Se assim desejar, deixe-me guiá-lo até";
+	mes "a área de embarque do Dirigível.";
+	next;
+	if (select("Sim:Não") == 1) {
+		warp "yuno",47,244;
+		end;
+	}
+	mes "[Equipe de Embarque]";
+	mes "Tudo bem, então.";
+	mes "Obrigado por voar";
+	mes "conosco, e espero que você";
+	mes "aproveite a sua viagem";
+	mes "em nosso Dirigíveis.";
+	close;
+}
+
+yuno,14,262,5	script	Equipe do Dirigível#yuno01	91,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao aeroporto de Juno.";
+	mes "Por favor, use esta porta para";
+	mes "embarcar no Dirigível que irá";
+	mes "voar todo o caminho até Izlude";
+	mes "no Reino Rune-Midgarts,";
+	mes "e para Rachel na República de";
+	mes "Arunafeltz.";
+	next;
+	mes "[Equipe do Dirigível]";
+	mes "Caso contrário, se Juno é";
+	mes "o seu destino pretendido,";
+	mes "por favor, desça as escadas e";
+	mes "peça a Equipe de Recepção para";
+	mes "levá-lo até o terminal principal. Obrigado,";
+	mes "e aproveite sua viagem.";
+	close;
+}
+
+yuno,88,263,3	script	Equipe do Dirigível#yuno02	91,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao aeroporto de Juno.";
+	mes "Por favor, use esta porta para";
+	mes "embarcar no Dirigível que irá";
+	mes "para Einbroch, Lighthalzen e";
+	mes "Hugel na República de Schwaltzvalt.";
+	next;
+	mes "[Equipe do Dirigível]";
+	mes "Caso contrário, se Juno é";
+	mes "o seu destino pretendido,";
+	mes "por favor, desça as escadas e";
+	mes "peça a Equipe de Recepção para";
+	mes "levá-lo até o terminal principal. Obrigado,";
+	mes "e aproveite sua viagem.";
+	close;
+}

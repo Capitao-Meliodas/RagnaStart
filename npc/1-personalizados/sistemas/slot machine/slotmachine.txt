@@ -1,0 +1,155 @@
+/* ----------------- *
+ * Script por Wynn~
+ * ----------------- */
+
+-	script	Caça Níqueis#1::SL1	563,{
+if (.u && !.multi) { mes .name$; mes "Esta máquina ja está em uso"; close; }
+	/*--------------------*
+	 *       CONFS~       *
+	 *--------------------*/
+	set .name$, "^2448b0[Caça Níqueis]^000000";
+	set .bet, 1;                           // 1 - Aposta em moedas | 0 - Aposta em Zeny
+	set .prize, 1;                         // 1 - Prêmio em moedas | 0 - Premio em Zeny
+	set .minbet, 1;                        // Minimo valor a ser apostado
+	set .maxbet, 10;                       // Valor máximo a ser apostado
+	set .multi, 0;                         // Várias pessoas podem usar a máquina ao mesmo tempo? 1 - Sim | 0 - Não
+	/*------------------------------------------------*
+	 * Estas duas arrays só funcionam se .bet for 1   *
+	 * ou se .bet e .prize tiverem valores diferentes.*
+	 * É a quantidade de prêmio em zeny correspondente*
+	 * a cada moeda e vice versa                      *
+	 *------------------------------------------------*/
+	setarray .itens[1], 673, 675, 671;     // Id das moedas
+	setarray .zprize[1], 500, 1000, 2500;  // Valor correspondente em zeny
+	/*--------------------*
+	 *       SCRIPT       *
+	 *--------------------*/
+	 if (!.multi) { set .u, 1; getmapxy(.@m,.x,.y,0); attachnpctimer; initnpctimer; }
+	set .@swt, .bet+.prize*10;
+	switch(.@swt) {
+	case 1:
+	case 11:
+		mes .name$; mes "Insira uma moeda:"; next;
+		set .@menu$, "Cancelar";
+		for( set .@i, 1; .@i <= getarraysize(.itens); set .@i, .@i +1 ) { if (getd(".itens["+.@i+"]") != 0) {set .@menu$, .@menu$+":"+getitemname(getd(".itens["+.@i+"]"));} }
+		set .@m, prompt(.@menu$)-1;
+		if (.@m == 0) { set .u, 0; close; }
+		else if (.@m == 254) { set .u, 0; end; }
+		set .@betnum, 1;
+		while (.maxbet != 1 && .maxbet) {
+		mes .name$; mes "Quantas "+getitemname(getd(".itens["+.@m+"]"))+" Você gostaria de apostar? ^b0245c(de "+.minbet+" a "+.maxbet+")^000000"; next;
+		if (input(.@betnum, .minbet, .maxbet)) { mes .name$; mes "Você não pode apostar essa quantidade de moedas."; next; continue; }
+		break;
+		}
+		if (countitem(getd(".itens["+.@m+"]")) < .@betnum) { next; mes .name$; mes "Você não tem moedas o suficiente."; set .u, 0; close; }
+		delitem getd(".itens["+.@m+"]"), .@betnum;
+		break;
+		
+	case 0:
+		while(1){
+		mes .name$; mes "Quanto você gostaria de apostar? ^b0245c(de "+.minbet+" a "+.maxbet+" zeny)^000000"; next;
+		if (input(.@betnum, .minbet, .maxbet)) { mes .name$; mes "Você não pode apostar essa quantidade de Zeny."; next; continue; }
+		if (.@betnum > Zeny) { mes .name$; mes "Você não tem zeny o suficiente."; set .u, 0; close; }
+		set Zeny, Zeny-.@betnum;
+		break;
+		}
+		break;
+		
+	case 10:
+		mes .name$; mes "Quanto você gostaria de apostar?"; next; 
+		set .@menu$, "Cancelar";
+		for( set .@i, 1; .@i <= getarraysize(.zprize); set .@i, .@i +1 ) { if (getd(".zprize["+.@i+"]") != 0) {set .@menu$, .@menu$+":"+getitemname(getd(".itens["+.@i+"]"))+" - "+getd(".zprize["+.@i+"]")+"z";} }
+		set .@m, prompt(.@menu$)-1;
+		if (.@m == 0) { set .u, 0; close; }
+		else if (.@m == 254) { set .u, 0; end; }
+		set .@betnum, 1;
+		while (.maxbet != 1 && .maxbet) {
+		mes .name$; mes "Quantas vezes você gostaria de apostar? ^b0245c(de "+.minbet+" a "+.maxbet+" vezes)^000000"; next;
+		if (input(.@betnum, .minbet, .maxbet)) { mes .name$; mes "Você não pode apostar essa quantidade de Zeny."; next; continue; }
+		break;
+		}
+		set .@m2, .@m*.@betnum;
+		if (getd(".zprize["+.@m2+"]") > Zeny ) { mes .name$; mes "Você não tem Zeny suficiente."; set .u, 0; close; }
+		set Zeny, Zeny-getd(".zprize["+.@m2+"]");
+		break;
+	
+	default: mes .name$; mes "Errr.. errr. Error."; set .u, 0; close;
+	}
+
+	close2;
+	pcblockmove getcharid(3),1;
+	set .@c, rand(1,4)*4; set .@c, .@c+13;
+	if ( .@c == 17 ) set .@res$, "m";
+	else if ( .@c == 21 ) set .@res$, "c";
+	else if ( .@c == 25 ) set .@res$, "s";
+	else if ( .@c == 29 ) set .@res$, "l";
+	for( set .@i, 1; .@i <= 30; set .@i, .@i +1 ) { cutin "fm_"+.@i,4; sleep2 10; if(.@i == 29 && .@r < 3) { set.@i, 14; set .@r, .@r+1; continue; } else if (.@i == 29 && .@r == 3) { break; } }
+	sleep2 10;
+	for( set .@i, 14; .@i <= .@c; set .@i, .@i +1 ) { cutin "fm_"+.@i,4; sleep2 10; }
+	sleep2 100;
+	while (.@a2 == 0) {
+	if ( .@a1 == 0 ) set .@st$, "a";
+	else set .@st$, "b";
+	set .@c, rand(1,4)*4;
+	for( set .@i, 1; .@i <= 17; set .@i, .@i +1 ) { cutin "fm_"+.@res$+.@a1+.@a2+.@a3+.@st$+.@i,4; sleep2 10; if(.@i == 16 && .@r < 3) { set.@i, 1; set .@r, .@r+1; continue; } else if (.@i == 16 && .@r == 3) { break; } }
+	for( set .@i, 1; .@i <= .@c; set .@i, .@i +1 ) { cutin "fm_"+.@res$+.@a1+.@a2+.@a3+.@st$+.@i,4; sleep2 10;}
+	//Limão
+	if (.@a1 == 0 && .@res$ == "l"){ if ( .@c == 4) {set .@a1, 4;} else if (.@c == 8) {set .@a1, 1;} else if (.@c == 8) {set .@a1, 2;} else if (.@c == 16) {set .@a1, 3;} }
+	else if (.@a2 == 0 && .@res$ == "l"){ if (.@c == 4) {set .@a2, 3;} else if (.@c == 8) {set .@a2, 4;} else if (.@c == 8) {set .@a2, 1;} else if (.@c == 16) {set .@a2, 2;} }
+	//7
+	if (.@a1 == 0 && .@res$ == "s"){ if ( .@c == 4) {set .@a1, 3;} else if (.@c == 8) {set .@a1, 4;} else if (.@c == 8) {set .@a1, 1;} else if (.@c == 16) {set .@a1, 2;} }	
+	else if (.@a2 == 0 && .@res$ == "s"){ if (.@c == 4) {set .@a2, 2;} else if (.@c == 8) {set .@a2, 3;} else if (.@c == 8) {set .@a2, 4;} else if (.@c == 16) {set .@a2, 1;} }
+	//Cereja
+	if (.@a1 == 0 && .@res$ == "c"){ if ( .@c == 4) {set .@a1, 2;} else if (.@c == 8) {set .@a1, 3;} else if (.@c == 8) {set .@a1, 4;} else if (.@c == 16) {set .@a1, 1;} }	
+	else if (.@a2 == 0 && .@res$ == "c"){ if (.@c == 4) {set .@a2, 1;} else if (.@c == 8) {set .@a2, 2;} else if (.@c == 8) {set .@a2, 3;} else if (.@c == 16) {set .@a2, 4;} }
+	//Maçã
+	if (.@a1 == 0 && .@res$ == "m"){ if ( .@c == 4) {set .@a1, 1;} else if (.@c == 8) {set .@a1, 2;} else if (.@c == 8) {set .@a1, 3;} else if (.@c == 16) {set .@a1, 4;} }	
+	else if (.@a2 == 0 && .@res$ == "m"){ if (.@c == 4) {set .@a2, 4;} else if (.@c == 8) {set .@a2, 1;} else if (.@c == 8) {set .@a2, 2;} else if (.@c == 16) {set .@a2, 3;} }
+	continue;
+	}
+	set .@st$, "c";
+	set .@c, rand(1,4)*4;
+	if ( .@res$ == "s" ) set .@k, 13;
+	else if ( .@res$ == "l" ) set .@k, 1;
+	else if ( .@res$ == "c" ) set .@k, 9;
+	else if ( .@res$ == "m" ) set .@k, 5;
+	for( set .@i, .@k; .@i <= 17; set .@i, .@i +1 ) { cutin "fm_"+.@a1+.@a2+.@a3+.@st$+.@i,4; sleep2 10; if(.@i == 16 && .@r < 4) { set.@i, 1; set .@r, .@r+1; continue; } else if (.@i == 16 && .@r == 4) { break; } }
+	for( set .@i, 1; .@i <= .@c; set .@i, .@i +1 ) { cutin "fm_"+.@a1+.@a2+.@a3+.@st$+.@i,4; sleep2 10; }
+	if (.@c == 4) set .@a3, 2;
+	else if (.@c == 8) set .@a3, 3;
+	else if (.@c == 12) set .@a3, 4;
+	else if (.@c == 16) set .@a3, 1;
+	if ( .@a1 == .@a2 && .@a1 == .@a3 ) {
+		if ( .@a1 == 1 ) set .@win, 10;
+		else if ( .@a1 == 2 ) set .@win, 4;
+		else if ( .@a1 == 3 ) set .@win, 2;
+		else if ( .@a1 == 4 ) set .@win, 6;
+		mes .name$;
+		mes "Parabéns, você venceu!";
+		if (.prize && .bet || .prize && !.bet) getitem getd(".itens["+.@m+"]"), .@betnum*.@win;
+		if (!.prize && .bet) { set .@n, getd(".zprize["+.@m+"]")*.@betnum; set .@n, .@n*.@win; set Zeny, Zeny+.@n;}
+		if (!.prize && !.bet) set Zeny, Zeny+.@betnum*.@win;
+	}
+	else {
+		mes .name$;
+		mes "Você perdeu.";
+	}
+	pcblockmove getcharid(3),0;
+	close2;
+	set .u, 0;
+	cutin "",255;
+	end;
+
+OnTimer1000:
+//npctalk " !!! "+playerattached();
+stopnpctimer;
+if(playerattached() && .u) { 
+getmapxy(.@m,.@x,.@y,0);
+if (.@x != .x || .@y != .y || !isloggedin(playerattached())) { set .u, 0; end; }
+}
+if(!playerattached() || !.u) { set .u, 0; end; }
+setnpctimer 0; attachnpctimer; startnpctimer; end;
+}
+
+//Duplicatas~
+prontera,191,146,1	duplicate(SL1)	Caça Níqueis#2	563

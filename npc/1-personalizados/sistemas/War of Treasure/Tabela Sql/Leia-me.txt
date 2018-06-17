@@ -1,0 +1,1 @@
+Tabela é necessária apenas para a versao 2.1 em diante.

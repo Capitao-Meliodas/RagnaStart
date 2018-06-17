@@ -1,0 +1,24 @@
+hugel,178,142,0	script	toairplane#hugel	45,1,1,{
+	end;
+OnTouch:
+	mes "Para usar o Dirigível, você precisa pagar 1.200 zeny ou um Ticket Gratuito para Dirigível.";
+	mes "Você gostaria de embarcar no Dirigível?";
+	next;
+	if (select("Sim:Não") == 1) {
+		if (countitem(7311) > 0) {
+			delitem 7311,1; //Free_Flying_Ship_Ticket
+			warp "airplane",244,58;
+			end;
+		}
+		if (Zeny >= 1200) {
+			set Zeny, Zeny - 1200;
+			warp "airplane",244,58;
+			end;
+		}
+		mes "Me desculpe, mas você não tem zeny suficiente.";
+		mes "Lembre-se, você precisa pagar 1.200 zeny para usar o Dirigível.";
+		close;
+	}
+	mes "Obrigado, e volte sempre.";
+	close;
+}

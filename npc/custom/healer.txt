@@ -1,0 +1,87 @@
+//===== rAthena Script =======================================
+//= Healer
+//===== By: ==================================================
+//= Euphy
+//= Traduzido por: Brenoma
+//===== Current Version: =====================================
+//= 1.1
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Basic healer script.
+//===== Additional Comments: =================================
+//= 1.0 Initial script.
+//= 1.1 Aligned coordinates with @go.
+//============================================================
+
+-	script	Curandeira	-1,{
+
+	.@Price = 0;	// Zeny necessário para a cura
+	.@Buffs = 1;	// Buffar jogadores? (1: sim / 0: não)
+	.@Delay = 0;	// Atraso, em segundos
+
+	if (@HD > gettimetick(2))
+		end;
+	if (.@Price) {
+		message strcharinfo(0), "Curar custa " + callfunc("F_InsertComma",.@Price) + " Zenys.";
+		if (Zeny < .@Price)
+			end;
+		if (select("^0055FFCurar^000000:^777777Cancelar^000000") == 2)
+			end;
+		Zeny -= .@Price;
+	}
+	specialeffect2 EF_HEAL2;
+	percentheal 100,100;
+	if (.@Buffs) {
+		specialeffect2 EF_INCAGILITY;
+		sc_start SC_INCREASEAGI,240000,10;
+		specialeffect2 EF_BLESSING;
+		sc_start SC_BLESSING,240000,10;
+	}
+	if (.@Delay)
+		@HD = gettimetick(2) + .@Delay;
+	end;
+}
+
+
+// Duplicates
+//============================================================
+alberta,25,240,6	duplicate(Curandeira)	Curandeira#alb	520
+aldebaran,135,118,6	duplicate(Curandeira)	Curandeira#alde	520
+amatsu,200,79,4	duplicate(Curandeira)	Curandeira#ama	520
+ayothaya,207,169,6	duplicate(Curandeira)	Curandeira#ayo	520
+comodo,184,158,6	duplicate(Curandeira)	Curandeira#com	520
+einbech,57,36,6	duplicate(Curandeira)	Curandeira#einbe	520
+einbroch,57,202,6	duplicate(Curandeira)	Curandeira#einbr	520
+geffen,115,72,6	duplicate(Curandeira)	Curandeira#gef	520
+gonryun,156,122,6	duplicate(Curandeira)	Curandeira#gon	520
+hugel,89,150,6	duplicate(Curandeira)	Curandeira#hug	520
+izlude,121,150,6	duplicate(Curandeira)	Curandeira#izl	520	//Pre-RE: (125,118)
+jawaii,250,139,4	duplicate(Curandeira)	Curandeira#jaw	520
+lighthalzen,152,100,6	duplicate(Curandeira)	Curandeira#lhz	520
+louyang,226,103,4	duplicate(Curandeira)	Curandeira#lou	520
+manuk,272,144,6	duplicate(Curandeira)	Curandeira#man	520
+mid_camp,203,289,6	duplicate(Curandeira)	Curandeira#mid	520
+moc_ruins,72,164,4	duplicate(Curandeira)	Curandeira#moc	520
+morocc,153,97,6	duplicate(Curandeira)	Curandeira#mor	520
+moscovia,220,191,4	duplicate(Curandeira)	Curandeira#mos	520
+niflheim,212,182,5	duplicate(Curandeira)	Curandeira#nif	520
+payon,179,106,4	duplicate(Curandeira)	Curandeira#pay	520
+prontera,162,193,4	duplicate(Curandeira)	Curandeira#prt	520
+rachel,125,116,6	duplicate(Curandeira)	Curandeira#rac	520
+splendide,201,153,4	duplicate(Curandeira)	Curandeira#spl	520
+thor_camp,249,74,4	duplicate(Curandeira)	Curandeira#thor	520
+umbala,105,148,3	duplicate(Curandeira)	Curandeira#umb	520
+veins,217,121,4	duplicate(Curandeira)	Curandeira#ve	520
+xmas,143,136,4	duplicate(Curandeira)	Curandeira#xmas	520
+yuno,164,45,4	duplicate(Curandeira)	Curandeira#yuno	520
+
+// Duplicates (Renewal)
+//============================================================
+brasilis,194,221,6	duplicate(Curandeira)	Curandeira#bra	909
+dewata,195,187,4	duplicate(Curandeira)	Curandeira#dew	909
+dicastes01,201,194,4	duplicate(Curandeira)	Curandeira#dic	909
+ecl_in01,45,60,4	duplicate(Curandeira)	Curandeira#ecl	909
+malangdo,132,114,6	duplicate(Curandeira)	Curandeira#mal	909
+malaya,227,204,6	duplicate(Curandeira)	Curandeira#ma	909
+mora,55,152,4	duplicate(Curandeira)	Curandeira#mora	909

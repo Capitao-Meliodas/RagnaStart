@@ -1,0 +1,492 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Gerenciador e Controlador VIP.   					            .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Gerencia contas VIP's e Controla o tmepo em duas formas:         .
+  .		- 1: Computa o tempo vip por contas off/on-line.                .
+  .     - 2: Computa o tempo vip por contas on-line.                    .
+  .---------------------------------------------------------------------.
+  . Changelog:                                                          .
+  .		* 1.0 [sbk_]                                                    .
+  .			- Iniciado o NPC.											.
+  *---------------------------------------------------------------------*/
+//
+-	script	Controller_Vip::ControllerVIP	-1,{
+OnReloadTimer:
+	message strcharinfo(0), "Sistema de tempo do Controle VIP reiniciado.";
+OnInit:
+	set $@CV_Mode, 0;
+	set $@CV_GroupSet, 1;
+	set $@CV_GroupReset, 0;
+	setarray $@CV_Atcommand[0], 90, 99; 
+	set $@CV_Expire_Msg$, "Sua conta privilegiada expirou, acesse nosso website e faça uma recarga!";
+
+	// [NÃO EDITE EMBAIXO, SEM NESCESSIDADES]
+	sleep 2000;
+	bindatcmd "controlvip", "ControllerVIP::OnControl", $@CV_Atcommand[0], $@CV_Atcommand[1];
+	bindatcmd "viptimer", "ControllerVIP::OnCmd";
+	bindatcmd "reloadcontrolvip", "ControllerVIP::OnReloadTimer", 99, 99;
+	initnpctimer;
+	end;
+
+OnControl:
+	set .@loop_1, 1;
+	while( .@loop_1 )
+	{
+		mes "^FFA500[Controlador VIP]^000000";
+		mes "Bem-vindo a central de controle de usuários VIP's.";
+		mes "Em que posso ajudar?";
+		next;
+		switch( select("- Inclusões de acesso VIP.", "- Remoções de acesso VIP.", "- Consultar VIP.", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				set .@loop_2, 1;
+				while( .@loop_2 )
+				{
+					mes "^FFA500[Controlador VIP]^000000";
+					mes "Por favor, digite a ^FF0000ID da conta ou o usuário^000000 que deseja adicionar o usuário VIP a conta.";
+					next;
+					input .@UserID$;
+
+					query_sql "SELECT `account_id`, `userid`, `group_id`, `vipCount` FROM `login` WHERE `account_id`='" + atoi(.@UserID$) + "' OR `userid`='" + .@UserID$ + "'", .@AccountId, .@UID$, .@GroupId, .@vCount;
+
+					if( !getarraysize(.@AccountId) )
+					{
+						mes "^FFA500[Controlador VIP]^000000";
+						mes "Nenhuma conta foi encontrada com ^FF0000AID/UID '" + .@UserID$ + "'^000000.";
+						mes "Deseja tentar novamente?";
+						next;
+						if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+							set .@loop_2, 0;
+					}
+					else {
+						set .@loop_3, 1;
+						while(.@loop_3)
+						{
+							mes "^FFA500[Controlador VIP]^000000";
+							mes (.@GroupId[0]==$@CV_GroupSet?"^00008BEste é um usuário VIP":"^0000FFEste não é um usuário VIP") + "^000000, o que deseja fazer?";
+							next;
+							set .@type, select((.@GroupId[0]==$@CV_GroupSet?"- Acrescentar dias.":"- Adicionar dias."), (.@GroupId[0]==$@CV_GroupSet?"- Acrescentar horas.":"- Adicionar horas."), (.@GroupId[0]==$@CV_GroupSet?"- Acrescentar minutos.":"- Adicionar minutos."), "^00008B- Digitar outro usuário.^000000", "^FF0000- Cancelar.^000000")-1;
+							
+							switch( .@type )
+							{
+								case 3:
+									set .@loop_3, 0;
+									break;
+								case 4:
+									set .@loop_3, 0;
+									set .@loop_2, 0;
+									set .@loop_1, 0;
+									break;
+								default:
+									set .@loop_4, 1;
+									while( .@loop_4 )
+									{
+										setarray .@mask_1$[0], "dias", "horas", "minutos";
+										setarray .@mask_2[0], 31, 24, 60;
+										mes "^FFA500[Controlador VIP]^000000";
+										mes "Digite a quantidade de ^00008B" + .@mask_1$[.@type] + "^000000 que deseja adicionar ao usuário ^00008B" + .@UID$[0] + "^000000.";
+										mes "^0000FFSendo o minimo 1 e o máximo " + .@mask_2[.@type] + ".^000000";
+										next;
+										input .@addCount;
+										
+										if( .@type == 0 )
+											set .@Count, .@addCount*1440;
+										else if( .@type == 1 )
+											set .@Count, .@addCount*60;
+										else
+											set .@Count, .@addCount;
+										
+										if( .@addCount < 1 || .@addCount > .@mask_2[.@type] )
+										{
+											mes "^FFA500[Controlador VIP]^000000";
+											mes "Você deve digitar o minimo de 1 ou máximo de " + .@mask_2[.@type] + " " + .@mask_1$[.@type] + ".";
+											mes "Deseja tentar novamente?";
+											next;
+											if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+											{
+												set .@loop_4, 0;
+												set .@loop_3, 0;
+												set .@loop_2, 0;
+											}
+										}
+										else if( (.@Count+.@vCount[0]) > 31536000 )
+										{
+											mes "^FFA500[Controlador VIP]^000000";
+											mes "Você não pode adicionar mais de 1 ano na conta vip, deseja tentar novamente?";
+											next;
+											if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+											{
+												set .@loop_4, 0;
+												set .@loop_3, 0;
+												set .@loop_2, 0;
+											}
+										}
+										else {
+											mes "^FFA500[Controlador VIP]^000000";
+											mes "Tem certeza que deseja adicionar ^FF0000" + .@addCount + " (" + .@mask_1$[.@type] + ")^000000 no usuário ^FF0000" + .@UID$[0] + "^000000?";
+											next;
+											switch( select("- Sim, por favor.", "- Não, desejo digitar outro usuário.", "- Não, desejo adicionar em ^FF0000'" + .@mask_1$[.@type] + "'^000000.", "- Não desejo digitar novamente.", "^FF0000- Cancelar.^000000") )
+											{
+												case 1:
+													// Adicionar
+													query_sql "UPDATE `login` SET `vipCount`=`vipCount`+'" + .@Count + "' WHERE `account_id`='" + .@AccountId[0] + "'";
+													
+													if( .@GroupId[0] == $@CV_GroupReset )
+														query_sql "UPDATE `login` SET `group_id`='" + $@CV_GroupSet + "' WHERE `account_id`='" + .@AccountId[0] + "'";
+													
+													set .@CharOnline$, callfunc("getcharonline", .@AccountId[0]);
+													if( .@CharOnline$ != "0" )
+													{
+															message .@CharOnline$, "Adicionado mais " + .@addCount + " (" + .@mask_1$[.@type] + ") em sua conta de acesso VIP.";
+															set .@countDay, callfunc("f_vip_timer", 0, (.@vCount[0]+.@Count));
+															set .@countHour, callfunc("f_vip_timer", 1, (.@vCount[0]+.@Count));
+															set .@countMinute, callfunc("f_vip_timer", 2, (.@vCount[0]+.@Count));
+															
+															message .@CharOnline$, "Você tem " + (.@countDay>0?.@countDay:0) + " dias " + (.@countHour>0?.@countHour:"00") + "h" + (.@countMinute>0?.@countMinute:"00") + "m de acesso vip.";
+													}
+															
+													mes "^FFA500[Controlador VIP]^000000";
+													mes "A quantidade de " + .@addCount + " (" + .@mask_1$[.@type] + ") foi adicionada com sucesso!";
+													next;
+													set .@loop_4, 0;
+													set .@loop_3, 0;
+													set .@loop_2, 0;
+													break;
+												case 2:
+													set .@loop_4, 0;
+													set .@loop_3, 0;
+													break;
+												case 3:
+													set .@loop_4, 0;
+													break;
+												case 4:
+													break;
+												case 5:
+													set .@loop_4, 0;
+													set .@loop_2, 0;
+													set .@loop_3, 0;
+													break;
+											}
+										}
+									}
+									break;
+							}
+						}
+					}
+				}
+				break;
+			case 2:
+				set .@loop_2, 1;
+				while( .@loop_2 )
+				{
+					mes "^FFA500[Controlador VIP]^000000";
+					mes "Por favor, digite a ^FF0000ID da conta ou o usuário^000000 que deseja fazer remoções de acesso vip.";
+					next;
+					input .@UserID$;
+
+					query_sql "SELECT `account_id`, `userid`, `group_id`, `vipCount` FROM `login` WHERE `account_id`='" + atoi(.@UserID$) + "' OR `userid`='" + .@UserID$ + "'", .@AccountId, .@UID$, .@GroupId, .@vCount;
+
+					if( !getarraysize(.@AccountId) )
+					{
+						mes "^FFA500[Controlador VIP]^000000";
+						mes "Nenhuma conta foi encontrada com ^FF0000AID/UID '" + .@UserID$ + "'^000000.";
+						mes "Deseja tentar novamente?";
+						next;
+						if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+							set .@loop_2, 0;
+					}
+					else {
+						set .@loop_3, 1;
+						while(.@loop_3)
+						{
+							if( .@GroupId[0] != $@CV_GroupSet )
+							{
+								mes "^FFA500[Controlador VIP]^000000";
+								mes "^0000FFEste não é um usuário VIP^000000, você não pode fazer remoções!";
+								next;
+								set .@type, 4;
+							}
+							else {
+								mes "^FFA500[Controlador VIP]^000000";
+								mes "^00008BEste é um usuário VIP^000000, o que deseja fazer?";
+								next;
+								set .@type, select("- Remover dias.", "- Remover horas.", "- Remover minutos.", "^00008B- Digitar outro usuário.^000000", "^FF0000- Cancelar.^000000")-1;
+							}
+							
+							switch( .@type )
+							{
+								case 3:
+									set .@loop_3, 0;
+									break;
+								case 4:
+									set .@loop_3, 0;
+									set .@loop_2, 0;
+									set .@loop_1, 0;
+									break;
+								default:
+									set .@loop_4, 1;
+									while( .@loop_4 )
+									{
+										setarray .@mask_1$[0], "dias", "horas", "minutos";
+										setarray .@mask_2[0], 31, 24, 60;
+										mes "^FFA500[Controlador VIP]^000000";
+										mes "Digite a quantidade de ^00008B" + .@mask_1$[.@type] + "^000000 que deseja remover ao usuário ^00008B" + .@UID$[0] + "^000000.";
+										mes "^0000FFSendo o minimo 1 e o máximo " + .@mask_2[.@type] + ".^000000";
+										next;
+										input .@addCount;
+										
+										if( .@type == 0 )
+											set .@Count, .@addCount*1440;
+										else if( .@type == 1 )
+											set .@Count, .@addCount*60;
+										else
+											set .@Count, .@addCount;
+										
+										if( .@addCount < 1 || .@addCount > .@mask_2[.@type] )
+										{
+											mes "^FFA500[Controlador VIP]^000000";
+											mes "Você deve digitar o minimo de 1 ou máximo de " + .@mask_2[.@type] + " " + .@mask_1$[.@type] + ".";
+											mes "Deseja tentar novamente?";
+											next;
+											if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+											{
+												set .@loop_4, 0;
+												set .@loop_3, 0;
+												set .@loop_2, 0;
+											}
+										}
+										else {
+											set .@delCount, .@vCount[0] - .@Count;
+											if( .@delCount <= 0 )
+												set .@delCount, 0;
+												
+											mes "^FFA500[Controlador VIP]^000000";
+											mes "Tem certeza que deseja remover ^FF0000" + .@addCount + " (" + .@mask_1$[.@type] + ")^000000 no usuário ^FF0000" + .@UID$[0] + "^000000?";
+											if( !.@delCount) mes "Se você fazer isso, irá remover o usuário do grupo de acesso VIP.";
+											next;
+											switch( select("- Sim, por favor.", "- Não, desejo digitar outro usuário.", "- Não, desejo adicionar em ^FF0000'" + .@mask_1$[.@type] + "'^000000.", "- Não desejo digitar novamente.", "^FF0000- Cancelar.^000000") )
+											{
+												case 1:
+													// Remover
+													query_sql "UPDATE `login` SET `vipCount`='" + .@delCount + "' WHERE `account_id`='" + .@AccountId[0] + "'";
+													
+													if( !.@delCount )
+														query_sql "UPDATE `login` SET `group_id`='" + $@CV_GroupReset + "' WHERE `account_id`='" + .@AccountId[0] + "'";
+													
+													set .@CharOnline$, callfunc("getcharonline", .@AccountId[0]);
+													if( .@CharOnline$ != "0" )
+													{
+															message .@CharOnline$, "Removido " + .@addCount + " (" + .@mask_1$[.@type] + ") em sua conta de acesso privilegiado.";
+															if( !.@delCount )
+																message .@CharOnline$, $@CV_Expire_Msg$;
+															else {
+																set .@countDay, callfunc("f_vip_timer", 0, .@delCount);
+																set .@countHour, callfunc("f_vip_timer", 1, .@delCount);
+																set .@countMinute, callfunc("f_vip_timer", 2, .@delCount);
+																
+																message .@CharOnline$, "Você tem " + (.@countDay>0?.@countDay:0) + " dias " + (.@countHour>0?.@countHour:"00") + "h" + (.@countMinute>0?.@countMinute:"00") + "m de acesso privilegiado.";
+															}
+													}
+												
+													mes "^FFA500[Controlador VIP]^000000";
+													mes "A quantidade de " + .@addCount + " (" + .@mask_1$[.@type] + ") foi removida com sucesso!";
+													next;
+													set .@loop_4, 0;
+													set .@loop_3, 0;
+													set .@loop_2, 0;
+													break;
+												case 2:
+													set .@loop_4, 0;
+													set .@loop_3, 0;
+													break;
+												case 3:
+													set .@loop_4, 0;
+													break;
+												case 4:
+													break;
+												case 5:
+													set .@loop_4, 0;
+													set .@loop_2, 0;
+													set .@loop_3, 0;
+													break;
+											}
+										}
+									}
+									break;
+							}
+						}
+					}
+				}
+				break;
+			case 3:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^FFA500[Controlador VIP]^000000";
+					mes "Por favor, digite a ^FF0000ID da conta ou o usuário^000000 que deseja consultar o acesso VIP.";
+					next;
+					input .@UserID$;
+
+					query_sql "SELECT `account_id`, `userid`, `group_id`, `vipCount` FROM `login` WHERE `account_id`='" + atoi(.@UserID$) + "' OR `userid`='" + .@UserID$ + "'", .@AccountId, .@UID$, .@GroupId, .@vCount;
+
+					if( !getarraysize(.@AccountId) )
+					{
+						mes "^FFA500[Controlador VIP]^000000";
+						mes "Nenhuma conta foi encontrada com ^FF0000AID/UID '" + .@UserID$ + "'^000000.";
+						mes "Deseja tentar novamente?";
+						next;
+						if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+							set .@loop_2, 0;
+					}
+					else if( .@vCount[0] )
+					{
+						set .@countDay, callfunc("f_vip_timer", 0, .@vCount[0]);
+						set .@countHour, callfunc("f_vip_timer", 1, .@vCount[0]);
+						set .@countMinute, callfunc("f_vip_timer", 2, .@vCount[0]);
+															
+						mes "^FFA500[Controlador VIP]^000000";
+						mes "Este ^FF0000AID/UID '" + .@UserID$ + "' contém tempo de usuário VIP^000000.";
+						mes (.@GroupId[0]==$@CV_GroupSet?"^FF0000O Acesso VIP está ativado na conta.^000000.":"^FF0000O Acesso VIP está desativado na conta.^000000");
+						mes "Seu tempo de acesso vip expira em ^FF0000" + .@countDay + " (dias) " + .@countHour + "h"+ .@countMinute +"m";
+						mes "Deseja fazer outra consulta?";
+						next;
+						if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+							set .@loop_2, 0;
+					}
+					else {	
+						mes "^FFA500[Controlador VIP]^000000";
+						mes "Este ^FF0000AID/UID '" + .@UserID$ + "' não contém tempo de usuário VIP^000000.";
+						mes (.@GroupId[0]==$@CV_GroupSet?"^FF0000O Acesso VIP está ativado na conta^000000.":"^FF0000O Acesso VIP está desativado na conta^000000.");
+						mes "Deseja fazer outra consulta?";
+						next;
+						if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+							set .@loop_2, 0;
+					}
+				}
+				break;
+			case 4:
+				set .@loop_1, 0;
+				break;
+		}
+	}
+
+	mes "^FFA500[Controlador VIP]^000000";
+	mes "Volte quando nescessitar de nosso sistema!";
+	close;
+
+OnCmd:
+OnPCLoginEvent:
+	if( getgroupid() < $@CV_GroupSet || getgroupid() == $@CV_Atcommand[0] || getgroupid() == $@CV_Atcommand[1] )
+		end;
+
+	query_sql "SELECT `group_id`, `vipCount` FROM `login` WHERE `account_id`='" + getcharid(3) + "'", .@GroupId, .@vCount;
+		
+	set @countDay, callfunc("f_vip_timer", 0, .@vCount[0]);
+	set @countHour, callfunc("f_vip_timer", 1, .@vCount[0]);
+	set @countMinute, callfunc("f_vip_timer", 2, .@vCount[0]);
+	
+	message strcharinfo(0), "Você tem " + (@countDay?((@countDay>0?@countDay:0) + " dias "):"") + (@countHour?(@countHour>0?@countHour:"00") + "h":"") + (@countMinute>0?@countMinute:"00") + "min de acesso priviligiado.";
+	end;
+
+OnTimer60000:
+	stopnpctimer;
+	initnpctimer;
+	freeloop(1);
+	if( $@CV_Mode )
+	{
+		// Select Remover AID
+		query_sql "SELECT `login`.`account_id` FROM `login`, `char` WHERE `login`.`group_id`='" + $@CV_GroupSet + "' AND `login`.`vipCount`='1' AND `char`.`online`='1'", .@AccountId;
+		// Update VipCount
+		query_sql "UPDATE `login`, `char` SET `login`.`vipCount`=`login`.`vipCount`-'1' WHERE `login`.`vipCount`>'0' AND `char`.`online`='1'";
+		// Update GroupID
+		query_sql "UPDATE `login` SET `group_id`='" + $@CV_GroupReset + "' WHERE `vipCount`='0' AND `group_id`='" + $@CV_GroupSet + "'";
+	}
+	else {
+		// Select Remover AID
+		query_sql "SELECT `login`.`account_id` FROM `login`, `char` WHERE `login`.`group_id`='" + $@CV_GroupSet + "' AND `login`.`vipCount`='1'", .@AccountId;
+		// Update VipCount
+		query_sql "UPDATE `login` SET `vipCount`=`vipCount`-'1' WHERE `vipCount`>'0'";
+		// Update GroupID
+		query_sql "UPDATE `login` SET `group_id`='" + $@CV_GroupReset + "' WHERE `vipCount`='0' AND `group_id`='" + $@CV_GroupSet + "'";
+	}
+
+	set .@CharName$, "";
+	for( set .@i, 0; .@i < getarraysize(.@AccountId); set .@i, .@i + 1 )
+	{
+		set .@CharName$, callfunc("getcharonline", .@AccountId[.@i]);
+		
+		if( .@CharName$ != "0" )
+			message .@CharName$, $@CV_Expire_Msg$;
+	}
+	freeloop(0);
+	end;
+}
+
+function	script	f_vip_timer	{
+	freeloop(1);
+	set .@remove, getarg(1);
+	for( set .@count_time, 0; .@remove >= 1440; set .@remove, .@remove - 1440 )
+		set .@count_time, .@count_time + 1;
+			
+	if( getarg(0) == 0 )
+		return .@count_time;
+
+	for( set .@count_time, 0; .@remove >= 60; set .@remove, .@remove - 60 )
+		set .@count_time, .@count_time + 1;
+		
+	if( getarg(0) == 1 )
+		return .@count_time;
+		
+	for( set .@count_time, 0; .@remove > 0; set .@remove, .@remove - 1 )
+		set .@count_time, .@count_time + 1;
+	freeloop(0);
+	return .@count_time;
+}
+
+// arg(0) type (0:days/1:hours/2:minutes)
+// arg(1) amount
+// arg(2) lvl group_id
+// arg(3) account_id
+function	script	f_vip_ticket	{
+
+	setarray .@mask_1$[0], "dias", "minutos", "horas";
+	if( getarg(0) == 0 )
+		set .@Count, getarg(1)*1440;
+	else if( getarg(0) == 1 )
+		set .@Count, getarg(1)*60;
+	else
+		set .@Count, getarg(1);
+
+	query_sql "UPDATE `login` SET `vipCount`=`vipCount`+'" + .@Count + "', `group_id`='" + getarg(2) + "' WHERE `account_id`='" + getarg(3) + "'";
+
+	query_sql "SELECT `vipCount` FROM `login` WHERE `account_id`='" + getarg(3) + "'", .@vCount;
+	set .@CharOnline$, callfunc("getcharonline", getarg(3));
+	if( .@CharOnline$ != "0" )
+	{
+		message .@CharOnline$, "Adicionado mais " + getarg(1) + " (" + .@mask_1$[.@type] + ") em sua conta de acesso VIP Grátis.";
+		set .@countDay, callfunc("f_vip_timer", 0, .@vCount[0]);
+		set .@countHour, callfunc("f_vip_timer", 1, .@vCount[0]);
+		set .@countMinute, callfunc("f_vip_timer", 2, .@vCount[0]);
+		message .@CharOnline$, "Você tem " + (.@countDay>0?.@countDay+" dias ":"") + (.@countHour>0?.@countHour:"00") + "h" + (.@countMinute>0?.@countMinute:"00") + "m de acesso vip grátis.";
+	}
+	
+	return;
+}

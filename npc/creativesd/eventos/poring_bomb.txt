@@ -1,0 +1,298 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Evento Poring Bomb                                               .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 2.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Arena de Evento Bomb Poring, no qual os jogadores devem correr   .
+  .  dos Bomb Poring e o último sobrevivente é o vencedor.              .
+  *---------------------------------------------------------------------*/
+-	script	BombPoring#Config	-1,{
+OnInit:
+	setarray $@bp_rewardid[0], 41001;	//30068, 30064, 30069, 30063;	// Id dos itens que podem vir como premio.
+	setarray $@bp_rewardamount[0], 50;	//1, 1, 1;					// Quantidade dos itens que podem vir como premio.
+	set $@bp_timer_waiting, 5;								// Tempo em minutos que o npc aguarda a chegada de jogadores na arena.
+	
+	bindatcmd "evporingbomb", strnpcinfo(0)+"::OnCommand",99,99;
+	end;
+	
+// Horários do Evento.
+OnClock1200:
+	if( !$@ev_bombporing_flag )
+		donpcevent "event#ev_bombporing::OnStart";
+	end;
+	
+OnCommand:
+	if( .@atcmd_numparameters )
+	{
+		if( .@atcmd_parameters$[0] == "ligar" )
+		{
+			if( $@ev_bombporing_flag )
+				donpcevent "event#ev_bombporing::OnEndGM";
+			else
+				message strcharinfo(0), "O Evento não está ligado.";
+			end;
+		}
+		else if( .@atcmd_parameters$[0] == "desligar" )
+		{
+			if( $@ev_bombporing_flag )
+				donpcevent "event#ev_bombporing::OnStart";
+			else
+				message strcharinfo(0), "O Evento já está ligado.";
+			end;
+		}
+	}
+	message strcharinfo(0), "Para utilizar o comando utilize @evporingbomb <ligar/desligar>";
+	end;
+}
+	
+event_room,120,101,3	script	Evento Bomb Poring#warp	4_M_JOB_ASSASSIN,{
+	set .@loop,1;
+	while(.@loop)
+	{
+		mes "^FF0000[Recepcionista]^000000";
+		mes "Bem-vindo ao ^0000FFBomb Poring^000000.";
+		if( $@ev_bombporing_flag >= 2 )
+			mes "Neste momento está ocorrendo o evento,";
+		else if( $@ev_bombporing_flag == 1 )
+			mes "Neste momento a arena do evento está aberto,";
+		else
+			mes "Neste momento, não está acontecendo o evento,";
+		mes "em que posso ajudar?";
+		next;
+		switch( select(($@ev_bombporing_flag==1?"^FF0000- Entrar no Evento.^000000":""), "^FF0000- Informações.^000000", "^0000FF- Cancelar.^000000") )
+		{
+			case 1:
+				if( !$@ev_bombporing_flag || $@ev_bombporing_flag >= 2 )
+				{
+					mes "^FF0000[Recepcionista]^000000";
+					mes "O Evento ainda não começou e você não pode acessar a arena.";
+					next;
+					break;
+				}
+				
+				mes "^FF0000[Recepcionista]^000000";
+				mes "Tem certeza que deseja entrar na Arena do Evento?";
+				next;
+				if( select("- Sim, por favor.", "- Não, obrigado.") == 1 )
+				{
+					mes "^FF0000[Recepcionista]^000000";
+					mes "Muito bem, vou te mandar para a arena do evento!";
+					close2;
+					warp "p_event02", 52, 45;
+					end;
+				}
+				break;
+			case 2:
+				mes "^FF0000[Recepcionista]^000000";
+				mes "Neste evento Bomb Poring's são invocado e o objetivo dos jogadores é sobreviver das explosões deles.";
+				mes "Apenas 1 jogador é vencedor deste evento, e é nescessário do minimo de 2 jogadores para que ele seja realizado.";
+				mes "As Habilidades são desativada no mapa do Evento.";
+				next;
+				break;
+			case 3:
+				set .@loop, 0;
+				break;
+		}
+	}
+	mes "^FF0000[Recepcionista]^000000";
+	mes "Tudo bem, volte quando desejar entrar no evento.";
+	close;
+	
+OnDisable:
+	delwaitingroom;
+	end;
+
+OnEnable:
+	waitingroom "Aberto o Evento", 0;
+	end;
+}
+
+// Recompensadores.
+p_event02,52,45,0	script	Recompensador#ev_bombporing	4_M_JOB_ASSASSIN,{
+	if( $@ev_bombporing_flag != 3 ) end;
+	
+	set .@rand, rand((getarraysize($@bp_rewardid)-1));
+	if( !checkweight($@bp_rewardid[.@rand],$@bp_rewardamount[.@rand]) )
+	{
+		mes "^FF0000[Recepcionista]^000000";
+		mes "Você está carregando muito peso com você, irei abrir o Armazém para você guardar alguns de seus itens.";
+		close2;
+		openstorage();
+		end;
+	}
+	
+	getitem $@bp_rewardid[.@rand], $@bp_rewardamount[.@rand];
+	mes "^FF0000[Recepcionista]^000000";
+	mes "Parabéns, você acaba de receber ^0000FF" + .@rewardamount[.@rand] + "^000000x " + getitemname(.@rewardid[.@rand]) + ".";
+	close2;
+	donpcevent "event#ev_bombporing::OnEnd";
+	disablenpc strnpcinfo(0);
+	end;
+	
+OnInit:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+p_event02,49,33,0	script	Juíz do Evento#ev_bombporing	4_M_JOB_ASSASSIN,{
+	if( $@ev_bombporing_flag )
+	{
+		switch(rand(0,3))
+		{
+			default:
+			case 0:
+				npctalk "Fique de olho nos Bomb Poring, eles pode te derrotar fácilmente.";
+				break;
+			case 1:
+			case 2:
+				npctalk "Concentre-se, não vai querer perder esta partida neh?";
+				break;
+		}
+	}
+	end;
+	
+OnInit:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+// Scripts de Evento
+-	script	event#ev_bombporing	-1,{
+	
+OnStart:
+	set $@ev_bombporing_flag, 1;
+	set $@ev_bombporing_timer, $@bp_timer_waiting;
+	enablenpc "Juíz do Evento#ev_bombporing";
+	disablenpc "Recompensador#ev_bombporing";
+	announce "[Bomb Poring]: O Evento vai começar em " + $@ev_bombporing_timer + " minutos, corram para a arena!", bc_all, "0x00FF00";
+	initnpctimer;
+	donpcevent "Evento Bomb Poring#warp::OnEnable";
+	end;
+
+OnTimer60000:
+	set $@ev_bombporing_timer, $@ev_bombporing_timer - 1;
+	if( $@ev_bombporing_timer > 0 )
+	{
+		announce "[Bomb Poring]: O Evento vai começar em " + $@ev_bombporing_timer + " minutos, corram para a arena!", bc_all, "0x00FF00";
+		setnpctimer 0;
+	}
+	else {
+		stopnpctimer;
+		if( getmapusers("p_event02") < 2 )
+		{
+			announce "[Bomb Poring]: O Evento foi cancelado por não haver jogadores suficiente na arena.", bc_all, "0x00FF00";
+			donpcevent "event#ev_bombporing::OnEnd";
+		}
+		else {
+			set $@ev_bombporing_flag, 2;
+			set $@ev_bombporing, 7;
+			set $@ev_bombporing_players, getmapusers("p_event02");
+			donpcevent "mobspawn#ev_bombporing::OnMobSpawnDie";
+			initnpctimer "timer#ev_bombporing";
+		}
+		donpcevent "Evento Bomb Poring#warp::OnDisable";
+	}
+	end;
+	
+OnDownEvent:
+	announce "[Bomb Poring]: Todos jogadores falharam no Bomb Poring!", bc_all, "0x00FF00";
+	donpcevent "event#ev_bombporing::OnEnd";
+	end;
+	
+OnFinishEvent:
+	mapannounce "p_event02", "[Bomb Poring]: Você é o vencedor, dirija-se ao recompensador!", bc_all, "0x00FF00";
+	set $@ev_bombporing_flag, 3;
+	enablenpc "Recompensador#ev_bombporing";
+	end;
+	
+OnEndGM:
+	donpcevent "Evento Bomb Poring#warp::OnDisable";
+	announce "[Bomb Poring]: O Evento foi Cancelado pelo GameMaster de Eventos.", bc_all, "0x00FF00";
+	stopnpctimer;
+OnEnd:
+	set $@ev_bombporing, 0;
+	set $@ev_bombporing_flag, 0;
+	mapwarp "p_event02", "prontera", 155, 179;
+	end;
+
+OnPCDieEvent:
+	if( $@ev_bombporing_flag && strcharinfo(3) == "p_event02" )
+	{
+		set $@ev_bombporing_players, $@ev_bombporing_players - 1;
+		warp "prontera", 155, 179;
+	}
+	end;
+}
+-	script	mobspawn#ev_bombporing	-1,{
+	
+OnMobSpawn:
+	sleep 2000;
+	areamonster "p_event02",26,46,77,45,"Evento Bomb Poring",1904,$@ev_bombporing,"mobspawn#ev_bombporing::OnMobSpawnDie";
+	set $@ev_bombporing, $@ev_bombporing + 7;
+	end;
+	
+OnMobSpawnDie:
+	set .@mobcount, mobcount("p_event02","mobspawn#ev_bombporing::OnMobSpawnDie");
+	if( $@ev_bombporing_players == 1 )
+	{
+		killmonsterall "p_event02";
+		donpcevent "event#ev_bombporing::OnFinishEvent";
+	}
+	else if( $@ev_bombporing_flag && $@ev_bombporing_players <= 0 )
+	{
+		killmonsterall "p_event02";
+		donpcevent "event#ev_bombporing::OnDownEvent"; 
+	}
+	else if( $@ev_bombporing_flag && .@mobcount <= 0 )
+	{
+		switch( $@ev_bombporing )
+		{
+			case 7:
+				mapannounce "p_event02", "[Bomb Poring]: Vamos começar, cuidado com os Bomb Poring invocados!", bc_all, "0x00FF00";
+				break;
+			case 14:
+				mapannounce "p_event02", "[Bomb Poring]: Essa foi fácil, que tal dobrarmos a quantidade?", bc_all, "0x00FF00";
+				break;
+			case 21:
+				mapannounce "p_event02", "[Bomb Poring]: Está ficando meio tenso?", bc_all, "0x00FF00";
+				break;
+			default:
+				mapannounce "p_event02", "[Bomb Poring]: Incrível, mais que tal melhorarmos as coisas? " + $@ev_bombporing + " Bomb Porings.", bc_all, "0x00FF00";
+				break;
+		}
+		donpcevent "mobspawn#ev_bombporing::OnMobSpawn";
+	}
+	end;
+}
+
+-	script	timer#ev_bombporing	-1,{
+OnTimer60000:
+	if( !getmapusers("p_event02") )
+		donpcevent "event#ev_bombporing::OnEnd";
+	else
+		setnpctimer 0;
+	end;
+}
+
+p_event02	mapflag	noteleport
+p_event02	mapflag	nowarp
+p_event02	mapflag	nowarpto
+p_event02	mapflag	noreturn
+p_event02	mapflag	nosave
+p_event02	mapflag	noskill

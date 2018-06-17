@@ -1,0 +1,159 @@
+sec_in01,174,180,5	script	Comerciante	903,{
+// ==== CONFIGS
+set .cm$,"[Comerciante]"; 
+	// nome do script
+
+SetArray $idbrav[0],607,608,609,610,611,612,613,613,614,615; 	// ID Itens trocados por pontos de bravura
+
+SetArray $ptbrav[0],1,2,3,4,5,6,7,8,9,10; 			  
+	// Pontos dos itens trocados por bravura
+// ==== FIM
+
+dispbottom "Creditos bOx.";
+mes .cm$;
+mes "Você tem "+#bravura+" Pontos de Bravura";
+mes "deseja comprar algum item?";
+menu "Sim,Deixe me ver",-,"Não Valeu",fechar;
+next;
+mes .cm$;
+mes "Se algum item estiver escrito NULL, não tente compra-lo, pois irá perder seus pontos";
+switch (select(""+getitemname($idbrav[0])+" - "+$ptbrav[0]+"",""+getitemname($idbrav[1])+" - "+$ptbrav[1]+"",""+getitemname($idbrav[2])+" - "+$ptbrav[2]+"",""+getitemname($idbrav[3])+" - "+$ptbrav[3]+"",""+getitemname($idbrav[4])+" - "+$ptbrav[4]+"",""+getitemname($idbrav[5])+" - "+$ptbrav[5]+"",""+getitemname($idbrav[6])+" - "+$ptbrav[6]+"",""+getitemname($idbrav[7])+" - "+$ptbrav[7]+"",""+getitemname($idbrav[8])+" - "+$ptbrav[8]+"",""+getitemname($idbrav[9])+" - "+$ptbrav[9]+"")){
+
+case 1: 
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[0])+" por "+$ptbrav[0]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[0] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[0]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[0];
+additem $idbrav[0],1;
+close;
+
+case 2:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[1])+" por "+$ptbrav[1]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[1] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[1]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[1];
+additem $idbrav[1],1;
+close;
+
+case 3:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[2])+" por "+$ptbrav[2]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[2] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[2]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[2];
+additem $idbrav[2],1;
+close;
+
+case 4:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[3])+" por "+$ptbrav[3]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[3] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[3]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[3];
+additem $idbrav[3],1;
+close;
+
+case 5:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[4])+" por "+$ptbrav[4]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[4] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[4]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[4];
+additem $idbrav[4],1;
+close;
+
+case 6:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[5])+" por "+$ptbrav[5]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[5] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[5]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[5];
+additem $idbrav[5],1;
+close;
+
+case 7:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[6])+" por "+$ptbrav[6]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[6] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[6]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[6];
+additem $idbrav[6],1;
+close;
+
+case 8:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[7])+" por "+$ptbrav[7]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[7] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[7]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[7];
+additem $idbrav[7],1;
+close;
+
+case 9:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[8])+" por "+$ptbrav[8]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[8] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[8]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[8];
+additem $idbrav[8],1;
+close;
+
+case 10:
+next;
+mes .cm$;
+mes "Você está certo que deseja comprar o "+getitemname($idbrav[9])+" por "+$ptbrav[9]+" pontos?";
+menu "Sim",-,"Não",exit;
+next;
+if( #bravura < $ptbrav[9] ){mes "Você não tem pontos para comprar este item"; mes "Você tem somente "+#bravura+"/"+$ptbrav[9]+"."; close;}
+mes .cm$;
+mes "Muito Bem aqui esta seu item.";
+set #bravura,#bravura-$ptbrav[9];
+additem $idbrav[9],1;
+close;
+
+}
+
+fechar:
+close;
+
+}
+
+

@@ -1,0 +1,236 @@
+
+// ------------------------------------------------
+///////////////////////////////////////////////////
+prontera,164,192,4	script	Painel de Controle	95,{
+ 
+set .n$,"[ ^2d66b5Painel de Controle^000000 ]"; // Nome do NPC
+ 
+ set .cp$,"[^2d66b5Painel de Controle^000000 ]";
+set .menu$,"^FFA500•^000000";
+if(gettime(3) <= 18)
+		{
+	 		set .hr$,"om dia";
+		}
+	else
+		{
+			set .hr$,"oa noite";
+		}
+ 
+while(#PIN == 0){
+	mes .n$;
+	mes "Para utilizar meus serviços é necessário definir um PIN:";
+	mes "Lembre-se o seu PIN e muito importante não passe ele para ninguem!";
+	input #PIN;
+	next;
+		if(#PIN != 0){
+			mes .n$;
+			mes "seu PIN foi definido com sucesso.";
+			next;
+		}
+
+		else{
+			mes .n$;
+			mes "seu PIN não pode ser 0.";
+			next;
+		}
+}
+
+while(.@PIN != #PIN){
+	mes .n$;
+	mes "B"+.hr$+", ^000EEE"+strcharinfo(0)+"^000000";
+	mes "Lembre-se o seu PIN e muito importante não passe ele para ninguem!";
+	mes "Digite seu PIN:";
+	input .@PIN;
+		if(.@PIN != #PIN){
+			next;
+			mes .n$;
+			mes "PIN incorreto.";
+			close;
+		}
+} 
+next;
+
+//================ Banco de Dados ==============================//
+	query_sql "SELECT `user_pass` FROM `login` WHERE `account_id` = '"+getcharid(3)+"'",@password$;
+	query_sql "SELECT `email` FROM `login` WHERE `account_id` = '"+getcharid(3)+"'",@email$;
+	query_sql "SELECT `logincount` FROM `login` WHERE `account_id` = '"+getcharid(3)+"'",@logou$;
+	query_sql "SELECT `group_id` FROM `login` WHERE `account_id` = '"+getcharid(3)+"'",@nivel$;
+	setarray .caracteres$[1],"[","]","{","}","!","@","#","$","%","¨","&","*","(",")","_","+","-","=","§",",",".","<",">",":",";","?","/","°","³","²","¹","º","ª","|","^","¢","£";
+
+//==============================================================//
+
+	mes .cp$;
+	mes "B"+.hr$+", ^000EEE"+strcharinfo(0)+"^000000";
+	mes "Sou o assistente de contas.";
+	mes "Posso lhe oferecer alguns serviços...";
+	mes "Me diga o que você precisa.";
+	mes " ";
+	switch(select(""+.menu$+" Trocar minha senha:"+.menu$+" Trocar meu e-mail:"+.menu$+" Deletar item:"+.menu$+" Resetar posição:"+.menu$+" Estatísticas da minha conta:"+.menu$+" Nada"))
+	{
+		case 1:
+			next;
+			mes .cp$;
+			mes "Sua senha atual é: ^BF3EFF"+@password$+"^000000";
+			mes "Deseja mesmo troca-la?";
+			if(select(""+.menu$+" Sim:"+.menu$+" Não") == 2)
+				{
+					next;
+					mes .cp$;
+					mes "Tudo bem então, tenha um(a) b"+.hr$+"!";
+					close;
+				}
+			next;
+			mes .cp$;
+			mes "Ok então, digite a sua senha atual.";
+			next;
+			input .senhaatual$;
+			if(.senhaatual$ != @password$){ mes .cp$; mes "A senha não confere..."; close; }
+			mes .cp$;
+			mes "Certo, agora digite a sua nova senha.";
+			next;
+			input .senhaconfirma$;
+			mes .cp$;
+			mes "Agora confirme a nova senha.";
+			input .senha$;
+			next;
+			for(set .@i,1; .@i < getarraysize(.caracteres$); set .@i,.@i+1){ 
+				if(compare(.senha$,.caracteres$[.@i])){
+					mes .cp$;
+					mes "Me desculpe, apenas letras e números são permitidos na senha...";
+					close;
+					}
+			}
+			if(getstrlen(.senha$) < 6 || getstrlen(.senha$) > 24){mes .cp$; mes "A senha precisa ter no mínimo 6 caracteres..."; close; }
+			if(.senhaconfirma$ != .senha$){ mes .cp$; mes "As senhas não conferem..."; close; }
+			mes .cp$;
+			mes "Sua nova senha é: ^BF3EFF"+.senha$+"^000000, está certo disso?";
+			if(select(""+.menu$+" Sim:"+.menu$+" Não") == 2)
+				{
+					next;
+					mes .cp$;
+					mes "Tudo bem então, tenha um(a) b"+.hr$+"!";
+					close;
+				}
+			next;
+			query_sql "UPDATE `login` SET `user_pass` = '"+.senha$+"' WHERE `account_id` = '"+getcharid(3)+"'";
+			mes .cp$;
+			mes "Agora sua nova senha é: ^BF3EFF"+.senha$+"^000000";
+			next;
+			mes .cp$;
+			mes "Obrigado por usar os meus serviços.";
+			close;
+
+		case 2:
+			next;
+			mes .cp$;
+			mes "Seu e-mail atual é: ^BF3EFF"+@email$+"^000000";
+			mes "Deseja mesmo troca-lo?";
+			if(select(""+.menu$+" Sim:"+.menu$+" Não") == 2)
+				{
+					next;
+					mes .cp$;
+					mes "Tudo bem então, tenha um(a) b"+.hr$+"!";
+					close;
+				}
+			next;
+			mes .cp$;
+			mes "Ok então, digite o seu novo e-mail.";
+			mes "DICA: use um e-mail simples e não use hotmail.";
+			next;
+			input .mail$;
+			query_sql "SELECT `email` FROM `login` WHERE `email` = '"+.mail$+"'",@emailexiste$;
+			if(.mail$ == @emailexiste$){mes .cp$; mes "Este e-mail já está em uso..."; close; }
+			mes .cp$;
+			mes "Seu novo e-mail é: ^BF3EFF"+.mail$+"^000000, está certo disso?";
+			if(select(""+.menu$+" Sim:"+.menu$+" Não") == 2)
+				{
+					next;
+					mes .cp$;
+					mes "Tudo bem então, tenha um(a) b"+.hr$+"!";
+					close;
+				}
+			next;
+			query_sql "UPDATE `login` SET `email` = '"+.mail$+"' WHERE `account_id` = '"+getcharid(3)+"'";
+			mes .cp$;
+			mes "Agora seu novo e-mail é: ^BF3EFF"+.mail$+"^000000";
+			next;
+			mes .cp$;
+			mes "Obrigado por usar os meus serviços.";
+			close;
+
+		case 3:
+			next;
+			mes .cp$;
+	mes "Itens que estão no seu inventario, digite o ID do item que esta bugado.:";
+	getinventorylist;
+	for(set .@i,0; .@i<@inventorylist_count; set .@i,.@i+1)
+		mes "[ "+@inventorylist_id[.@i]+" ] "+getitemname(@inventorylist_id[.@i])+" x"+@inventorylist_amount[.@i];
+	next;
+	input .@item;
+	if (getitemname(.@item) != "null") {
+		if (countitem(.@item)) {
+			input .@amount;
+			if (.@amount && countitem(.@item) >= .@amount) {
+				delitem .@item,.@amount;
+				mes getitemname(.@item)+" x"+.@amount+" deleted.";
+				close;
+			} else {
+				mes "Número Invalido "+.@amount+".";
+				close;
+			}
+		}
+	}
+
+	mes "Invalid input "+.@item+".";
+
+	close;
+		case 4:
+		    next;
+    		mes .cp$;
+			query_sql "SELECT `name` FROM `char` WHERE `account_id`='"+getcharid(3)+"'",.@reset$;
+			mes "Escolha o personagem que você deseja Resetar a Posição.";
+			for(set .@i, 0; .@reset$[.@i] != ""; set .@i, .@i + 1) set .@menu$, .@menu$ + ""+.menu$+" " + .@reset$[.@i]+":";
+			if(select(.@menu$ + "Cancelar") == .@i +1) close;
+			set .@reset$, .@reset$[@menu -1];
+			query_sql "UPDATE `char` SET `last_map`='prontera', `last_x`='156', `last_y`='191' WHERE `name`='"+.@reset$+"'";
+			mes "Posição resetada!";
+			close;
+
+		case 5:
+			next;
+			mes .cp$;
+			mes "Vejo em meu sistema, que você já logou "+@logou$+" vezes nessa conta.";
+			next;
+			mes .cp$;
+			mes "Vejo também, que você logou "+logou+" vezes neste char.";
+			next;
+			mes .cp$;
+			if(getgroupid() >= 1)
+				{
+					if(#CASHPOINTS >= 1)
+						{
+							mes "Sua conta é VIP e possui "+#CASHPOINTS+" Cashs.";
+							close;
+						}
+					mes "Sua conta é VIP e não possui Cashs.";
+					close;
+				}
+			if(#CASHPOINTS >= 1)
+				{
+					mes "Sua conta não é VIP e possui "+#CASHPOINTS+" Cashs.";
+					close;
+				}
+			mes "Sua conta não é VIP e não possui Cashs.";
+			close;
+
+		case 6:
+			next;
+			mes .cp$;
+			mes "Tudo bem então, tenha um(a) b"+.hr$+"!";
+			close;
+	}
+//==== Estatísticas de Char
+OnPCLoginEvent:
+	set logou,logou + 1;
+	end;
+}

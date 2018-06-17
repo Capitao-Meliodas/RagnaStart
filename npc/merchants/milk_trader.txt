@@ -1,0 +1,80 @@
+//===== rAthena Script =======================================
+//= Milk Trader
+//===== By: ==================================================
+//= kobra_k88; L0ne_W0lf
+//===== Current Version: =====================================
+//= 1.5
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= [Official Conversion]
+//= Trades bottles for milk
+//===== Additional Comments: =================================
+//= Fully working
+//= 1.1 Negative input bug fixed [Lupus]
+//= 1.2 Raised the price to close zeny exploit [Lupus]
+//= 1.2a Switched to Lupus's "loopless" technique.[kobra_k88]
+//= 1.3 Rescripted to Aegis 10.3 standards. [L0ne_W0lf]
+//= 1.4 Implemented checkweight. [L0ne_W0lf]
+//= 1.5 Fixed missed variable. (bugreport:1523) [L0ne_W0lf]
+//============================================================
+
+prontera,73,140,0	script	Milk Vendor	86,{
+	if (checkweight(1201,1) == 0) {
+		mes "^3355FFEspere um momento!";
+		mes "Eu não posso oferecer meu serviço";
+		mes "à você porque está";
+		mes "carregendo itens demais.";
+		mes "Volte após depositár"; 
+		mes "um pouco do peso na Kafra.";
+		close;
+	}
+	mes "[leiteiro]";
+	mes " Ei, Ei....";
+	mes "Se você trouxer";
+	mes "1 Garrafa Vazia e"; 
+	mes "15 Zeny, eu troco"; 
+	mes "por 1 Leite. O que você"; 
+	mes "acha disso?";
+	next;
+	if (select("Trocar todas minhas Garrafas Vazias:Cancelar") == 1) {
+		if (countitem(713) <= 0) {
+			mes "[leiteiro]";
+			mes " Ei....";
+			mes "Er... Eu preciso";
+			mes "de Garrafas Vazias";
+			mes "para poder encher de leite...";
+			mes "Traga algumas"; 
+			mes "e fazemos a troca, ok?";
+			close;
+		}
+		set .@bottles,countitem(713);
+		set .@total_weight,.@bottles * 50;
+		set .@total_cost,.@bottles * 15;
+		if (Zeny < .@Total_cost) {
+			mes "[Milk Vendor]";
+			mes "Oh, whoa~!";
+			mes "Você não tem zeny";
+			mes "o suficiente para trocar tudas";
+			mes "essas Garrafas vazias por";
+			mes "Leite. Você precisa ter";
+			mes "pelo menos " + .@total_cost + " zeny.";
+			close;
+		}
+		if (MaxWeight - Weight < .@total_weight) {
+			mes "[Milk Vendor]";
+			mes "Hmm...";
+			mes "Você teria";
+			mes "um pouco mais de espaço";
+			mes "no seu inventário";
+			mes "antes de lhe dar";
+			mes "todo este leite?";
+			close;
+		}
+		set Zeny, Zeny-.@total_cost;
+		delitem 713,.@bottles; //Empty Bottles
+		getitem 519,.@bottles; //Milk
+		close;
+	}
+	close;
+}

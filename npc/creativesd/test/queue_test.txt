@@ -1,0 +1,47 @@
+prontera,150,150,4	script	Test Queue	1_M_04,{
+	mes "[ Queue Test ]";
+	mes "select test:";
+	next;
+	switch( select("- queue check.", "- queue size.", "- queue join.", "- queue leave.", "- queue clean.", "- queue players.") )
+	{
+		case 1:
+			set .@qcheck, queue_check(.queue_id);
+			if( .@qcheck )
+				mes "queue is created: " + .@qcheck;
+			else
+				mes "queue is not created: " + .@qcheck;
+			break;
+		case 2:
+			set .@qsize, queue_size(.queue_id);
+			mes "queue size : " + .@qsize;
+			break;
+		case 3:
+			if( queue_join(.queue_id, 1, 0, getcharid(3)) )
+				mes "you got in the queue";
+			else
+				mes "you have not entered the queue";
+			break;
+		case 4:
+			if( queue_leave(2, getcharid(3)) )
+				mes "you left the queue";
+			else
+				mes "you have not left the queue";
+			break;
+		case 5:
+			queue_clean(.queue_id);
+			mes "clean wait queue";
+			break;
+		case 6:
+			queue_get_players .queue_id;
+			mes "- Players: ";
+			for( .@i=0; .@i < .@queue_count; .@i++ )
+				mes " " + .@queue_player$[.@i];
+			break;
+	}
+	close;
+	
+OnInit:
+	set .queue_id, 99;
+	queue_create .queue_id, "Queue Test";
+	end;
+}

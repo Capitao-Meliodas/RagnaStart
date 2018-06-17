@@ -1,0 +1,39 @@
+-	script	::Airship_Staff_izlude	-1,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo! você gostaria";
+	mes "de embarcar no Dirigível";
+	mes "que irá partir para";
+	mes "Juno e Rachel?";
+	next;
+	if (select("Embarcar no Dirigível para Juno/Rachel.:Cancelar.") == 1) {
+		mes "[Equipe do Dirigível]";
+		mes "A taxa de embarque é de";
+		mes "1,200 zeny. No entanto,";
+		mes "esta cobrança é dispensada se você";
+		mes "usar um Ticket Gratuito para Dirigível. Agora,";
+		mes "você ainda gostaria de embarcar?";
+		next;
+		if (select("Sim:Não") == 1) {
+			if (countitem(7311) > 0) {
+				delitem 7311,1; //Free_Flying_Ship_Ticket
+				warp "airplane_01",244,58;
+				end;
+			}
+			if (Zeny >= 1200) {
+				set Zeny, Zeny - 1200;
+				warp "airplane_01",244,58;
+				end;
+			}
+			mes "[Equipe do Dirigível]";
+			mes "Me desculpe, mas você não";
+			mes "tem 1,200 zeny para pagar";
+			mes "a taxa de embarque.";
+			close;
+		}
+	}
+	mes "[Equipe do Dirigível]";
+	mes "Obrigado,";
+	mes "e volte sempre.";
+	mes "Tenha um bom dia~";
+	close;
+}

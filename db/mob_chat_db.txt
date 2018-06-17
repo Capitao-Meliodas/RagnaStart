@@ -1,0 +1,46 @@
+// Monster Chat Database
+//
+// Structure of Database:
+// Line_ID#Color_Code#Dialog
+
+1#0xFF0000#Weakling! Fraco! Me desafie se tiver alguma coragem!
+2#0xFF0000#Impressive! Impressionante! Eu me pergunto até onde sua imprudencia irá levá-lo.
+3#0xFF0000#I Tenho pena de você estar contra mim. Agora se prepare para meu ataque!
+4#0xFF0000#My Meus servos fiéis! O recebram com uma morte dolorosa!
+5#0xFF0000#Don't Não fuja!
+6#0xFF0000#You Vocês, humanos inúteis. Seus poderes sagrados não tem efeito sobre mim!
+7#0xFF0000#Useless Subalternos inúteis!... Tudo bem, eu tenho mais armas descartáveis para usar.
+8#0xFF0000#Pray Reze para seus deuses!
+9#0xFF0000#Do Você ainda acha que é um jogo para mim?
+10#0xFF0000#Vanish! Desapareça!
+11#0xFF0000#Let's Vamos ver por quanto tempo você pode agüentar meu poder!
+12#0xFF0000#Is Isso é tudo que você tem?
+13#0xFF0000#You're Você está me fazendo cócegas!
+14#0xFF0000#This Chama isso de ataque? Assista e aprenda, seus fracos!
+15#0xFF0000#It's É hora de terminar o jogo!
+16#0xFF0000#Oh, Ha! Você é mais forte do que eu pensava!
+17#0xFF0000#No, Não! Isso não poder estar acontecendo! Eu sou Satan Morroc, o Rei da Destruição!
+18#0xFF0000#I Eu nunca morrei! Sempre estarei voltando para lhe pegar!
+19#0xFF0000#I Eu nasci para conquistar este mundo! Nada poderá me impedir!
+20#0xFF0000#Your Seus dias estão contados!
+21#0xFF0000#Pulse Strike! Meus dedos dilaceradores de aço!
+22#0xFF0000#Hahaha, Hahaha! Me diga quem sou! Eo sou Bafomé! O herdeiro do inferno!
+23#0xFF0000#Enjoy Aproveite sua vida enquanto pode! Sua esperança em breve irá se transformar em desespero!
+24#0xFF0000#When Quando você aprenderá a lição? Quando morrer?
+25#0xFF0000#No... Não... Eu não posso perder! Não vou implorar por minha vida! Eu não estou fugindo! Eu não aceito isso como derrota!
+26#0xFF0000#Argh... Argh... Eu... Eu, estou enfraquecendo...
+27#0xFF0000#What O que você quer de mim?
+28#0xFF0000#No! Não! Eu não fiz isso! Ele é quem planejou tudo isso!
+29#0xFF0000#I Eu só queria encontrar a paz..! É por isso que eu estava fugindo!
+30#0xFF0000#Ahhhh!!! Ahhhh!!! Agora, só tenho que matá-lo!
+31#0xFF0000#Annoying Moscas irritantes!! Saiam de mim!
+32#0xFF0000#Suffer Sofra no Inferno!
+33#0xFF0000#Mwahahaha! TMuahahaha! Sinta a fúria da terra!!!
+34#0xFF0000#No... Não... Eu não irei aceitar esta derrota!
+35#0xFF0000#Will Será que me bater irá aliviar a sua solidão? Por que você não fica aqui comigo para sempre, humano?
+36#0xFF0000#You Você esqueceu o significado do tempo. Eu me pergunto quanto tempo você poderá durar aqui...
+37#0xFF0000#Is Existe alguém esperando por você? Desista de tudo, você é meu agora...
+38#0xFF0000#Discard Esqueça sua vida e fique confinado aqui. Você vai desejar a liberdade preso em cativeiro cativeiro !!
+39#0xFF0000#How Quais serão as mudanças no mundo exterior, enquanto você estiver aqui na solidão durante mil anos?
+40#0xFF0000#Yes! Sim! Desejar a sua liberdade neste local confinado, sua permanência aqui será eterna !!
+

@@ -1,0 +1,71 @@
+lhz_airport,143,43,5	script	Equipe do Dirigível#lhz_air1a::lhz_airport1	90,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao";
+	mes "Aeroporto de Lighthalzen,";
+	mes "onde oferecemos constantes";
+	mes "voos para as cidades de Einbroch, Juno e Hugel.";
+	next;
+	if (select("Embarcar no Dirigível:Cancelar.") == 1) {
+		mes "[Equipe do Dirigível]";
+		mes "A taxa de embarque é de";
+		mes "1.200 zeny, mas você pode";
+		mes "renunciar à taxa se você tiver";
+		mes "um Ticket Gratuito para Dirigível";
+		next;
+		if (select("Sim:Não") == 1) {
+			if (countitem(7311) > 0) {
+				delitem 7311,1; //Free_Flying_Ship_Ticket
+				warp "lhz_airport",148,51;
+				end;
+			}
+			if (Zeny >= 1200) {
+				set Zeny, Zeny - 1200;
+				warp "lhz_airport",148,51;
+				end;
+			}
+			mes "[Equipe do Dirigível]";
+			mes "Me desculpe, mas você não";
+			mes "tem 1,200 zeny para pagar";
+			mes "a taxa de embarque.";
+			close;
+		}
+	}
+	mes "[Equipe do Dirigível]";
+	mes "Obrigado,";
+	mes "e volte sempre.";
+	mes "Tenha um bom dia~";
+	close;
+}
+
+lhz_airport,158,43,5	duplicate(lhz_airport1)	Equipe do Dirigível#lhz_air1b	90
+lhz_airport,126,43,5	duplicate(lhz_airport1)	Equipe do Dirigível#lhz_air1c	90
+
+lhz_airport,143,49,3	script	Equipe de Recepção#lhz_air2a::lhz_airport2	90,{
+	mes "[Equipe de Recepção]";
+	mes "Bem-vindo ao Aeroporto de Lighthalzen.";
+	mes "Por favor deixe-me guiá-lo até o";
+	mes "terminal principal se você acaba de chegar do seu voo. Caso contrário, por favor";
+	mes "embarque no Dirigível para ir ao seu destino pretendido.";
+	next;
+	if (select("Sair do terminal principal.:Cancelar.") == 1) {
+		mes "[Equipe de Recepção]";
+		mes "Uma vez no terminal principal, você terá que pagar a taxa novamente";
+		mes "para embarcar no Dirigível. Você só";
+		mes "deve sair se a cidade de Lighthalzen for seu destino final. Devemos";
+		mes "prosseguir para o terminal principal?";
+		next;
+		if (select("Sim:Não") == 1) {
+			warp "lhz_airport",142,40;
+			end;
+		}
+	}
+	mes "[Equipe de Recepção]";
+	mes "Tudo bem, obrigado";
+	mes "pelo seu apoio";
+	mes "e espero que você tenha";
+	mes "um vôo agradável~";
+	close;
+}
+
+lhz_airport,126,51,3	duplicate(lhz_airport2)	Equipe de Recepção#lhz_air2b	90
+lhz_airport,158,50,3	duplicate(lhz_airport2)	Equipe de Recepção#lhz_air2c	90

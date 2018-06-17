@@ -1,0 +1,58 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Horários do Evento NxZ (Aprendiz vs Zumbi)                   .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compátivel:	eAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Exemplo de personalização entre horários.                    .
+  *-----------------------------------------------------------------*/
+-	script	NxZ#automatic_event	FAKE_NPC,{
+OnClock1500:
+	if( $@NxZ_FLAG )
+		end;
+	
+	// Carrega o evento com suas configurações padrões.
+	donpcevent "noviceVSzombie#main::OnStart";
+	end;
+	
+OnClock2100:
+	if( $@NxZ_FLAG )
+		end;
+	
+	// Definir novas configurações no evento.
+	set $@NxZ_MaxTimer, 15; // Define tempo máximo do evento de  15 minutos.
+	set $@NxZ_MinPlayer, 5; // Define o mínimo de jogadores para 5.
+	set $@NxZ_MaxPlayer, 20; // Define o máximo de jogadores para 20.
+	set $@NxZ_Waiting, 5; // Define o tempo de coleta de jogadores para 5 minutos.
+	set $@NxZ_MaxTimer, 0; // Remove o modo sobrevivência.
+	set $@NxZ_Horde, 1; // Ativa modo horda a cada 5 minutos.
+	setarray $@NxZ_MobID[0],	// Definindo monstros a serem invocados.
+		1015, 1,
+		1041, 1,
+		1197, 1,
+		1463, 1
+	;
+	set $@NxZ_DR_Enable, 1; // Ativando drop de itens dos monstros.
+	setarray $@NxZ_DropRewards[0],	// Definindo novos drops dos monstros.
+		505, 15,
+		506, 8,
+		503, 2
+	;
+	set $@NxZ_Reward_Enable, 1; // Entregar todas recompensas ao campeão.
+	donpcevent "noviceVSzombie#main::OnStart";
+	end;
+}

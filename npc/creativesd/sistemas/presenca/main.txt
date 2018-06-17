@@ -1,0 +1,241 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Sistema de Presença                                              .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Configurações, Comandos, Funções e Computadores.                 .
+  *---------------------------------------------------------------------*/
+-	script	Presença#main	-1,{
+OnInit:	
+	// GroupId do jogador para interagir com comandos.
+	//	Comandos:
+	//		@presence
+	//		@bepresence
+	//
+	.@pCommand = 0;
+	
+	// GroupId de GameMaster para interagir com comandos.
+	//	Comandos:
+	//		#presence <PlayerName>
+	//		#bepresence <PlayerName>
+	//
+	.@aCommand = 99;
+	
+	// Modo de Computação
+	//
+	//	0: O Jogador deve falar com o Npc de Presença para iniciar a computação.
+	//	1: Quando o Jogador Logar já começa a computação.
+	//
+	.ComputerMode = 0;
+	
+	//	Remarcação de Tempo
+	//
+	//	0: O Jogador deve falar novamente com o npc quando chegar no determinado tempo.
+	//	1: Remarcação de Presença é automática.
+	//
+	.BePresent = 1;
+	
+	//	Entrega de Pontos
+	//
+	//	0: O jogador deve falar com o NPC para pegar os pontos.
+	//	1: O sistema irá se encarregar de entregar os pontos aos Jogadores.
+	.DeliveryPoints = 1;
+	
+	//	Configuração de Tempo
+	//
+	//	Em minutos, ponha o tempo que é necessário para ganhar os pontos de presença.
+	//	Padrão é 60 (1hora).
+	.Timer = 60;
+	
+	// Configuração de entrega de pontos
+	//
+	//	Quantos pontos serão entregue a cada x tempo.
+	.Points = 1;
+	
+	// Resetar timer quando o jogador desconectar-se?
+	// Isso inclui quando o jogador mudar de personagem.
+	//
+	//	0: desativado / 1: ativado
+	.Reset = 0;
+	
+	// Configurações de Mensagens
+	//
+	setarray .Msg$[0],
+						// Mensagem de Exibição de pontos de Presença.
+						"Você possuí %d pontos de presença.",
+						// Mensagem de Exibição de tempo restantes.
+						"Resta %d minutos para você marca presença novamente.",
+						// Mensagem para retirar presença no NPC.
+						"Você pode retirar seus pontos de presença no Npc Quadro de Presença.",
+						// Mensagem para marcar presença.
+						"Você ainda não marcou sua presença, marque ela no quadro de presença ou entre com o comando @bepresence.",
+						// Mensagem de recebimento de pontos. 
+						"Você recebeu %d pontos de presença, você tem %d pontos.",
+						// Mensagem de ativação e desativação de presença
+						"Sua presença está %s agora."
+	;
+	
+	bindatcmd "presence", strnpcinfo(0)+"::OnCmd01", .@pCommand, .@aCommand;
+	bindatcmd "bepresence", strnpcinfo(0)+"::OnCmd02", .@pCommand, .@aCommand;
+	initnpctimer;
+	end;
+	
+OnCmd01:
+	.@getPoints = callfunc("fPresence", 0, getcharid(3));
+	.@check = callfunc("fPresence", 2, getcharid(3));
+	message strcharinfo(0), sprintf(.Msg$[0], .@getPoints);
+	
+	if( !.@check )
+		message strcharinfo(0), .Msg$[3];
+	else {
+		.@getTimer = .Timer - callfunc("fPresence", 1, getcharid(3));
+		if( .@getTimer <= 0 )
+			message strcharinfo(0), .Msg$[2];
+		else
+			message strcharinfo(0), sprintf(.Msg$[1],.@getTimer);
+	}
+	end;
+	
+OnCmd02:
+	.@check = callfunc("fPresence", 2, getcharid(3));
+	callfunc("fPresence", 5, getcharid(3), (!.@check?1:0));
+	message strcharinfo(0), sprintf(.Msg$[5], (!.@check?"Marcada":"Pausada"));
+	PresenceFlag = (!.@check?1:0);
+	end;
+	
+OnPCLoginEvent:
+	if( .ComputerMode )
+	{
+		PresenceFlag = 1;
+		callfunc("fPresence", 5, getcharid(3), 1);
+	}
+	else {
+		PresenceFlag = 0;
+		callfunc("fPresence", 5, getcharid(3), 0);
+	}
+	end;
+	
+OnPCLogoutEvent:
+	.@aid = getcharid(3);
+	callfunc("fPresence", 5, .@aid, 0);
+	
+	if( .Reset )
+		callfunc("fPresence", 7, .@aid);		
+	end;
+	
+OnTimer60000:
+	freeloop(1);
+	query_sql "UPDATE `login`, `char` SET `login`.`presencetimer`=`login`.`presencetimer`+'1' WHERE `char`.`online`='1' AND `char`.`account_id`=`login`.`account_id` AND `login`.`presenceflag`='1' AND `login`.`presencetimer`<'" + .Timer + "'";
+	query_sql "SELECT `char`.`account_id`, `char`.`name` FROM `char`, `login` WHERE `char`.`account_id`=`login`.`account_id` AND `char`.`online`='1' AND `login`.`presencetimer`>='" + .Timer + "'", .@aid, .@cname$;
+	
+	if( .DeliveryPoints )
+	{	
+		query_sql "UPDATE `login` SET `presencepoint`=`presencepoint`+'" + .Points + "', `presencetimer`=`presencetimer`-'" + .Timer + "' WHERE `presencetimer`>='" + .Timer + "'";
+		
+		for( .@i=0; .@i < getarraysize(.@aid); .@i++ )
+		{
+			.@getPoints = callfunc("fPresence", 0, .@aid[.@i]);
+			message .@cname$[.@i], sprintf(.Msg$[4], .Points, .@getPoints);
+		}
+	}
+	else {
+		for( .@i=0; .@i < getarraysize(.@aid); .@i++ )
+		{
+			.@getPoints = callfunc("fPresence", 0, .@aid[.@i]);
+			message .@cname$[.@i], .Msg$[2];
+		}
+	}
+	
+	if( !.ComputerMode )
+		query_sql "UPDATE `login` SET `presenceflag`='0' WHERE `presencetimer`='0'";
+		
+	freeloop(0);
+	stopnpctimer;
+	initnpctimer;
+	end;
+}
+	
+// Funções do Npc de Presença.
+//
+// * Consultar Pontos de Presença
+//	fPresence(0, <account_id>);
+//
+// * Consulta de Tempo de Presença
+//	fPresence(1, <account_id>);
+//
+// * Consulta a marcação de presença.
+//	fPresence(2, <account_id>);
+//
+// * Adiciona o Pontos de Presença
+//	fPresence(3, <account_id>, <pontos>);
+//
+// * Remove o Pontos de Presença
+//	fPresence(4, <account_id>, <pontos>);
+//
+// * Atualiza a marcação de presença.
+//	fPresence(5, <account_id>, <0:desativado/1:ativado>)
+//
+// * Remove uma quantidade de tempo.
+//	fPresence(6, <account_id>, <quantidade>);
+//
+//	* Resetar o tempo de uma conta.
+//	fPresence(7, <account_id>);
+//
+//	* Para emuladores rAthena, saber o valor de um determinado item.
+//	fPresence(8, <item_id>);
+//
+function	script	fPresence	{
+	switch( getarg(0) )
+	{
+		case 0:
+			query_sql "SELECT `presencepoint` FROM `login` WHERE `account_id`='" + getarg(1) + "'", .@getpnts;
+			return !getarraysize(.@getpnts)?0:.@getpnts;
+		case 1:
+			query_sql "SELECT `presencetimer` FROM `login` WHERE `account_id`='" + getarg(1) + "'", .@gettimer;
+			return !getarraysize(.@gettimer)?0:.@gettimer;
+		case 2:
+			query_sql "SELECT `presenceflag` FROM `login` WHERE `account_id`='" + getarg(1) + "'", .@getflag;
+			return !getarraysize(.@getflag)?0:.@getflag;
+		case 3:
+			query_sql "UPDATE `login` SET `presencepoint`=`presencepoint`+'" + getarg(2) + "' WHERE `account_id`='" + getarg(1) + "'";
+			return 1;
+		case 4:
+			query_sql "UPDATE `login` SET `presencepoint`=`presencepoint`-'" + getarg(2) + "' WHERE `account_id`='" + getarg(1) + "'";
+			return 1;
+		case 5:
+			query_sql "UPDATE `login` SET `presenceflag`='" + getarg(2) + "' WHERE `account_id`='" + getarg(1) + "'";
+			return 1;
+		case 6:
+			query_sql "UPDATE `login` SET `presencetimer`=`presencetimer`-'" + getarg(2) + "' WHERE `account_id`='" + getarg(1) + "'";
+			return 1;
+		case 7:
+			query_sql "UPDATE `login` SET `presencetimer`='0' WHERE `account_id`='" + getarg(1) + "'";
+			return 1;
+		case 8:
+			for( .@i=0; .@i < getarraysize($@presenceshop); .@i+=2 )
+			{
+				if( $@presenceshop[.@i] == getarg(1) )
+					return $@presenceshop[(.@i+1)];
+			}
+			return 0;
+		defautl:
+			debugmes "Unknow argtype presence func.";
+	}
+	return 0;
+}

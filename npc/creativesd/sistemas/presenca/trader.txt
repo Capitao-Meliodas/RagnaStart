@@ -1,0 +1,127 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Quadro de Presença e Loja                                        .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.1	.
+  .                                                                     .
+  . Compátivel:	rAthena e derivações.                    	            .
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Loja e Quadro de Presença                                        .
+  *---------------------------------------------------------------------*/
+  
+/*======================================================*
+ *					Loja de Presença					*
+ *------------------------------------------------------*/
+ -	pointshop	Presença#shop	-1,#presencepoints,501:2,502:4,503:6,504:8
+
+-	script	Presença#shopconfig	-1,{
+OnInit:
+	// Para não complexar muito, a CreativeSD não procurou utilizar 100% dos recurso de loja dinamica, então é necessário adicionar os
+	// itens e preço na loja (linha 28), e adicionar nos arrays com os itens e preços no array abaixo, sendo o id seguido do preço.
+	//
+	//	Exemplo:
+	//		setarray $@presenceshop[0], <item_id>, <preço>{.....};
+	//
+	//	Suporta até 64 itens com valores, abaixo, está definido na loja pré-configurada, com itens para teste, note que o id e preço é equivalente a do pointshop.
+	//
+	setarray $@presenceshop[0], 501, 2, 502, 4, 503, 6, 504, 8;
+	end;
+}
+
+prontera,164,184,3	script	Quadro de Presença#board	4_BOARD3,{
+	// Informações utilizada pelo sistem.
+	.@ComputerMode = getvariableofnpc(.ComputerMode,"Presença#main");
+	.@bePresent = getvariableofnpc(.BePresent,"Presença#main");
+	.@Timer = getvariableofnpc(.Timer,"Presença#main");
+	.@Points = getvariableofnpc(.Points,"Presença#main");
+	.@getTimer = callfunc("fPresence", 1, getcharid(3));
+	.@chkPresence = callfunc("fPresence", 2, getcharid(3));
+	
+	if( .@getTimer >= .@Timer )
+	{
+		.@add = 0;
+		for( .@i=.@getTimer; .@i >= .@Timer; .@i-=.@Timer )
+			.@add++;
+			
+		.@del = .@add*.@Timer;
+		.@add = .@add*.@Points;
+		
+		callfunc "fPresence", 6, getcharid(3), .@del;
+		callfunc "fPresence", 3, getcharid(3), .@add;
+		.@getPoints = callfunc("fPresence", 0, getcharid(3));
+		message strcharinfo(0), sprintf(getvariableofnpc(.Msg$[4],"Presença#main"), .@Points, .@getPoints);
+		sleep2 2000;
+		.@getTimer = callfunc("fPresence", 1, getcharid(3));
+	}
+	
+	.@getPoints = callfunc("fPresence", 0, getcharid(3));
+	if( .@getPoints )
+	{
+		#presencepoints += .@getPoints;
+		callfunc "fPresence", 4, getcharid(3), .@getPoints;
+	}
+	
+	mes "^B8860B[Quadro de Presença]^000000";
+	mes "^0000FFTotal de Pontos:^000000 " + #presencepoints;
+	if( .@getTimer )
+		mes "^0000FFTempo restante:^000000 " + (.@Timer-.@getTimer);
+	mes " ";
+	mes "O que deseja fazer?";
+	next;
+	switch( select((.@chkPresence?"- Pausar Presença.":"- Marcar Presença."), "^0000FF- Loja de Presença.^000000", "^FF0000- Cancelar.^000000") )
+	{
+		case 1:
+			mes "^B8860B[Quadro de Presença]^000000";
+			if( !.@chkPresence )
+				mes "Você acabou de marcar presença.";
+			else
+				mes "Você acabou de pausar a presença.";
+				
+			callfunc "fPresence", 5, getcharid(3), (!.@chkPresence?1:0);
+			set PresenceFlag, .@chkPresence?1:0;
+			close;
+		case 2:
+			close2;
+			callshop "Presença#shop", 1;
+			npcshopattach "Presença#shop";
+			end;
+		case 3:
+			break;
+	}
+	close;
+	
+OnBuyItem:
+	for( .@i=0; .@i < getarraysize(@bought_nameid); .@i++ )
+	{
+		if( @bought_quantity[.@i] <= 0 )
+			continue;
+			
+		.@iprice = callfunc("fPresence", 8, @bought_nameid[.@i]);
+		
+		if( !.@iprice )
+			continue;
+		
+		.@price = @bought_quantity[.@i]*.@iprice;
+		
+		if( #presencepoints < .@price )
+			continue;
+			
+		callfunc "fPresence", 4, getcharid(3), .@price;
+		set #presencepoints, #presencepoints - .@price;
+		getitem @bought_nameid[.@i], @bought_quantity[.@i];
+	}
+	end;
+}

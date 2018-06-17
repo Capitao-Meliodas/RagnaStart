@@ -1,0 +1,186 @@
+//*.-----------------------------------------------------------------.
+// .    ____                          __                             .
+// .   /\  _`\                       /\ \__  __                      .
+// .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+// .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+// .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+// .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+// .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+// .                                                                 .
+// .          2014~2018 © Creative Services and Development          .
+// .                      www.creativesd.com.br                      .
+// .-----------------------------------------------------------------.
+// .                       CreativeSD English                        .
+// *-----------------------------------------------------------------*
+
+// Ranked System
+// ------------------------------------------------------------------
+1600: Rank List
+1601:  (ID: %d/%s) Points Required: %.1f
+1602: You've fallen from Rank, you're not Rank!
+1603: Congratulations!!! You have reached Rank %s.
+1604: You've been demoted to %s.
+1605: Beware you are in a ranked area!
+1606: Rank Database re-loaded successfully!
+1607: You are not ranked.
+1608: Points: %.1f
+1609: Current Rank: %s
+1610: %.1f point to reach Rank %s.
+1611: Please enter the player's name (usage: @rankinfo3 <player>).
+1612: Player '%s' is not ranked.
+1613: Player: %s
+1614: You can only deactivate the display of your Rank in Cities.
+1615: Your Rank view has been activated.
+1616: Your Rank view has been disabled.
+1617: usage: @setrank <rank_id> <type>
+1618:  Types:
+1619:   0 - Character Only
+1620:   1 - Global Account
+1621:   2 - Account and Character
+1622: Rank changed successfully.
+1623: Rank not found.
+1624: usage: @ranksetpoints <type> <amount>
+1625: You have earned %.1f points for eliminating a player.
+1626: You have lost %.1f points for being eliminated.
+1627: You have earned %.1f points for support.
+1628: You have lost %.1f points for giving incorrect support.
+1629: You have earned %.1f points.
+1630: You have lost %.1f points.
+
+// Battleground Warfare
+// ------------------------------------------------------------------
+// System
+1650: Server : %s has quit game...
+1651: Server : %s is leaving the battlefield....
+1652: Server : %s has been afk-kicked from the battlefield...
+1653: Server : %s was kicked out for %s.
+1654: Battleground: You're %s %s.
+1655: You initiated the vote to expel %s player.
+1656: You voted to expel %s player.
+1657: Reason for Expulsion: %s
+1658: You should report the reason for wanting to expel the %s player.
+1659: %s initiated a vote to expel %s.
+1660: Expel Player %s.
+1661: Reason for Expulsion: %s
+1662: %d/%d required for expulsion.
+1663: Battleground: You received as a reward %dx %s in your inventory.
+1664: Battleground: You received as a reward %dx %s in your Storage.
+1665: Battleground: You received as a reward %dx %s.
+1666: Battleground: You received as a reward (%d) %s.
+1667: Battleground: You received as a reward +%d %s.
+1668: There were no rewards for you in this Battle.
+1669: You are in possession of the '%s'. 
+1670: %s is in the possession of %s!
+1671: You captured the '%s'. 
+1672: You have recaptured the '%s'.
+// Battleground Commands
+1673: Unable to reload Battleground, the main script is not activated.
+1674: A sign was sent to reload the Battleground.
+1675: It was not possible to open the Battleground Registry.
+1676: It was not possible to use the Quick Registry of Battleground.
+1677: Could not remove it from the current battle.
+1678: Removed from battle successfully.
+1679: You are not participating in a Battleground.
+1680: usage: @bgreportafk <player_name> to report a player who is absent from the battle.
+1681: Player %s not found.
+1682: Player %s is not in battle.
+1683: You are not in the same Army as the player.
+1684: Player is not absent, he is currently interacting with an NPC.
+1685: Player is not absent.
+1686: The Player has already been reported to the system.
+1687: The Player was reported successfully.
+1688: Battleground: You were reported for absence in battle, you have %d seconds to enter into interaction.
+1689: It was not possible to open the Battleground Waiting List.
+1690: It was not possible to open the Player List of Battleground.
+1691: It was not possible to open the Battleground Rankings.
+1692: You must enter the message (usage: @order <message>).
+1693: This command is only for Army Captains.
+1694: You have to be in a battle to send a message to your Army.
+1695: You are not participating in a Battle.
+1696: Only the Army Captain can use this command.
+1697: There are no more players in your Army for you to name as Captain.
+1698: This player is not on the same team as you.
+1699: Player %s has been named Captain of the Army.
+1700: Could not name Player %s as Army Captain.
+1701: You must enter the player you want (usage: @bgchangeleader <Nickname>).
+1702: Player: %s | Level: %d/%d | Job: %s
+1703: Battleground Rewards re-charged successfully!
+// Armys and patents
+1704: Guillaume Army
+1705: General Guillaume Marollo
+1706: Blue Lions
+1707: Only the strength of our Army can strengthen the Kingdom of Maroll.
+1708: Croix Army
+1709: Prince Croix Marollo
+1710: Red Eagles
+1711: Raise your swords one last time for the greater good of the Kingdom of Maroll.
+1712: Captain
+1713: Lieutenant
+1714: Sergeant
+1715: Soldier
+1716: Battleground : %s joined the Army.
+
+// Queue System
+// ------------------------------------------------------------------
+// System
+1750: You can not enter the Queue in %s.
+1751: To enter the Queue you must contain at least Base Level 30 %d.
+1752: To enter the Queue you must contain at most Base Level %d.
+1753: Player '%s' joined Queue at %s.
+1754: You joined the Queue at %s.
+1755: Player '%s' left the Queue at %s because he was not in a City.
+1756: Player '%s' has exited Queue at %s.
+1757: Player '%s' was kicked out of Queue at %s.
+1758: Player '%s' was removed from Queue at %s by disconnecting.
+1759: You were removed from Queue at %s because you left the City.
+1760: You left the Queue at %s.
+1761: You have been kicked from Queue at %s.
+1762: You were removed from Queue at %s for not meeting the requirements.
+1763: You have been removed from Queue at %s and must wait for %s to sign up again.
+1764: You have been removed from Queue at %s because it has expired but you can now sign up for a new one.
+1765: You were removed from Queue at %s because it has expired.
+1766: %d seconds
+1767: %d minutes and %d seconds
+1768: %d hour %d minutes and %d seconds
+1769: %d days %d hours %d minutes and %d seconds
+// Commands
+1770: Queues:
+1771: No Queue found.
+1772: Total %d Queues.
+1773: You must inform the Queue where you want to know the registered players:
+1774: There are no players waiting in the Queue at %s.
+1775: Players waiting in Queue at %s:
+1776:    (%d) %s | Job: %s | Level: %d/%d
+1777: You must enter the character name or account id (usage: @queuekick <player_name/account_id>).
+1778: The character was not found.
+1779: The player is not listed on a Queue for you remove it.
+1780: Player '%s' was successfully removed from Queue at %s:
+1781: Failed to remove player '%s' from Queue at %s successfully:
+1782: You must enter the delay value in seconds (usage: @queuesetdelay <delay>).
+1783: Delay for Queue Entry changed successfully.
+1784: Queue Delay: %s.
+1785: You do not have time to wait for a Queue and can register normally.
+1786: You will not be moved to another waiting queue if you are expiring.
+1787: You will be moved to another waiting queue if you are expiring.
+
+// Organized Shops
+// ------------------------------------------------------------------
+1790: You can not open more organized stores on this map.
+1791: %s opened the Shop "%s" on: %s %d %d
+1792: This is not a map of organized stores.
+1793: There was a problem, all of the organized stores blocks are full.
+1794: Recharged successfully, no more stores were moved from place to place.
+1795: Recharged successfully, %d stores moved.
+
+// Presence
+// ------------------------------------------------------------------
+1796: You have presence enabled, use the @bepresence command to turn off presence.
+
+// Arealoot
+// ------------------------------------------------------------------
+1797: Arealoot is now off.
+1798: Arealoot is now on.
+
+// Event Room
+// ------------------------------------------------------------------
+1799: Could not teleport to the Events Room.

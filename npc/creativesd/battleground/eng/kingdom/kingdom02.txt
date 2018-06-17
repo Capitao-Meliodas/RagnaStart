@@ -1,0 +1,909 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Battleground Warfare (Kingdom Kriemhild)                     .
+  .-----------------------------------------------------------------.
+  . Author: Romulo SM (sbk_)                         Version: 1.0   .
+  .                                                                 .
+  . Compatible:                                                     .
+  .    eAthena, rAthena and derivations.                            .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Simulates the Emperium War First Edition of Arbor Castle.    .
+  *-----------------------------------------------------------------*/
+  
+// Kingdom Arbor Engine
+// -----------------------------------------------------------------
+bat_g02,298,158,0	script	start#bat_g02	CLEAR_NPC,{
+	end;
+	
+OnInit:
+	// Removing Players from Arena
+	mapwarp "bat_g02","bat_room",154,150;
+	
+	// Creating Queue and specific times for Arena
+	queue_create(12, "Kingdom Arbor", 0, 0, "start#bat_g02::OnReadyCheck");
+	set $@KingdomBG2_id1, bg_create_team(23, "bat_g02", 13, 10, 18, 50, 0, "start#bat_g02::OnGuillaumeQuit", "", "start#bat_g02::OnGuillWO");
+	set $@KingdomBG2_id2, bg_create_team(24, "bat_g02", 283, 12, 18, 50, 1, "start#bat_g02::OnCroixQuit", "", "start#bat_g02::OnCroixWO");
+	
+	// Expeling Players
+	bg_kick_team($@KingdomBG2_id1, 0);
+	bg_kick_team($@KingdomBG2_id2, 0);
+	
+	// Getting Started
+	set .global_announce, 0;
+	set .BlockStatus, 0;
+	setcell "bat_g02", 10, 62, 25, 44, cell_nobattleground, 1;
+	donpcevent "start#bat_g02::OnReadyCheck";
+	
+	// Set NPC's of Flags with the Symbol of the Army.
+	donpcevent "::OnBatG02Emblem";
+	end;
+	
+OnReadyCheck:
+	if( .BlockStatus )
+	{
+		sleep 5000;
+		donpcevent "start#bat_g02::OnReadyCheck";
+	}
+		
+	set .BlockStatus, 1;
+
+	set .@min_player, callfunc("bg_getarenainfo", 12, "min_player");
+	set .@max_player, callfunc("bg_getarenainfo", 12, "max_player");
+	set .@a_name$, callfunc("bg_getarenainfo", 12, "arena_name");
+	set .@min_player, (.@min_player*2);
+	
+	if( .@max_player > MAX_BG_MEMBERS )
+	{
+		bg_console "(BG_ID: 12) Maximum number of players in a team exceeds the established limit, setting the maximum number of players to " + MAX_BG_MEMBERS + ".";
+		set .@max_player, MAX_BG_MEMBERS;
+	}
+	
+	queue_get_players 12;
+	set .@playlist_team1, bg_team_size($@KingdomBG2_id1);
+	set .@playlist_team2, bg_team_size($@KingdomBG2_id2);
+	if( !.@queue_count )
+	{
+		set .BlockStatus, 0;
+		end;
+	}
+	else if( $@KingdomBG2 && $@KingdomBG2 < 2 && .@queue_count && (.@playlist_team1 < .@max_player || .@playlist_team2 < .@max_player) )
+	{
+		set .@guill, 0;
+		set .@croix, 0;
+		set .@count_g, 0;
+		set .@count_c, 0;
+		
+		// ---------------------------------------------------
+		// -              Equating the Armies                -
+		// ---------------------------------------------------
+		if( .@playlist_team1 < .@playlist_team2 )
+		{
+			set .@guill, .@playlist_team2-.@playlist_team1;
+			for( set .@i,0; .@i < .@guill; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_g, .@count_g + 1;
+				message .@queue_player$[.@i], "Você ingressou no Exército de Guillaume em uma batalha em " + .@a_name$ + " que já está acontecendo, e será teleportado em 10 segundos.";
+			}
+			
+			deletearray .@queue_cid;
+			deletearray .@queue_aid;
+			deletearray .@queue_player$;
+			set .@queue_count, 0;
+			queue_get_players 12; // Reset
+			set .@playlist_team1, bg_team_size($@KingdomBG2_id1);
+		}
+		else if( .@playlist_team2 < .@playlist_team1 )
+		{
+			set .@croix, .@playlist_team1-.@playlist_team2;
+			for( set .@i,0; .@i < .@croix; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_c, .@count_c + 1;
+				message .@queue_player$[.@i], "Você ingressou no Exército de Croix em uma batalha em " + .@a_name$ + " que já está acontecendo, e será teleportado em 10 segundos.";
+			}
+			
+			deletearray .@queue_cid;
+			deletearray .@queue_aid;
+			deletearray .@queue_player$;
+			set .@queue_count, 0;
+			queue_get_players 2; // Reset
+			set .@playlist_team2, bg_team_size($@KingdomBG2_id2);
+		}
+		// ---------------------------------------------------
+		// -             Expanding the Armies                -
+		// ---------------------------------------------------
+		if( .@queue_count && .@playlist_team1 == .@playlist_team2 && .@playlist_team1 < .@max_player && .@playlist_team2 < .@max_player )
+		{
+			set .@guill, .@max_player-.@playlist_team1;
+			set .@croix, .@max_player-.@playlist_team2;
+			
+			if( .@queue_count > (.@guill+.@croix) )
+				set .@queue_count, (.@guill+.@croix);
+				
+			if( .@queue_count%2 )
+				set .@queue_count, .@queue_count-1;
+			
+			set .@size, .@queue_count/2;
+			for( set .@i, 0; .@i < .@size; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_g, .@count_g + 1;
+			}
+			
+			for( set .@i,.@size; .@i < .@queue_count; set .@i, .@i + 1 )
+			{
+				bg_join_team $@KingdomBG2_id2, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				set .@count_c, .@count_c + 1;
+			}
+		}
+		
+		if( .@count_c || .@count_g )
+		{
+			announce "[Battleground]: " + (.@count_c+.@count_g) + " players are being sent to a battle that is going on in " + .@a_name$ + ", the Armies were balanced and expanded.", bc_all, "0xFFCE00";
+			sleep 3000;
+		}
+		
+		deletearray .@queue_cid;
+		deletearray .@queue_aid;
+		deletearray .@queue_player$;
+		set .@queue_count, 0;
+		queue_get_players 12; // Reset
+		
+		set .@queue_size, queue_size(12);
+		set .@team1_size, bg_team_size($@KingdomBG2_id1);
+		set .@team2_size, bg_team_size($@KingdomBG2_id2);
+		
+		if( .@team1_size < .@max_player || .@team2_size < .@max_player )
+		{
+			set .@size, (2*.@max_player)-(.@team1_size+.@team2_size)-.@queue_size;
+			announce "[Battleground]: There are still " + (.@size) + " spots for a battle going on in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+		}
+	}
+	else if( $@KingdomBG2 && !.global_announce && .@queue_count >= .@min_player )
+	{
+		announce "[Battleground]: The battle is complete, but there is a battle going on in " + .@a_name$ + ", all players standing in the queue must wait.", bc_all, "0xFFCE00";
+		set .global_announce, 1;
+	}
+	else if( .@queue_count < .@min_player )
+		announce "[Battleground]: There are " + (.@min_player-.@queue_count) + " players left in the battle in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+	else
+	{
+		// ---------------------------------------------------
+		// -                    Balancing                    -
+		// ---------------------------------------------------
+		if( .@queue_count > (.@max_player*2) )
+			set .@queue_count, (.@max_player*2);
+			
+		if( .@queue_count%2 )
+			set .@queue_count, .@queue_count-1;
+			
+		if( .@queue_count >= .@min_player )
+		{
+			for( set .@i,0; .@i < .@queue_count; set .@i, .@i + 2 )
+			{
+				// Entering Guillaume's Army
+				bg_join_team $@KingdomBG2_id1, 1, .@queue_aid[.@i];
+				queue_leave 0, .@queue_aid[.@i];
+				message .@queue_player$[.@i], "You joined Guillaume's Army, you will be teleported in 10 seconds.";
+				
+				// Entering Croix's Army
+				bg_join_team $@KingdomBG2_id2, 1, .@queue_aid[.@i+1];
+				queue_leave 0, .@queue_aid[.@i+1];
+				message .@queue_player$[.@i+1], "You joined the Croix's Army, you will be teleported in 10 seconds.";
+			}
+		}
+		
+		bg_refresh_patent($@KingdomBG2_id1);
+		bg_refresh_patent($@KingdomBG2_id2);
+		set .global_announce, 0;
+		set $@KingdomBG2, 1;
+		announce "[Battleground]: Both Armies, are complete good luck in the battles at " + .@a_name$ + ".", bc_all, "0xFFCE00";
+		set $@KingdomBG2_CroixScore, 0;
+		set $@KingdomBG2_GuillScore, 0;
+		bg_updatescore "bat_g02",0,0;
+		if( !rand(0,1) ) {
+			set $@KingdomBG2_TeamAttack, $@KingdomBG2_id2;
+			set $@KingdomBG2_TeamDefender, $@KingdomBG2_id1;
+		}
+		else {
+			set $@KingdomBG2_TeamAttack, $@KingdomBG2_id1;
+			set $@KingdomBG2_TeamDefender, $@KingdomBG2_id2;
+		}
+		bg_set_respawn $@KingdomBG2_TeamDefender, 139, 139;
+		donpcevent "start#bat_g02::OnEnable";
+		donpcevent "BattleGround#queue_main::OnStopTimer";
+		sleep 3000;
+		initnpctimer;
+		
+		if( .@queue_count < (2*.@max_player) )
+		{
+			sleep 3000;
+			set .@count, (2*.@max_player)-.@queue_count;
+			announce "[Battleground]: There are still " + .@queue_count + " spots in the battles in " + .@a_name$ + "!", bc_all, "0xFFCE00";
+		}
+		sleep 10000; // 10 seconds and reloads the respawn to the defaults
+		bg_set_respawn $@KingdomBG2_TeamDefender, 18, 50;
+	}
+	set .BlockStatus, 0;
+	end;
+
+OnEnable:
+	enablenpc "Kurunnadi#bat_g02";
+	disablenpc "Lieutenant#bat_g02_a";
+	disablenpc "Lieutenant#bat_g02_b";
+	donpcevent "time#bat_g02::OnEnable";
+	donpcevent "countdown#bat_g02::OnEnable";
+	donpcevent "guardian#bat_g02::OnKill";
+	donpcevent "emperium#bat_g02::OnKill";
+	donpcevent "emperium#bat_g02::OnEnable";
+	donpcevent "time_event#bat_g02::OnEnable";
+	if( $@KingdomBG2_TeamAttack == $@KingdomBG2_id1 )
+		donpcevent "::OnBatG02EmblemCroix";
+	else
+		donpcevent "::OnBatG02EmblemGuill";
+	end;
+	
+OnReset:
+	disablenpc "Kurunnadi#bat_g02";
+	enablenpc "Lieutenant#bat_g02_a";
+	enablenpc "Lieutenant#bat_g02_b";
+	donpcevent "Battle Therapist#bat_g02_a::OnStop";
+	donpcevent "Battle Therapist#bat_g02_b::OnStop";
+	donpcevent "time#bat_g02::OnStop";
+	donpcevent "time_event#bat_g02::OnStop";
+	donpcevent "guardian#bat_g02::OnKill";
+	donpcevent "emperium#bat_g02::OnKill";
+	donpcevent "::OnBatG02EmblemNone:";
+	bg_warp $@KingdomBG2_id1,"bat_g02",13,10;
+	bg_warp $@KingdomBG2_id2,"bat_g02",283,12;
+	end;
+
+OnGuillaumeQuit:
+	callfunc "bg_clear_score", getcharid(0);
+	callfunc "bg_ranking", getcharid(0), 12, 0, 0, 1, 0, $@KingdomBG2_CroixScore;
+	donpcevent "start#bat_g02::OnReadyCheck";
+	end;
+	
+OnCroixQuit:
+	callfunc "bg_clear_score", getcharid(0);
+	callfunc "bg_ranking", getcharid(0), 12, 0, 1, 1, $@KingdomBG2_GuillScore, 0;
+	donpcevent "start#bat_g02::OnReadyCheck";
+	end;
+	
+OnGuillWO:
+	if( queue_size(12) )
+		end;
+	
+	// Sign the Victory
+	set $@KingdomBG2, 2;
+	set $@KingdomBG2_Victory, 2;
+	
+	// Computes Ranking and awards rewards
+	callfunc "bg_finish", 12, $@KingdomBG2_id1, $@KingdomBG2_id2, $@KingdomBG2_Victory, $@KingdomBG2_GuillScore, $@KingdomBG2_CroixScore;
+	
+	// Starts Ending Events
+	mapannounce "bat_g02", "Lieutenant Swandery: Guillaume's cowards fled. We won this one! Wow!",bc_map,"0xFFCE00";
+	enablenpc "Lieutenant#bat_g02_a";
+	enablenpc "Lieutenant#bat_g02_b";
+	donpcevent "start#bat_g02_Out::OnBegin";
+	sleep 2000;
+	donpcevent "start#bat_g02::OnReset";
+	end;
+	
+OnCroixWO:
+	if( queue_size(13) )
+		end;
+	
+	// Sign the Victory
+	set $@KingdomBG2, 2;
+	set $@KingdomBG2_Victory, 1;
+	
+	// Computes Ranking and awards rewards
+	callfunc "bg_finish", 12, $@KingdomBG2_id1, $@KingdomBG2_id2, $@KingdomBG2_Victory, $@KingdomBG2_GuillScore, $@KingdomBG2_CroixScore;
+	
+	// Starts Ending Events
+	mapannounce "bat_g02", "Lieutenant Guillaume Axl Rose: Croix's cowards fled. We won this one! Wow!",bc_map,"0xFFCE00";
+	enablenpc "Lieutenant#bat_g02_a";
+	enablenpc "Lieutenant#bat_g02_b";
+	donpcevent "start#bat_g02_Out::OnBegin";
+	sleep 2000;
+	donpcevent "start#bat_g02::OnReset";
+	end;
+
+// Player Check in the Arena.
+// -------------------------------------------------------
+OnTimer60000:
+	stopnpctimer;
+	if( !getmapusers("bat_g02") )
+	{
+		set $@KingdomBG2, 0;
+		bg_kick_team $@KingdomBG2_id1;
+		bg_kick_team $@KingdomBG2_id2;
+		donpcevent "start#bat_g02_Out::OnStop";
+		
+		if( $@BG_MODE )
+			donpcevent "BattleGround#queue_main::OnReload";
+		else
+			donpcevent "start#bat_g02::OnReadyCheck";
+	}
+	else
+		initnpctimer;
+	end;
+}
+
+bat_g02,298,157,0	script	emperium#bat_g02	CLEAR_NPC,{
+OnEnable:
+	bg_monster $@KingdomBG2_TeamDefender, "bat_g02", 139, 139, "Emperium", 1288, "Kingdom Arbor", "emperium#bat_g02::OnMobDead";
+	end;
+	
+OnKill:
+	killmonster "bat_g02","emperium#bat_g02::OnMobDead";
+	end;
+	
+OnMobDead:
+	if( $@KingdomBG2_TeamAttack == $@KingdomBG2_id1 )
+	{
+		set $@KingdomBG2_GuillScore, $@KingdomBG2_GuillScore+1;
+		set $@KingdomBG2_TeamAttack, $@KingdomBG2_id2;
+		set $@KingdomBG2_TeamDefender, $@KingdomBG2_id1;
+		bg_updatescore "bat_g02", $@KingdomBG2_GuillScore, $@KingdomBG2_CroixScore;
+		bg_warp $@KingdomBG2_id1,"bat_g02",139,139;
+		bg_warp $@KingdomBG2_id2,"bat_g02",18,50;
+		donpcevent "guardian#bat_g02::OnKill";
+		donpcevent "emperium#bat_g02::OnEnable";
+		donpcevent "::OnBatG02EmblemGuill";
+		mapannounce "bat_g02", "The Emperium was destroyed by Guillaume's Army.",bc_map,"0xFFCE00";
+		sleep 2000;
+		mapannounce "bat_g02", "Captain of Guillaume, summoning Guardians increases in defense of the Castle.",bc_map,"0xFFCE00";
+	}
+	else {
+		set $@KingdomBG2_CroixScore, $@KingdomBG2_CroixScore+1;
+		set $@KingdomBG2_TeamAttack, $@KingdomBG2_id1;
+		set $@KingdomBG2_TeamDefender, $@KingdomBG2_id2;
+		bg_updatescore "bat_g02", $@KingdomBG2_GuillScore, $@KingdomBG2_CroixScore;
+		bg_warp $@KingdomBG2_id1,"bat_g02",18,50;
+		bg_warp $@KingdomBG2_id2,"bat_g02",139,139;
+		donpcevent "guardian#bat_g02::OnKill";
+		donpcevent "emperium#bat_g02::OnEnable";
+		donpcevent "::OnBatG02EmblemCroix";
+		mapannounce "bat_g02", "The Emperium was destroyed by the Croix's Army.",bc_map,"0xFFCE00";
+		sleep 2000;
+		mapannounce "bat_g02", "Captain of Croix, summoning Guardians increases in defense of the Castle.",bc_map,"0xFFCE00";
+	}
+	donpcevent "emperium#bat_g02::OnEnable";
+	end;
+}
+
+// Guardians
+// -------------------------------------------------------
+bat_g02,298,156,0	script	guardian#bat_g02	CLEAR_NPC,{
+	end;
+
+// Label only to differentiate Guardian
+OnKill:
+	for( set .@i,0; .@i <= 8; set .@i,.@i+1 ) {
+		killmonster "bat_g02","guardian#bat_g02::OnMobDead0"+.@i;
+	}
+	end;
+	
+OnMobDead01:
+OnMobDead02:
+OnMobDead03:
+OnMobDead04:
+OnMobDead05:
+OnMobDead06:
+OnMobDead07:
+OnMobDead08:
+	end;
+}
+
+bat_g02,120,58,4	script	Kurunnadi#bat_g02	1_M_JOBTESTER,{
+	setarray .@guardiantype[0],2,2,2,2,2,2,2,3;
+	setarray .@guardianposx[0],229,225,222,99,65,36,51,138;
+	setarray .@guardianposy[0],92,80,111,45,31,127,144,133;
+		
+	if ( bg_get_data($@KingdomBG2_TeamDefender, 3) != strcharinfo(0)) {
+		mes "[Kurunnadi]";
+		mes "No matter how much you pester me, I'll still follow my master Captain ^ff0000"+bg_get_data($@KingdomBG2_TeamDefender, 3)+"^000000 of " + bg_get_data($@KingdomBG2_TeamDefender, 4) + "'s Army. Where are the Guardians?! Send these ruffians away right now!";
+		close;
+	}
+	mes "[Kurunnadi]";
+	mes "Welcome. My honorable master, ^ff0000"+strcharinfo(0)+"^000000...";
+	mes "our humble servent, Ahvray, is here to serve you.";
+	next;
+	select("Summon Guardian");
+	mes "[Kurunnadi]";
+	mes "Will you summon a Guardian? It'll be a protector to defend us loyally.";
+	mes "Please select a guardian to defend us.";
+	next;
+	for ( set .@i,0; .@i <= 7; set .@i,.@i+1 ) {
+		if (.@guardiantype[.@i] == 1) { set .@type$, "Guardian Soldier"; }
+		else if (.@guardiantype[.@i] == 2) { set .@type$, "Guardian Archer"; }
+		else { set .@type$, "Guardian Knight"; }
+		if( mobcount("bat_g02","guardian#bat_g02::OnMobDead0"+(.@i+1)) ) {
+			setarray .@gname$[.@i], .@type$ + " - Implemented";
+		}
+		else {
+			setarray .@gname$[.@i], .@type$ + " - Not Implemented";
+		}
+	}
+	set .@menu$, .@gname$[0]+":"+.@gname$[1]+":"+.@gname$[2]+":"+.@gname$[3]+":"+.@gname$[4]+":"+.@gname$[5]+":"+.@gname$[6]+":"+.@gname$[7];
+	set .@gnum, select(.@menu$)-1;
+	mes "[Kurunnadi]";
+	mes "Will you summon the chosen guardian? 10,000 zeny are required to summon a Guardian.";
+	next;
+	switch (select("Summon:Cancel")) {
+	case 1:
+		if (mobcount("bat_g02","guardian#bat_g02::OnMobDead0"+(.@gnum+1)) == 1) {
+			mes "[Kurunnadi]";
+			mes "Master, you already have summoned that Guardian. We cannot summon another.";
+			close;
+		}
+		if (Zeny < 10000) {
+			mes "[Kurunnadi]";
+			mes "Well... I'm sorry but we don't have funds to summon the Guardian. We failed to summon the Guardian.";
+			close;
+		}
+		set Zeny, Zeny-10000;
+		if (.@guardiantype[.@gnum] == 1) { set .@type, 1287; }
+		else if (.@guardiantype[.@gnum] == 2) { set .@type, 1285; }
+		else { set .@type, 1286; }
+		bg_monster $@KingdomBG2_TeamDefender,"bat_g02",.@guardianposx[.@gnum],.@guardianposy[.@gnum],strmobinfo(2,.@type),.@type,"Kingdom Arbor","guardian#bat_g02::OnMobDead0"+(.@gnum+1);
+		mes "[Kurunnadi]";
+		mes "We completed the summoning of the Guardian. Our defenses are now increased with it in place.";
+		close;
+	case 2:
+		mes "[Kurunnadi]";
+		mes "I did as you ordered. But please remember if you the have money to spare, it'll be better to set it up.";
+		close;
+	}
+	
+OnInit:
+	disablenpc "Kurunnadi#bat_g02";
+	end;
+}
+
+// Warps
+// -------------------------------------------------------
+bat_g02,201,126,0	warp	bat_g02#w_01	1,1,bat_g02,102,21
+bat_g02,222,130,0	warp	bat_g02#w_02	1,1,bat_g02,130,43
+bat_g02,218,112,0	warp	bat_g02#w_03	1,1,bat_g02,230,94
+bat_g02,230,98,0	warp	bat_g02#w_04	1,1,bat_g02,222,112
+bat_g02,213,76,0	warp	bat_g02#w_05	1,1,bat_g02,201,118
+bat_g02,201,114,0	warp	bat_g02#w_06	1,1,bat_g02,213,72
+bat_g02,134,43,0	warp	bat_g02#w_07	1,1,bat_g02,226,130
+bat_g02,102,17,0	warp	bat_g02#w_08	1,1,bat_g02,201,121
+bat_g02,84,15,0	warp	bat_g02#w_09	1,1,bat_g02,15,115
+bat_g02,53,111,0	warp	bat_g02#w_10	1,1,bat_g02,115,147
+bat_g02,11,115,0	warp	bat_g02#w_11	1,1,bat_g02,81,15
+bat_g02,115,151,0	warp	bat_g02#w_12	1,1,bat_g02,53,115
+bat_g02,214,44,0	warp	bat_g02#w_13	1,1,bat_g02,18,50
+bat_g02,17,59,0	warp	bat_g02#w_14	1,1,bat_g02,214,48
+
+// Flags
+// -----------------------------------------------------------------
+bat_g02,238,67,4	script	Kingdom Arbor#bat_g02_01	GUILD_FLAG,{
+	set .@bg_id, bg_npc_getid();
+	mes "[ Edict of the Divine Rune-Midgarts Kingdom ]";
+	mes " ";
+	mes "1. Follow the ordinance of The Divine Rune-Midgarts Kingdom,";
+	mes "we approve that this place is in";
+	mes "the private prossession of ^FF0000" + bg_get_data(.@bg_id,4) + "^000000 Army.";
+	mes " ";
+	mes "2. The Captain of ^ff0000" + bg_get_data(.@bg_id,4) + "^000000 Army is";
+	mes "^ff0000" + bg_get_data(.@bg_id,3) + "^000000";
+	mes "If there is anyone who objects to this,";
+	mes "prove your strength and honor with a steel blade in your hand.";
+	close;
+	
+OnBatG02EmblemGuill:
+	bg_set_npc $@KingdomBG2_id1;
+	end;
+	
+OnBatG02EmblemCroix:
+	bg_set_npc $@KingdomBG2_id2;
+	end;
+	
+OnBatG02EmblemNone:
+	bg_set_npc 0;
+	end;
+}
+
+bat_g02,233,67,4	duplicate(Kingdom Arbor#bat_g02_01)	Kingdom Arbor#bat_g02_02	GUILD_FLAG
+bat_g02,221,123,4	duplicate(Kingdom Arbor#bat_g02_01)	Kingdom Arbor#bat_g02_03	GUILD_FLAG
+bat_g02,221,116,4	duplicate(Kingdom Arbor#bat_g02_01)	Kingdom Arbor#bat_g02_04	GUILD_FLAG
+bat_g02,206,108,4	duplicate(Kingdom Arbor#bat_g02_01)	Kingdom Arbor#bat_g02_05	GUILD_FLAG
+bat_g02,212,108,4	duplicate(Kingdom Arbor#bat_g02_01)	Kingdom Arbor#bat_g02_06	GUILD_FLAG
+
+// Guillaume Army Flags
+// -----------------------------------------------------------------
+bat_g02,11,18,4	script	Guillaume Base#bat_g02_a01	GUILD_FLAG,{
+	end;
+	
+OnBatG02Emblem:
+	bg_set_npc $@KingdomBG2_id1;
+	end;
+}
+
+bat_g02,16,18,4	duplicate(Guillaume Base#bat_g02_a01)	Guillaume Base#bat_g02_a02	GUILD_FLAG
+
+// Croix Army Flags
+// -----------------------------------------------------------------
+bat_g02,281,20,4	script	Croix Base#bat_g02_b01	GUILD_FLAG,{
+	end;
+	
+OnBatG02Emblem:
+	bg_set_npc $@KingdomBG2_id2;
+	end;
+}
+
+bat_g02,286,20,4	duplicate(Croix Base#bat_g02_b01)	Croix Base#bat_g02_b02	GUILD_FLAG
+
+// Neutral Flags
+// -----------------------------------------------------------------
+bat_g02,13,54,4	script	Kingdom Arbor#bat_g02_n01	GUILD_FLAG,{
+	mes "^FF0000[Kingdom Arbor]^000000";
+	mes "This Battleground is a simulation of the First War of Emperium in Kriemhild Castle.";
+	mes " ";
+	mes "This point is neutral and also the starting point, no player can face while in this area.";
+	close;
+	
+OnBatG02Emblem:
+	bg_set_npc $@KingdomBG2_id1;
+	end;
+}
+
+bat_g02,22,54,4	script	Kingdom Arbor#bat_g02_n02	GUILD_FLAG,{
+	mes "^FF0000[Kingdom Arbor]^000000";
+	mes "This Battleground is a simulation of the First War of Emperium in Kriemhild Castle.";
+	mes " ";
+	mes "This point is neutral and also the starting point, no player can face while in this area.";
+	close;
+	
+OnBatG02Emblem:
+	bg_set_npc $@KingdomBG2_id2;
+	end;
+}
+
+// Terapeutas
+// -------------------------------------------------------
+bat_g02,298,154,1	script	time#bat_g02	CLEAR_NPC,{
+OnEnable:
+	donpcevent "Battle Therapist#bat_g02_a::OnEnable";
+	donpcevent "Battle Therapist#bat_g02_b::OnEnable";
+	end;
+
+OnStop:
+	donpcevent "Battle Therapist#bat_g02_a::OnStop";
+	donpcevent "Battle Therapist#bat_g02_b::OnStop";
+	end;
+}
+
+bat_g02,13,15,3	script	Battle Therapist#bat_g02_a	4_F_SISTER,{
+	specialeffect2 EF_HEAL;
+	mes "[Battle Therapist]";
+	mes "Just close your eyes";
+	mes "and take a deep breath.";
+	mes "You can free yourself from pain.";
+	close;
+
+OnTimer25000:
+	specialeffect EF_SANCTUARY;
+	end;
+
+OnTimer26500:
+	stopnpctimer;
+	donpcevent "Battle Therapist#bat_g02_a::OnEnable";
+	end;
+
+OnEnable:
+	initnpctimer;
+	enablenpc "Battle Therapist#bat_g02_a";
+	end;
+
+OnStop:
+	disablenpc "Battle Therapist#bat_g02_a";
+	stopnpctimer;
+	end;
+}
+
+bat_g02,283,17,3	script	Battle Therapist#bat_g02_b	4_F_SISTER,{
+	specialeffect2 EF_HEAL;
+	mes "[Battle Therapist]";
+	mes "Just close your eyes";
+	mes "and take a deep breath.";
+	mes "You can free yourself from pain.";
+	close;
+
+OnTimer25000:
+	specialeffect EF_SANCTUARY;
+	end;
+
+OnTimer26500:
+	stopnpctimer;
+	donpcevent "Battle Therapist#bat_g02_b::OnEnable";
+	end;
+
+OnEnable:
+	initnpctimer;
+	enablenpc "Battle Therapist#bat_g02_b";
+	end;
+
+OnStop:
+	disablenpc "Battle Therapist#bat_g02_b";
+	stopnpctimer;
+	end;
+}
+
+// Countdown
+// -------------------------------------------------------
+bat_g02,298,153,3	script	countdown#bat_g02	CLEAR_NPC,{
+OnInit:
+	stopnpctimer;
+	end;
+
+OnEnable:
+	stopnpctimer;
+	initnpctimer;
+	end;
+
+OnStop:
+	stopnpctimer;
+	end;
+
+OnTimer7000:
+	mapannounce "bat_g02", "Lieutenant Axl Rose : Great Týr! This battle is ours already!",bc_map,"0xFF9900";
+	end;
+
+OnTimer8000:
+	mapannounce "bat_g02", "Lieutenant Swandery : Let us show them all our power.",bc_map,"0xFF99CC";
+	end;
+
+OnTimer1800000:
+	mapannounce "bat_g02", "Marollo VII : Guillaume Marollo, Croix Marollo! And his followers!",bc_map,"0x99CC00";
+	end;
+
+OnTimer1803000:
+	mapannounce "bat_g02", "Marollo VII : Both armies are very competitive, so it is difficult to judge which group is superior.",bc_map,"0x99CC00";
+	end;
+
+OnTimer1808000:
+	mapannounce "bat_g02", "Marollo VII : I think it would be better to end the battle, and we call it a tie.",bc_map,"0x99CC00";
+	end;
+
+OnTimer1822000:
+	mapannounce "bat_g02", "Marollo VII : Keep faith and loyalty for Freyja, define this battle now!",bc_map,"0x99CC00";
+	end;
+
+OnTimer1825000:
+	mapannounce "bat_g02", "Axl Rose, Swandery : Yes Sir.",bc_map,"0x99CC00";
+	stopnpctimer;
+	end;
+}
+
+bat_g02,298,152,3	script	time_event#bat_g02	CLEAR_NPC,{
+OnInit:
+	stopnpctimer;
+	end;
+
+OnEnable:
+	set .Kingdom_Timer, 0;
+	stopnpctimer;
+	initnpctimer;
+	end;
+
+OnStop:
+	stopnpctimer;
+	end;
+	
+OnTimer60000:
+	set .Kingdom_Timer, .Kingdom_Timer+1;
+	set .@event_timer, callfunc("bg_getarenainfo", 12, "event_timer");
+	if( .Kingdom_Timer >= .@event_timer )
+	{
+		set $@KingdomBG2, 2;
+		if( $@KingdomBG2_GuillScore < $@KingdomBG2_CroixScore )
+		{
+			mapannounce "bat_g02", "Marollo VII: The Croix's Army is victorious for its Battle performance!",bc_map,"0x99CC00";
+			set $@KingdomBG2_Victory, 2;
+		}
+		else if( $@KingdomBG2_GuillScore > $@KingdomBG2_CroixScore )
+		{
+			mapannounce "bat_g02", "Marollo VII: The Guillaume's Army is victorious for its Battle performance!",bc_map,"0x99CC00";
+			set $@KingdomBG2_Victory, 1;
+		}
+		else
+		{
+			if( $@KingdomBG2_TeamDefender == $@KingdomBG2_id1 )
+			{
+				set .@name$, "Guillaume";
+				set $@KingdomBG2_Victory, 1;
+			}
+			else {
+				set .@name$, "Croix";
+				set $@KingdomBG2_Victory, 2;
+			}
+			
+			mapannounce "bat_g02", "Marollo VII: The " + .@name$ + "'s is the victor for its incredible defense!",bc_map,"0x99CC00";
+		}
+		
+		// Computes Ranking and awards rewards
+		callfunc "bg_finish", 12, $@KingdomBG2_id1, $@KingdomBG2_id2, $@KingdomBG2_Victory, $@KingdomBG2_GuillScore, $@KingdomBG2_CroixScore;
+		
+		donpcevent "start#bat_g02::OnReset";
+		donpcevent "countdown#bat_g02::OnStop";
+		donpcevent "start#bat_g02_Out::OnBegin";
+	}
+	else
+	{
+		stopnpctimer;
+		initnpctimer;
+	}
+	end;
+}
+
+-	script	start#bat_g02_Out	FAKE_NPC,{
+	end;
+
+OnBegin:
+	initnpctimer;
+	end;
+	
+OnStop:
+	stopnpctimer;
+	end;
+
+OnTimer1000:
+	mapannounce "bat_g02", "Please talk to the Lieutenant to leave the battlefield.",bc_map,"0x00ff00";
+	end;
+
+OnTimer3000:
+	mapannounce "bat_g02", "In 30 seconds, the Lieutenant will dispense with the grouping.",bc_map,"0x00ff00";
+	end;
+
+OnTimer5000:
+	mapannounce "bat_g02", "Speak to the Lieutenant to leave the battlefield immediately. Please be careful.",bc_map,"0x00ff00";
+	end;
+
+OnTimer55000:
+	mapannounce "bat_g02", "You will be sent back.",bc_map,"0x00ff00";
+	end;
+
+OnTimer60000:
+	stopnpctimer;
+	set $@KingdomBG2_GuillScoree,0;
+	set $@KingdomBG2_CroixScore,0;
+	set $@KingdomBG2_Victory, 0;
+	bg_kick_team $@KingdomBG2_id1;
+	bg_kick_team $@KingdomBG2_id2;
+	disablenpc "Lieutenant#bat_g02_a";
+	disablenpc "Lieutenant#bat_g02_b";
+	mapwarp "bat_g02","bat_room",154,150;
+	maprespawnguildid "bat_g02",0,3; // Just in case someone else
+	end;
+}
+
+// Recompensas
+// -------------------------------------------------------
+bat_g02,13,15,3	script	Lieutenant#bat_g02_a	4_M_KY_HEAD,{
+	mes "[Axl Rose]";
+	if( getcharid(4) == $@KingdomBG2_id2 )
+	{
+		mes "What?? Some of the Croix Army soldiers are doing it at Guillaume's camp!!";
+		mes "A soldier will lead you to his group.";
+		close2;
+		warp "bat_g02", 283, 12;
+		end;
+	}
+	else if( getcharid(4) == $@KingdomBG2_id1 )
+	{
+		if( $@KingdomBG2_Victory == 0 )
+		{
+			mes "The Battle is not yet soldered, go right to your post, Guillaume's Army needs you!";
+			close;
+		}
+		else if( $@KingdomBG2_Victory == 1 )
+		{
+			mes "Bless the Guillaume Army!";
+			mes strcharinfo(0) + ", let's enjoy our glorious victory!";
+		}
+		else if( $@KingdomBG2_Victory == 2 ) {
+			mes "You lost, but you dedicated yourself to this battle for Guillaume Marollo!";
+			mes "Consider this defeat as a lesson, and next time you will come out victorious.";
+		}
+		else {
+			mes "This indeed was a great Battle!";
+			mes "Not everyone can come out victorious, consider this tie as a lesson and next time we will be victorious.";
+		}
+		close2;
+		bg_leave;
+	}
+	else {
+		mes "A Civilian on our battlefield?";
+		mes "We'll take you to a safe place!";
+		close2;
+	}
+	warp "prontera", 156, 176;
+	end;
+
+OnInit:
+	disablenpc "Lieutenant#bat_g02_a";
+	end;
+}
+
+bat_g02,283,17,3	script	Lieutenant#bat_g02_b	4_M_CRU_HEAD,{
+	mes "[Swandery]";
+	if( getcharid(4) == $@KingdomBG2_id1 )
+	{
+		mes "What?? One of Guillaume's Army soldiers is doing at Croix's camp!!";
+		mes "A soldier will lead you to his group.";
+		close2;
+		warp "bat_g02", 13, 10;
+		end;
+	}
+	else if( getcharid(4) == $@KingdomBG2_id2 )
+	{
+		if( $@KingdomBG2_Victory == 0 )
+		{
+			mes "The Battle is not yet soldered, go right to your post, the Croix Army needs you!";
+			close;
+		}
+		else if( $@KingdomBG2_Victory == 1 ) {
+			mes "Oh " + strcharinfo(0) + ", do not be sed.";
+			mes "Even if we did not win, we did our best.";
+			mes "Do not forget this battle, we will win the next.";
+		}
+		else if( $@KingdomBG2_Victory == 2 )
+		{
+			mes "Bless the Croix Army!";
+			mes strcharinfo(0) + ", let's enjoy our glorious victory!";
+		}
+		else {
+			mes "This indeed was a great Battle!";
+			mes "Not everyone can come out victorious, do not forget this battle!";
+			mes "We'll win the next one.";
+		}
+		close2;
+		bg_leave;
+	}
+	else {
+		mes "A Civilian on our battlefield?";
+		mes "We'll take you to a safe place!";
+		close2;
+	}
+	warp "prontera", 156, 176;
+	end;
+
+OnInit:
+	disablenpc "Lieutenant#bat_g02_b";
+	end;
+}
+
+// MapFlags
+// -----------------------------------------------------------------
+bat_g02	mapflag	nowarp
+bat_g02	mapflag	nowarpto
+bat_g02	mapflag	nomemo
+bat_g02	mapflag	noteleport
+bat_g02	mapflag	nosave
+bat_g02	mapflag	noreturn
+bat_g02	mapflag	nobranch
+bat_g02	mapflag	nopenalty
+bat_g02	mapflag	battleground	2

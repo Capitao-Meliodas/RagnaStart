@@ -1,0 +1,564 @@
+izlude,139,254,3	script	Premiador WOT [Player]	733,{
+//* Itens a venda
+//*id - id do item * valor - valor do item * desitem - nome do item
+set @id1, 607;
+set @kit1, 5;
+set @valor1, 4;
+set @desitem1$, "Frutos de ygg";
+
+set @id2, 608;
+set @kit2, 10;
+set @valor2, 4;
+set @desitem2$, "Sementes de ygg";
+
+set @id3, 678;
+set @kit3, 5;
+set @valor3, 8;
+set @desitem3$, "Garrafas de Veneno Mortal";
+
+set @id4, 7135;
+set @kit4, 5;
+set @valor4, 12;
+set @desitem4$, "Frascos de Fogo Grego";
+
+set @id5, 7136;
+set @kit5, 5;
+set @valor5, 12;
+set @desitem5$, "Frascos de Ácido";
+
+set @id6, 970;
+set @kit6, 5;
+set @valor6, 4;
+set @desitem6$, "Álcool";
+
+set @id7, 12028;
+set @kit7, 5;
+set @valor7, 4;
+set @desitem7$, "Caixas do Trovão";
+
+set @id8, 12029;
+set @kit8, 5;
+set @valor8, 4;
+set @desitem8$, "Caixas da Escuridão";
+
+set @id9, 12030;
+set @kit9, 5;
+set @valor9, 4;
+set @desitem9$, "Caixas do Ressentimento";
+
+set @id10, 12031;
+set @kit10, 5;
+set @valor10, 4;
+set @desitem10$, "Caixas da Tempestade";
+
+set @id11, 12033;
+set @kit11, 5;
+set @valor11, 4;
+set @desitem11$, "Caixas da Luz do Sol";
+
+set @id12, 12206;
+set @kit12, 5;
+set @valor12, 15;
+set @desitem12$, "Nove Caudas Cozidas";
+
+set @id13, 12205;
+set @kit13, 5;
+set @valor13, 15;
+set @desitem13$, "Tônicos de Hwergelmir";
+
+set @id14, 12203;
+set @kit14, 5;
+set @valor14, 15;
+set @desitem14$, "Escorpiões no Vapor";
+
+set @id31, 12207;
+set @kit31, 5;
+set @valor31, 15;
+set @desitem31$, "Sopas da Imortalidade";
+
+set @id15, 12204;
+set @kit15, 5;
+set @valor15, 15;
+set @desitem15$, "Coqueteis Sopro do Dragão";
+
+set @id16, 12202;
+set @kit16, 5;
+set @valor16, 15;
+set @desitem16$, "Línguas no Vapor";
+
+set @id17, 12114;
+set @kit17, 5;
+set @valor17, 10;
+set @desitem17$, "Conversores Elementais Fogo";
+
+set @id18, 12115;
+set @kit18, 5;
+set @valor18, 10;
+set @desitem18$, "Conversores Elementais Água";
+
+set @id19, 12116;
+set @kit19, 5;
+set @valor19, 10;
+set @desitem19$, "Conversores Elementais Terra";
+
+set @id20, 12117;
+set @kit20, 5;
+set @valor20, 10;
+set @desitem20$, "Conversores Elementais Vento";
+
+set @id21, 12118;
+set @kit21, 5;
+set @valor21, 10;
+set @desitem21$, "Poções Antifogo";
+
+set @id22, 12119;
+set @kit22, 5;
+set @valor22, 10;
+set @desitem22$, "Poções Antiágua";
+
+set @id23, 12120;
+set @kit23, 5;
+set @valor23, 10;
+set @desitem23$, "Poções Antiterra";
+
+set @id24, 12121;
+set @kit24, 5;
+set @valor24, 10;
+set @desitem24$, "Poções Antivento";
+
+set @id25, 12215;
+set @kit25, 10;
+set @valor25, 5;
+set @desitem25$, "Pergaminhos de Benção";
+
+set @id26, 12216;
+set @kit26, 10;
+set @valor26, 5;
+set @desitem26$, "Pergaminhos de Agilidade";
+
+set @id27, 12217;
+set @kit27, 10;
+set @valor27, 5;
+set @desitem27$, "Pergaminhos de Aspersio";
+
+set @id28, 12218;
+set @kit28, 10;
+set @valor28, 5;
+set @desitem28$, "Pergaminhos de Assumptio";
+
+set @id29, 12219;
+set @kit29, 10;
+set @valor29, 5;
+set @desitem29$, "Pergaminhos do Vento";
+
+set @id30, 12220;
+set @kit30, 10;
+set @valor30, 5;
+set @desitem30$, "Pergaminhos de Adrenalina";
+
+
+set @pontos, 0;
+set @quant, 0;
+set @valorc, 0;
+
+
+//* Nome do NPC
+set @nome$,"[Premiador WOT]";
+mes @nome$;
+mes "Sou eu quem troca os pontos conquistados na WOT por prêmios, posso ajudar?";
+next;
+menu "- Quero trocar pontos",TROCA,"- O que tem para trocar?",ITENS_TROCA,"- Nada não, tchau!",SAIR;
+
+
+TROCA:
+mes @nome$;
+query_sql "SELECT pontokill FROM chargdt WHERE char_idd ='"+getcharid(0)+"'", @pontos;
+if(@pontos == 0) goto SEM_PONTO;
+mes "Vou lhe apresentar a lista de prêmios. Nela você já podera consultar o valor que irei lhe cobrar pelo item. Seus pontos atuais são ^FF0000"+@pontos+"^000000";
+next;
+mes @nome$;
+mes "- ^006600Nome do item ^000000";
+mes "- ^000099Quantidade de itens no kit^000000";
+mes "- ^CC0000Pontos cobrados por cada kit^000000";
+mes " ";
+mes "Obs: O valor a ser pago com desconto para usuários VIP TOTAL é apresentado somente no final da troca! O desconto é de 50%, aplicado no valor final da troca!";
+next;
+
+menu "- ^006600"+@desitem1$+"^000000 [^000099"+@kit1+"^000000] [^CC0000"+@valor1+"^000000]",ITEM1,
+"- ^006600"+@desitem2$+"^000000 [^000099"+@kit2+"^000000] [^CC0000"+@valor2+"^000000]",ITEM2,
+"- ^006600"+@desitem3$+"^000000 [^000099"+@kit3+"^000000] [^CC0000"+@valor3+"^000000]",ITEM3,
+"- ^006600"+@desitem4$+"^000000 [^000099"+@kit4+"^000000] [^CC0000"+@valor4+"^000000]",ITEM4,
+"- ^006600"+@desitem5$+"^000000 [^000099"+@kit5+"^000000] [^CC0000"+@valor5+"^000000]",ITEM5,
+"- ^006600"+@desitem6$+"^000000 [^000099"+@kit6+"^000000] [^CC0000"+@valor6+"^000000]",ITEM6,
+"- ^006600"+@desitem7$+"^000000 [^000099"+@kit7+"^000000] [^CC0000"+@valor7+"^000000]",ITEM7,
+"- ^006600"+@desitem8$+"^000000 [^000099"+@kit8+"^000000] [^CC0000"+@valor8+"^000000]",ITEM8,
+"- ^006600"+@desitem9$+"^000000 [^000099"+@kit9+"^000000] [^CC0000"+@valor9+"^000000]",ITEM9,
+"- Próxima lista >> ",PROXIMO1;
+
+
+PROXIMO1:
+menu "- ^006600"+@desitem10$+"^000000 [^000099"+@kit10+"^000000] [^CC0000"+@valor10+"^000000]",ITEM10,
+"- ^006600"+@desitem11$+"^000000 [^000099"+@kit11+"^000000] [^CC0000"+@valor11+"^000000]",ITEM11,
+"- ^006600"+@desitem12$+"^000000 [^000099"+@kit12+"^000000] [^CC0000"+@valor12+"^000000]",ITEM12,
+"- ^006600"+@desitem13$+"^000000 [^000099"+@kit13+"^000000] [^CC0000"+@valor13+"^000000]",ITEM13,
+"- ^006600"+@desitem14$+"^000000 [^000099"+@kit14+"^000000] [^CC0000"+@valor14+"^000000]",ITEM14,
+"- ^006600"+@desitem31$+"^000000 [^000099"+@kit31+"^000000] [^CC0000"+@valor31+"^000000]",ITEM31,
+"- ^006600"+@desitem15$+"^000000 [^000099"+@kit15+"^000000] [^CC0000"+@valor15+"^000000]",ITEM15,
+"- ^006600"+@desitem16$+"^000000 [^000099"+@kit16+"^000000] [^CC0000"+@valor16+"^000000]",ITEM16,
+"- ^006600"+@desitem17$+"^000000 [^000099"+@kit17+"^000000] [^CC0000"+@valor17+"^000000]",ITEM17,
+"- ^006600"+@desitem18$+"^000000 [^000099"+@kit18+"^000000] [^CC0000"+@valor18+"^000000]",ITEM18,
+"- ^006600"+@desitem19$+"^000000 [^000099"+@kit19+"^000000] [^CC0000"+@valor19+"^000000]",ITEM19,
+"- Próxima lista >> ",PROXIMO2;
+
+
+PROXIMO2:
+menu "- ^006600"+@desitem20$+"^000000 [^000099"+@kit20+"^000000] [^CC0000"+@valor20+"^000000]",ITEM20,
+"- ^006600"+@desitem21$+"^000000 [^000099"+@kit21+"^000000] [^CC0000"+@valor21+"^000000]",ITEM21,
+"- ^006600"+@desitem22$+"^000000 [^000099"+@kit22+"^000000] [^CC0000"+@valor22+"^000000]",ITEM22,
+"- ^006600"+@desitem23$+"^000000 [^000099"+@kit23+"^000000] [^CC0000"+@valor23+"^000000]",ITEM23,
+"- ^006600"+@desitem24$+"^000000 [^000099"+@kit24+"^000000] [^CC0000"+@valor24+"^000000]",ITEM24,
+"- ^006600"+@desitem25$+"^000000 [^000099"+@kit25+"^000000] [^CC0000"+@valor25+"^000000]",ITEM25,
+"- ^006600"+@desitem26$+"^000000 [^000099"+@kit26+"^000000] [^CC0000"+@valor26+"^000000]",ITEM26,
+"- ^006600"+@desitem27$+"^000000 [^000099"+@kit27+"^000000] [^CC0000"+@valor27+"^000000]",ITEM27,
+"- ^006600"+@desitem28$+"^000000 [^000099"+@kit28+"^000000] [^CC0000"+@valor28+"^000000]",ITEM28,
+"- ^006600"+@desitem29$+"^000000 [^000099"+@kit29+"^000000] [^CC0000"+@valor29+"^000000]",ITEM29,
+"- ^006600"+@desitem30$+"^000000 [^000099"+@kit30+"^000000] [^CC0000"+@valor30+"^000000]",ITEM30;
+
+
+// ****************************** INICIO DA VENDA ***************************************
+
+ITEM1:
+set @kit, @kit1;
+set @valor, @valor1;
+set @id, @id1;
+set @desitem$, @desitem1$;
+if(@id >= 1) goto ITEM;
+
+ITEM2:
+set @kit, @kit2;
+set @valor, @valor2;
+set @id, @id2;
+set @desitem$, @desitem2$;
+if(@id >= 1) goto ITEM;
+
+ITEM3:
+set @kit, @kit3;
+set @valor, @valor3;
+set @id, @id3;
+set @desitem$, @desitem3$;
+if(@id >= 1) goto ITEM;
+
+ITEM4:
+set @kit, @kit4;
+set @valor, @valor4;
+set @id, @id4;
+set @desitem$, @desitem4$;
+if(@id >= 1) goto ITEM;
+
+ITEM5:
+set @kit, @kit5;
+set @valor, @valor5;
+set @id, @id5;
+set @desitem$, @desitem5$;
+if(@id >= 1) goto ITEM;
+
+ITEM6:
+set @kit, @kit6;
+set @valor, @valor6;
+set @id, @id6;
+set @desitem$, @desitem6$;
+if(@id >= 1) goto ITEM;
+
+ITEM7:
+set @kit, @kit7;
+set @valor, @valor7;
+set @id, @id7;
+set @desitem$, @desitem7$;
+if(@id >= 1) goto ITEM;
+
+ITEM8:
+set @kit, @kit8;
+set @valor, @valor8;
+set @id, @id8;
+set @desitem$, @desitem8$;
+if(@id >= 1) goto ITEM;
+
+ITEM9:
+set @kit, @kit9;
+set @valor, @valor9;
+set @id, @id9;
+set @desitem$, @desitem9$;
+if(@id >= 1) goto ITEM;
+
+ITEM10:
+set @kit, @kit10;
+set @valor, @valor10;
+set @id, @id10;
+set @desitem$, @desitem10$;
+if(@id >= 1) goto ITEM;
+
+ITEM11:
+set @kit, @kit11;
+set @valor, @valor11;
+set @id, @id11;
+set @desitem$, @desitem11$;
+if(@id >= 1) goto ITEM;
+
+ITEM12:
+set @kit, @kit12;
+set @valor, @valor12;
+set @id, @id12;
+set @desitem$, @desitem12$;
+if(@id >= 1) goto ITEM;
+
+ITEM13:
+set @kit, @kit13;
+set @valor, @valor13;
+set @id, @id13;
+set @desitem$, @desitem13$;
+if(@id >= 1) goto ITEM;
+
+ITEM14:
+set @kit, @kit14;
+set @valor, @valor14;
+set @id, @id14;
+set @desitem$, @desitem14$;
+if(@id >= 1) goto ITEM;
+
+ITEM15:
+set @kit, @kit15;
+set @valor, @valor15;
+set @id, @id15;
+set @desitem$, @desitem15$;
+if(@id >= 1) goto ITEM;
+
+ITEM16:
+set @kit, @kit16;
+set @valor, @valor16;
+set @id, @id16;
+set @desitem$, @desitem16$;
+if(@id >= 1) goto ITEM;
+
+ITEM17:
+set @kit, @kit17;
+set @valor, @valor17;
+set @id, @id17;
+set @desitem$, @desitem17$;
+if(@id >= 1) goto ITEM;
+
+ITEM18:
+set @kit, @kit18;
+set @valor, @valor18;
+set @id, @id18;
+set @desitem$, @desitem18$;
+if(@id >= 1) goto ITEM;
+
+ITEM19:
+set @kit, @kit19;
+set @valor, @valor19;
+set @id, @id19;
+set @desitem$, @desitem19$;
+if(@id >= 1) goto ITEM;
+
+ITEM20:
+set @kit, @kit20;
+set @valor, @valor20;
+set @id, @id20;
+set @desitem$, @desitem20$;
+if(@id >= 1) goto ITEM;
+
+ITEM21:
+set @kit, @kit21;
+set @valor, @valor21;
+set @id, @id21;
+set @desitem$, @desitem21$;
+if(@id >= 1) goto ITEM;
+
+ITEM22:
+set @kit, @kit22;
+set @valor, @valor22;
+set @id, @id22;
+set @desitem$, @desitem22$;
+if(@id >= 1) goto ITEM;
+
+ITEM23:
+set @kit, @kit23;
+set @valor, @valor23;
+set @id, @id23;
+set @desitem$, @desitem23$;
+if(@id >= 1) goto ITEM;
+
+ITEM24:
+set @kit, @kit24;
+set @valor, @valor24;
+set @id, @id24;
+set @desitem$, @desitem24$;
+if(@id >= 1) goto ITEM;
+
+ITEM25:
+set @kit, @kit25;
+set @valor, @valor25;
+set @id, @id25;
+set @desitem$, @desitem25$;
+if(@id >= 1) goto ITEM;
+
+ITEM26:
+set @kit, @kit26;
+set @valor, @valor26;
+set @id, @id26;
+set @desitem$, @desitem26$;
+if(@id >= 1) goto ITEM;
+
+ITEM27:
+set @kit, @kit27;
+set @valor, @valor27;
+set @id, @id27;
+set @desitem$, @desitem27$;
+if(@id >= 1) goto ITEM;
+
+ITEM28:
+set @kit, @kit28;
+set @valor, @valor28;
+set @id, @id28;
+set @desitem$, @desitem28$;
+if(@id >= 1) goto ITEM;
+
+ITEM29:
+set @kit, @kit29;
+set @valor, @valor29;
+set @id, @id29;
+set @desitem$, @desitem29$;
+if(@id >= 1) goto ITEM;
+
+ITEM30:
+set @kit, @kit30;
+set @valor, @valor30;
+set @id, @id30;
+set @desitem$, @desitem30$;
+if(@id >= 1) goto ITEM;
+
+ITEM31:
+set @kit, @kit31;
+set @valor, @valor31;
+set @id, @id31;
+set @desitem$, @desitem31$;
+if(@id >= 1) goto ITEM;
+
+
+// ****************************** CALCULANDO A VENDA ***************************************
+
+ITEM:
+mes @nome$;
+mes "Quantos kits de "+@desitem$+" você deseja levar?";
+next;
+input @quant;
+if(@quant == 0) goto SEM_VENDA;
+mes @nome$;
+set @valorc, @valor * @quant;
+
+if(getgmlevel() == 20) {
+mes "Você como usuarios VIP TOTAL, recebera um desconto de ^FF000050%^000000 em suas trocas!";
+set @valorc, @valorc / 2;
+mes "Você estara economizando ^006600"+@valor+"^000000 pontos nesta troca! Obrigado por ajudar o pbRO!";
+next;
+mes @nome$;
+	}
+mes "Sua compra vai lhe custar ^FF0000"+@valorc+"^000000 pontos. Você possui ^FF0000"+@pontos+"^000000 pontos.";
+if(@valorc > @pontos) {
+mes "Espere ai... você não tem pontos suficientes, não poderei fazer a troca!";
+close;
+}
+mes "Tudo certo. Faremos a troca!";
+next;
+mes @nome$;
+mes "Posso confirmar?";
+mes "Você esta levando ^FF0000"+@quant+"^000000 kit(s) de "+@desitem$+".";
+mes " ";
+mes "^FF0000ATENÇÃO: tome cuidado com o seu peso, se ele estiver muito próximo do limite máximo e na trocar exceder esse limite, os itens da negociação cairão no CHÃO! Certifique-se de que tem espaço suficiente no inventario.^000000";
+next;
+menu "- Sim",SIM,"- Não", SAIR;
+
+SIM:
+set @pontos, @pontos - @valorc;
+query_sql("UPDATE chargdt SET pontokill = '"+@pontos+"' WHERE char_idd = '"+getcharid(0)+"'");
+set @quant, @quant * @kit;
+getitem @id, @quant;
+mes @nome$;
+mes "Ai esta seus itens, faça bom proveito";
+mes "Ainda resta ^006600"+@pontos+"^000000 ponto(s) para você gastar!";
+close;
+// ****************************** FIM DA VENDA ***************************************
+
+
+
+ITENS_TROCA:
+mes @nome$;
+mes "Veja os itens que você pode trocar comigo por pontos de WOT";
+next;
+mes @nome$;
+mes "Bons não são?";
+mes " ";
+mes "- " +@desitem1$;
+mes "- " +@desitem2$;
+mes "- " +@desitem3$;
+mes "- " +@desitem4$;
+mes "- " +@desitem5$;
+mes "- " +@desitem6$;
+mes "- " +@desitem7$;
+mes "- " +@desitem8$;
+mes "- " +@desitem9$;
+next;
+mes @nome$;
+mes "Que tal esses?";
+mes " ";
+mes "- " +@desitem10$;
+mes "- " +@desitem11$;
+mes "- " +@desitem12$;
+mes "- " +@desitem13$;
+mes "- " +@desitem14$;
+mes "- " +@desitem31$;
+mes "- " +@desitem15$;
+mes "- " +@desitem16$;
+mes "- " +@desitem17$;
+mes "- " +@desitem18$;
+mes "- " +@desitem19$;
+next;
+mes @nome$;
+mes "Estes aqui então... Sem palavras";
+mes " ";
+mes "- " +@desitem20$;
+mes "- " +@desitem21$;
+mes "- " +@desitem22$;
+mes "- " +@desitem23$;
+mes "- " +@desitem24$;
+mes "- " +@desitem25$;
+mes "- " +@desitem26$;
+mes "- " +@desitem27$;
+mes "- " +@desitem28$;
+mes "- " +@desitem29$;
+mes "- " +@desitem30$;
+next;
+mes @nome$;
+mes "Por enquanto é isso que tenho, minhas novas mercadorias chegarão em breve! Então poderei dizer que minha loja esta completa.";
+close;
+
+SEM_PONTO:
+mes "Pelo que estou vendo você não tem pontos... Não vendo nada de graça, volte quando tiver conquistado algum baú!";
+close;
+
+SEM_VENDA:
+mes @nome$;
+mes "...";
+mes "Se não quer nada por que me procurou?";
+close;
+
+SAIR:
+mes @nome$;
+mes "OK. Até breve... Tchau!";
+close;
+}
+izlude_a.gat,139,254,3	duplicate(Premiador WOT [Player])	WOTP#1	733
+izlude_b.gat,139,254,3	duplicate(Premiador WOT [Player])	WOTP#2	733
+izlude_c.gat,139,254,3	duplicate(Premiador WOT [Player])	WOTP#3	733
+izlude_d.gat,139,254,3	duplicate(Premiador WOT [Player])	WOTP#4	733
+

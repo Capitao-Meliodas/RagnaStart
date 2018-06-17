@@ -1,0 +1,774 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Loja por Emblema                                             .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compátivel:	rAthena e derivações.                               .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Negociante de Itens Stuff para BG, GVG e PVP.                .
+  *-----------------------------------------------------------------*/
+prontera,145,187,5	script	Loja por Emblemas#stshop	4_M_JOB_KNIGHT2,{
+	set .@loop_1, 1;
+	while(.@loop_1)
+	{
+		mes "^7B68EE[Negociante]^000000";
+		mes "Olá ^0000FF" + strcharinfo(0) + "^000000,";
+		mes "estou aqui para negociar itens por ^FF0000Emblemas^000000";
+		mes "ganhos em suas batalhas.";
+		mes "Em que posso ajudar?";
+		next;
+		switch( select(
+					"- Acessórios.",
+					"- Armaduras.",
+					"- Armamentos.",
+					"- Capas.",
+					"^0000FF- Consumíveis.^000000",
+					"- Sapatos.",
+					(.Stuff_KvM_Convert?"^9932CC- Converter KvM Pontos.^000000":""),
+					(.Stuff_WoM_Convert?"^9932CC- Converter WoM Pontos.^000000":""),
+					(.Stuff_BB_Convert?"^9932CC- Converter Emblemas de Bravura.^000000":""),
+					(.Stuff_VG_Convert?"^9932CC- Converter Emblemas de Valor.^000000":""),
+					"^FF0000- Cancelar.^000000"
+		) ) {
+			// Acessórios
+			case 1:
+				mes "^7B68EE[Negociante]^000000";
+				mes "Tudo bem, vou abrir a ^0000FFLoja de Acessórios^000000.";
+				close2;
+				callshop "Accessórios#stshop";
+				if( .Stuff_Equips ) npcshopattach "Accessórios#stshop";
+				end;
+			// Armaduras
+			case 2:
+				mes "^7B68EE[Negociante]^000000";
+				mes "Tudo bem, vou abrir a ^0000FFLoja de Armaduras^000000.";
+				close2;
+				callshop "Armaduras#stshop";
+				if( .Stuff_Equips ) npcshopattach "Armaduras#stshop";
+				end;
+			// Armamentos
+			case 3:
+				mes "^7B68EE[Negociante]^000000";
+				mes "Muito bom, qual tipo de ^0000FFArmamento^000000 você está interessado?";
+				next;
+				switch( select("- Adagas.", "- Arcos.", "- Cajados.", "- Chicotes.", "- Espadas.", "- Espingardas.", "- Garras.", "- Instrumentos Musicais.", "- Katares.", "- Lanças.", "- Lança-Granadas.", "- Livros.", "- Machados.", "- Maças.", "- Metralhadoras.", "- Revólveres.", "- Shurikens.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+				{
+					// Adagas
+					case 1:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Adagas^000000.";
+						close2;
+						callshop "Adagas#stshop";
+						if( .Stuff_Equips ) npcshopattach "Adagas#stshop";
+						end;
+					// Arcos
+					case 2:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFArcos^000000.";
+						close2;
+						callshop "Arcos#stshop";
+						if( .Stuff_Equips ) npcshopattach "Arcos#stshop";
+						end;
+					// Cajados
+					case 3:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Cajados^000000.";
+						close2;
+						callshop "Cajados#stshop";
+						if( .Stuff_Equips ) npcshopattach "Cajados#stshop";
+						end;
+					// Chicotes
+					case 4:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Chicotes^000000.";
+						close2;
+						callshop "Cajados#stshop";
+						if( .Stuff_Equips ) npcshopattach "Chicotes#stshop";
+						end;
+					// Espadas
+					case 5:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Qual o tipo de ^0000FFEspada^000000 você está procurando?";
+						next;
+						switch( select("- Espadas de Uma Mão.", "- Espadas de Duas Mãos.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+						{
+							// Espadas de Uma Mão
+							case 1:
+								mes "^7B68EE[Negociante]^000000";
+								mes "Tudo bem, vou abrir a ^0000FFLoja de Espadas de Uma Mão^000000.";
+								close2;
+								callshop "Esp. de Uma Mão#stshop";
+								if( .Stuff_Equips ) npcshopattach "Esp. de Uma Mão#stshop";
+								end;
+							// Espadas de Duas Mãos
+							case 2:
+								mes "^7B68EE[Negociante]^000000";
+								mes "Tudo bem, vou abrir a ^0000FFLoja de Espadas de Duas Mãos^000000.";
+								close2;
+								callshop "Esp. de Duas Mãos#stshop";
+								if( .Stuff_Equips ) npcshopattach "Esp. de Duas Mãos#stshop";
+								end;
+							// Voltar
+							case 3:
+								break;
+							// Cancelar
+							case 4:
+								set .@loop_1,0;
+								break;
+						}
+						break;
+					// Espingardas
+					case 6:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Espingardas^000000.";
+						close2;
+						callshop "Espingardas#stshop";
+						if( .Stuff_Equips ) npcshopattach "Espingardas#stshop";
+						end;
+					// Garras
+					case 7:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Garras^000000.";
+						close2;
+						callshop "Garras#stshop";
+						if( .Stuff_Equips ) npcshopattach "Garras#stshop";
+						end;
+					// Instrumentos Musicais
+					case 8:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Instrumentos Musicais^000000.";
+						close2;
+						callshop "Inst. Musicais#stshop";
+						if( .Stuff_Equips ) npcshopattach "Inst. Musicais#stshop";
+						end;
+					// Katares
+					case 9:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Katares^000000.";
+						close2;
+						callshop "Katares#stshop";
+						if( .Stuff_Equips ) npcshopattach "Katares#stshop";
+						end;
+					// Lanças
+					case 10:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Qual o tipo de ^0000FFLança^000000 você está procurando?";
+						next;
+						switch( select("- Espadas de Uma Mão.", "- Espadas de Duas Mãos.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+						{
+							// Lanças de Uma Mão
+							case 1:
+								mes "^7B68EE[Negociante]^000000";
+								mes "Tudo bem, vou abrir a ^0000FFLoja de Lanças de Uma Mão^000000.";
+								close2;
+								callshop "Lanç. de Uma Mão#stshop";
+								if( .Stuff_Equips ) npcshopattach "Lanç. de Uma Mão#stshop";
+								end;
+							// Lanças de Duas Mãos
+							case 2:
+								mes "^7B68EE[Negociante]^000000";
+								mes "Tudo bem, vou abrir a ^0000FFLoja de Lanças de Duas Mão^000000.";
+								close2;
+								callshop "Lanç. de Duas Mãos#stshop";
+								if( .Stuff_Equips ) npcshopattach "Lanç. de Duas Mãos#stshop";
+								end;
+							// Voltar
+							case 3:
+								break;
+							// Cancelar
+							case 4:
+								set .@loop_1,0;
+								break;
+						}
+						break;
+					// Lança-Granadas
+					case 11:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Lança-Granadas^000000.";
+						close2;
+						callshop "Lança-Granadas#stshop";
+						if( .Stuff_Equips ) npcshopattach "Lança-Granadas#stshop";
+						end;
+					// Livros
+					case 12:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Livros^000000.";
+						close2;
+						callshop "Livros#stshop";
+						if( .Stuff_Equips ) npcshopattach "Livros#stshop";
+						end;
+					// Machados
+					case 13:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Qual o tipo de ^0000FFMachado^000000 você está procurando?";
+						next;
+						switch( select("- Machados de Uma Mão.", "- Machados de Duas Mãos.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+						{
+							// Machados de Uma Mão
+							case 1:
+								mes "^7B68EE[Negociante]^000000";
+								mes "Tudo bem, vou abrir a ^0000FFLoja de Machados de Uma Mão^000000.";
+								close2;
+								callshop "Mac. de Uma Mão#stshop";
+								if( .Stuff_Equips ) npcshopattach "Mac. de Uma Mão#stshop";
+								end;
+							// Machados de Duas Mãos
+							case 2:
+								mes "^7B68EE[Negociante]^000000";
+								mes "Tudo bem, vou abrir a ^0000FFLoja de Machados de Duas Mãos^000000.";
+								close2;
+								callshop "Mac. de Duas Mãos#stshop";
+								if( .Stuff_Equips ) npcshopattach "Mac. de Duas Mãos#stshop";
+								end;
+							// Voltar
+							case 3:
+								break;
+							// Cancelar
+							case 4:
+								set .@loop_1,0;
+								break;
+						}
+						break;
+					// Maças
+					case 14:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Maças^000000.";
+						close2;
+						callshop "Maças#stshop";
+						if( .Stuff_Equips ) npcshopattach "Maças#stshop";
+						end;
+					// Metralhadoras
+					case 15:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Metralhadoras^000000.";
+						close2;
+						callshop "Metralhadoras#stshop";
+						if( .Stuff_Equips ) npcshopattach "Metralhadoras#stshop";
+						end;
+					// Revólveres
+					case 16:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Revólveres^000000.";
+						close2;
+						callshop "Revólveres#stshop";
+						if( .Stuff_Equips ) npcshopattach "Revólveres#stshop";
+						end;
+					// Shurikens
+					case 17:
+						mes "^7B68EE[Negociante]^000000";
+						mes "Tudo bem, vou abrir a ^0000FFLoja de Shurikens^000000.";
+						close2;
+						callshop "Shurikens#stshop";
+						if( .Stuff_Equips ) npcshopattach "Shurikens#stshop";
+						end;
+					// Voltar
+					case 18:
+						break;
+					// Cancelar
+					case 19:
+						set .@loop_1,0;
+						break;
+				}
+				break;
+			// Capas
+			case 4:
+				mes "^7B68EE[Negociante]^000000";
+				mes "Tudo bem, vou abrir a ^0000FFLoja de Capas^000000.";
+				close2;
+				callshop "Capas#stshop";
+				if( .Stuff_Equips ) npcshopattach "Capas#stshop";
+				end;
+			// Consumíveis
+			case 5:
+				mes "^7B68EE[Negociante]^000000";
+				mes "Tudo bem, vou abrir a ^0000FFLoja de Consumíveis^000000.";
+				close2;
+				callshop "Consumíveis#stshop";
+				if( .Stuff_Supplies ) npcshopattach "Consumíveis#stshop";
+				end;
+			// Sapatos
+			case 6:
+				mes "^7B68EE[Negociante]^000000";
+				mes "Tudo bem, vou abrir a ^0000FFSapatos^000000.";
+				close2;
+				callshop "Sapatos#stshop";
+				if( .Stuff_Equips ) npcshopattach "Sapatos#stshop";
+				end;
+			// Converter KvM Pontos
+			case 7:
+				if( kvm_point )
+					set .@emblems, round(.Stuff_KvM_Convert*kvm_point);
+				else
+					set .@emblems, 0;
+					
+				mes "^7B68EE[Negociante]^000000";
+				if( .@emblems <= 0 ) {
+					mes "Você não possuí ^FF0000Pontos KvM^000000 para trocar por ^0000FF" + getitemname(7773) + "^000000.";
+					next;
+					break;
+				}
+				mes "Você possuí ^FF0000(" + kvm_point + ") Pontos de KvM^000000,";
+				mes "deseja trocar por ^0000FF(" + .@emblems + ") " + getitemname(7773) + "^000000?";
+				next;
+				switch( select("- Sim, converter.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+				{
+					case 1:
+						mes "^7B68EE[Negociante]^000000";
+						if( !checkweight(7773,.@emblems) ) {
+							mes "Você não pode carregar tantos ^FF0000" + getitemname(7773) + "^000000!";
+							mes "Guarde alguns dos seus itens no ^0000FFArmazém Pessoal^000000.";
+							close;
+						}
+						getitem 7773, .@emblems;
+						set kvm_point, kvm_point - .@emblems;
+						mes "Muito bem, aqui estão seus ^0000FF" + getitemname(7773) + "^000000";
+						next;
+						break;
+					case 2:
+						break;
+					case 3:
+						set .@loop_1, 0;
+						break;
+				}
+				break;
+			// Converter WoM Pontos
+			case 8:
+				if( wom_point )
+					set .@emblems, round(.Stuff_WoM_Convert*wom_point);
+				else
+					set .@emblems, 0;
+					
+				mes "^7B68EE[Negociante]^000000";
+				if( .@emblems <= 0 ) {
+					mes "Você não possuí ^FF0000Pontos WoM^000000 para trocar por ^0000FF" + getitemname(7773) + "^000000.";
+					next;
+					break;
+				}
+				mes "Você possuí ^FF0000(" + wom_point + ") Pontos de WoM^000000,";
+				mes "deseja trocar por ^0000FF(" + .@emblems + ") " + getitemname(7773) + "^000000?";
+				next;
+				switch( select("- Sim, converter.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+				{
+					case 1:
+						mes "^7B68EE[Negociante]^000000";
+						if( !checkweight(7773,.@emblems) ) {
+							mes "Você não pode carregar tantos ^FF0000" + getitemname(7773) + "^000000!";
+							mes "Guarde alguns dos seus itens no ^0000FFArmazém Pessoal^000000.";
+							close;
+						}
+						getitem 7773, .@emblems;
+						set wom_point, wom_point - .@emblems;
+						mes "Muito bem, aqui estão seus ^0000FF" + getitemname(7773) + "^000000";
+						next;
+						break;
+					case 2:
+						break;
+					case 3:
+						set .@loop_1, 0;
+						break;
+				}
+				break;
+			// Converter Emblemas de Bravuras
+			case 9:
+				if( countitem(7828) )
+					set .@emblems, round(.Stuff_BB_Convert*countitem(7828));
+				else
+					set .@emblems, 0;
+					
+				mes "^7B68EE[Negociante]^000000";
+				if( .@emblems <= 0 ) {
+					mes "Você não possuí ^FF0000" + getitemname(7828) + "^000000 para trocar por ^0000FF" + getitemname(7773) + "^000000.";
+					next;
+					break;
+				}
+				mes "Você possuí ^FF0000(" + countitem(7828) + ") " + getitemname(7828) + "^000000,";
+				mes "deseja trocar por ^0000FF(" + .@emblems + ") " + getitemname(7773) + "^000000?";
+				next;
+				switch( select("- Sim, converter.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+				{
+					case 1:
+						mes "^7B68EE[Negociante]^000000";
+						if( !checkweight(7773,.@emblems) ) {
+							mes "Você não pode carregar tantos ^FF0000" + getitemname(7773) + "^000000!";
+							mes "Guarde alguns dos seus itens no ^0000FFArmazém Pessoal^000000.";
+							close;
+						}
+						getitem 7773, .@emblems;
+						delitem 7828, .@emblems;
+						mes "Muito bem, aqui estão seus ^0000FF" + getitemname(7773) + "^000000";
+						next;
+						break;
+					case 2:
+						break;
+					case 3:
+						set .@loop_1, 0;
+						break;
+				}
+				break;
+			// Converter Emblemas de Valor
+			case 10:
+				if( countitem(7829) )
+					set .@emblems, round(.Stuff_BB_Convert*countitem(7829));
+				else
+					set .@emblems, 0;
+
+				mes "^7B68EE[Negociante]^000000";
+				if( .@emblems <= 0 ) {
+					mes "Você não possuí ^FF0000" + getitemname(7829) + "^000000 para trocar por ^0000FF" + getitemname(7773) + "^000000.";
+					next;
+					break;
+				}
+				mes "Você possuí ^FF0000(" + countitem(7829) + ") " + getitemname(7829) + "^000000,";
+				mes "deseja trocar por ^0000FF(" + .@emblems + ") " + getitemname(7773) + "^000000?";
+				next;
+				switch( select("- Sim, converter.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+				{
+					case 1:
+						mes "^7B68EE[Negociante]^000000";
+						if( !checkweight(7773,.@emblems) ) {
+							mes "Você não pode carregar tantos ^FF0000" + getitemname(7773) + "^000000!";
+							mes "Guarde alguns dos seus itens no ^0000FFArmazém Pessoal^000000.";
+							close;
+						}
+						getitem 7773, .@emblems;
+						delitem 7829, .@emblems;
+						mes "Muito bem, aqui estão seus ^0000FF" + getitemname(7773) + "^000000";
+						next;
+						break;
+					case 2:
+						break;
+					case 3:
+						set .@loop_1, 0;
+						break;
+				}
+				break;
+			// Cancelar
+			default:
+				set .@loop_1, 0;
+				break;
+		}
+	}
+	mes "^7B68EE[Negociante]^000000";
+	mes "Tudo bem, volte quando desejar";
+	mes "trocar seus ^FF0000emblemas^000000 por itens.";
+	close;
+	
+OnBuyItem:
+	set .@CID, callsub(sub_StuffType);
+	if( @bought_itempay > 0 ) {
+		// Check Price
+		if( countitem(@bought_itempay) < @bought_cost ) {
+			dispbottom "Você não tem " + getitemname(@bought_itempay) + " suficiente.", 0xFF0000;
+			end;
+		}
+		
+		// Check Weight
+		for( set .@i, 0; .@i < getarraysize(@bought_nameid); set .@i, .@i + 1 )
+		{
+			if( !checkweight(@bought_nameid[.@i], @bought_quantity[.@i]) )
+			{
+				dispbottom "Você não pode carregar tantos " + getitemname(@bought_nameid[.@i]) + " suficiente.", 0xFF0000;
+				end;
+			}
+		}
+		
+		// Remove Items
+		for( set .@i, 0; .@i < getarraysize(@bought_nameid); set .@i, .@i + 1 ) {
+			if( .@CID )
+				getitem2 @bought_nameid[.@i],@bought_quantity[.@i],1,0,0, 254, 0, .@CID & 0xFFFF, .@CID >> 0x10;
+			else
+				getitem @bought_nameid[.@i], @bought_quantity[.@i];
+		}
+		delitem @bought_itempay, @bought_cost;
+	}
+	else if( getstrlen(@bought_reg$) > 0 ) {
+		// Check Price
+		set .@points, getd(@bought_reg$);
+		if( .@points < @bought_cost ) {
+			dispbottom "Você não tem pontos suficiente.", 0xFF0000;
+			end;
+		}
+		
+		// Check Weight
+		for( set .@i, 0; .@i < getarraysize(@bought_nameid); set .@i, .@i + 1 )
+		{
+			if( !checkweight(@bought_nameid[.@i], @bought_quantity[.@i]) )
+			{
+				dispbottom "Você não pode carregar tantos " + getitemname(@bought_nameid[.@i]) + " suficiente.", 0xFF0000;
+				end;
+			}
+		}
+		
+		// Remove Items
+		for( set .@i, 0; .@i < getarraysize(@bought_nameid); set .@i, .@i + 1 ) {
+			if( .@CID )
+				getitem2 @bought_nameid[.@i],@bought_quantity[.@i],1,0,0, 254, 0, .@CID & 0xFFFF, .@CID >> 0x10;
+			else
+				getitem @bought_nameid[.@i], @bought_quantity[.@i];
+		}
+		setd @bought_reg$, .@points - @bought_cost;
+	}
+	end;
+	
+sub_StuffType:
+	// Set Stuff CID
+	set .@Stuff_Mode, .Stuff_Mode[0] + .Stuff_Mode[1] + .Stuff_Mode[2];
+	if( .@Stuff_Mode > 1 )
+	{
+		set .@loop_1,1;
+		while(.@loop_1)
+		{
+			mes "^7B68EE[Negociante]^000000";
+			mes "Você deseja utilizar este itens em qual ocasião:";
+			next;
+			switch( select(.Stuff_Mode[0] ? "- Utilizar na Batalhas Campais." : "", .Stuff_Mode[1] ? "- Utilizar na GvG." : "", .Stuff_Mode[2] ? "- Utilizar no PvP." : "", "^FF0000- Cancelar.^000000") )
+			{
+				case 1:
+					mes "^7B68EE[Negociante]^000000";
+					mes "Tem certeza que irá utilizar os itens comprados nas ^0000FFBatalhas Campais^000000?";
+					next;
+					switch( select("- Sim, por favor.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							mes "^7B68EE[Negociante]^000000";
+							mes "Tudo bem, vou converter para ^0000FFStuff de Batalhas Campais^000000.";
+							close2;
+							return getbattleflag("stuff_bg_reserverd_id");
+						case 2:
+							break;
+						case 3:
+							set .@loop_1, 0;
+							break;
+					}
+					break;
+				case 2:
+					mes "^7B68EE[Negociante]^000000";
+					mes "Tem certeza que irá utilizar os itens comprados em ^0000FFGvG^000000?";
+					next;
+					switch( select("- Sim, por favor.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							mes "^7B68EE[Negociante]^000000";
+							mes "Tudo bem, vou converter para ^0000FFStuff de GvG^000000.";
+							close2;
+							return getbattleflag("stuff_gvg_reserverd_id");
+						case 2:
+							break;
+						case 3:
+							set .@loop_1, 0;
+							break;
+					}
+					break;
+				case 3:
+					mes "^7B68EE[Negociante]^000000";
+					mes "Tem certeza que irá utilizar os itens comprados em ^0000FFPvP^000000?";
+					next;
+					switch( select("- Sim, por favor.", "^FFA500- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						case 1:
+							mes "^7B68EE[Negociante]^000000";
+							mes "Tudo bem, vou converter para ^0000FFStuff de PvP^000000.";
+							close2;
+							return getbattleflag("stuff_pvp_reserverd_id");
+						case 2:
+							break;
+						case 3:
+							set .@loop_1, 0;
+							break;
+					}
+					break;
+				default:
+					set .@loop_1, 0;
+					break;
+			}
+		}
+	}
+	else if( .Stuff_Mode[0] )
+		return getbattleflag("stuff_bg_reserverd_id");
+	else if( .Stuff_Mode[1] )
+		return getbattleflag("stuff_gvg_reserverd_id");
+	else if( .Stuff_Mode[2] )
+		return getbattleflag("stuff_pvp_reserverd_id");
+		
+	mes "^7B68EE[Negociante]^000000";
+	mes "Tudo bem, volte quando desejar";
+	mes "trocar seus ^FF0000emblemas^000000 por itens.";
+	close;
+
+OnInit:
+	// Configurações Básicas
+	// Habilitar Stuff em Consumíveis?
+	// Se esta opção estiver ativa, os consumíveis só puderam ser utilizados.
+	set .Stuff_Supplies, 1;	
+	
+	// Habilitar Stuff em Equipamentos?
+	// Se esta opção estiver ativa, os equipamentos só puderam ser utilizados.
+	set .Stuff_Equips, 1;
+	
+	// Quantos Emblemas de Guerra o jogador irá receber por cada Pontos KvM convertido?
+	// 0 Irá desativar a opção de converter pontos KvM para Emblemas de Guerra.
+	set .Stuff_KvM_Convert, 1;
+	
+	// Quantos Emblemas de Guerra o jogador irá receber por cada Pontos WoM convertido?
+	// 0 Irá desativar a opção de converter pontos WoM para Emblemas de Guerra.
+	set .Stuff_WoM_Convert, 1;
+	
+	// Quantos Emblemas de Guerra o jogador irá receber por cada Emblema de Bravura convertido?
+	// 0 Irá desativar a opção de converter Emblemas de Bravura para Emblemas de Guerra.
+	set .Stuff_BB_Convert, 1;
+	
+	// Quantos Emblemas de Guerra o jogador irá receber por cada Emblema de Valor convertido?
+	// 0 Irá desativar a opção de converter Emblemas de Vasor para Emblemas de Guerra.
+	set .Stuff_VG_Convert, 1;
+	
+	// Qual tipo de Stuff o NPC pode converter?
+	setarray .Stuff_Mode[0],	1, // Habilitar para Battleground
+								1, // Habilitar para GvG
+								1  // Habilitar para PvP
+	;
+	end;
+}
+
+// Lojas
+// --------------------------------------------------
+// - Armaduras
+-	itemshop	Armaduras#stshop	-1,7773,2394:840,2395:630,2396:580
+
+// - Acessórios
+-	itemshop	Accessórios#stshop	-1,7773,2772:580,2773:200,2774:30
+
+// - Armamentos
+// Addagas
+-	itemshop	Adagas#stshop	-1,7773,13042:2000
+
+// Arcos
+-	itemshop	Arcos#stshop	-1,7773,1743:2000
+
+// Cajados
+-	itemshop	Cajados#stshop	-1,7773,2002:2000,1640:2000,1641:2000
+
+// Chicotes
+-	itemshop	Chicotes#stshop	-1,7773,1981:2000
+
+// Espadas de Uma Mão
+-	itemshop	Esp. de Uma Mão#stshop	-1,7773,13416:2000,13417:2000,13418:2000
+
+// Espadas de Duas Mãos
+-	itemshop	Esp. de Duas Mãos#stshop	-1,7773,1187:2000
+
+// Espingardas
+-	itemshop	Espingardas#stshop	-1,7773,13176:2000
+
+// Garras
+-	itemshop	Garras#stshop	-1,7773,1826:2000,1827:2000
+
+// Instrumentos Musicais
+-	itemshop	Inst. Musicais#stshop	-1,7773,1927:2000
+
+// Katares
+-	itemshop	Katares#stshop	-1,7773,1281:2000,1282:2000
+
+// Lanças de Uma Mão
+-	itemshop	Lanç. de Uma Mão#stshop	-1,7773,1426:2000
+
+// Lanças de Duas Mãos
+-	itemshop	Lanç. de Duas Mãos#stshop	-1,7773,1486:2000
+
+// Lança-Granadas
+-	itemshop	Lança-Granadas#stshop	-1,7773,13179:2000
+
+// Livros
+-	itemshop	Livros#stshop	-1,7773,1576:2000,1577:2000
+
+// Machados de Uma Mão
+-	itemshop	Mac. de Uma Mão#stshop	-1,7773,1310:2000
+
+// Machados de Duas Mãos
+-	itemshop	Mac. de Duas Mãos#stshop	-1,7773,1382:2000
+
+// Maças
+-	itemshop	Maças#stshop	-1,7773,1548:2000
+
+// Metralhadoras
+-	itemshop	Metralhadoras#stshop	-1,7773,13177:2000
+
+// Revólveres
+-	itemshop	Revólveres#stshop	-1,7773,13178:2000
+
+// Shurikens
+-	itemshop	Shurikens#stshop	-1,7773,13307:2000
+
+// - Capas
+-	itemshop	Capas#stshop	-1,7773,2549:630
+
+// - Sapatos
+-	itemshop	Sapatos#stshop	-1,7773,2444:580,2445:70,2446:630
+
+// - Consumíveis
+-	itemshop	Consumíveis#stshop	-1,7773,501:1,502:1,503:1,607:5
+
+// Adiciona o item para Stuff da BG
+//	Arg(0): ID do Item
+//	Arg(1): Quantidade
+//	Arg(2): ID do Item que Chamou
+function	script	item_bg_stuff	{
+	set .@BG_CHARID, getbattleflag("stuff_bg_reserverd_id");
+	if( !checkweight(getarg(0),getarg(1)) )
+		callfunc "item_bg_stuff", 501, 10, 0;
+		set .@i, callfunc("item_bg_stuff", 501, 10, 502);
+	{
+		dispbottom "Você não pode carregar tantos " + getitemname(getarg(0)) + ".", 0xFF0000;
+		if( getarg(2) ) getitem getarg(2), 1;
+		return 0;
+	}
+	
+	getitem2 getarg(0),getarg(1),1,0,0, 254, 0, .@BG_CHARID & 0xFFFF, .@BG_CHARID >> 0x10;
+	return 1;
+}
+
+// Adiciona o item para Stuff da GvG
+//	Arg(0): ID do Item
+//	Arg(1): Quantidade
+//	Arg(2): ID do Item que Chamou
+function	script	item_gvg_stuff	{
+	set .@GVG_CHARID, getbattleflag("stuff_gvg_reserverd_id");
+	if( !checkweight(getarg(0),getarg(1)) )
+	{
+		dispbottom "Você não pode carregar tantos " + getitemname(getarg(0)) + ".", 0xFF0000;
+		if( getarg(2) ) getitem getarg(2), 1;
+		return 0;
+	}
+	
+	getitem2 getarg(0),getarg(1),1,0,0, 254, 0, .@GVG_CHARID & 0xFFFF, .@GVG_CHARID >> 0x10;
+	return 1;
+}
+
+// Adiciona o item para Stuff da GvG
+//	Arg(0): ID do Item
+//	Arg(1): Quantidade
+//	Arg(2): ID do Item que Chamou
+function	script	item_pvp_stuff	{
+	set .@PVP_CHARID, getbattleflag("stuff_pvp_reserverd_id");
+	if( !checkweight(getarg(0),getarg(1)) )
+	{
+		dispbottom "Você não pode carregar tantos " + getitemname(getarg(0)) + ".", 0xFF0000;
+		if( getarg(2) ) getitem getarg(2), 1;
+		return 0;
+	}
+	
+	getitem2 getarg(0),getarg(1),1,0,0, 254, 0, .@PVP_CHARID & 0xFFFF, .@PVP_CHARID >> 0x10;
+	return 1;
+}

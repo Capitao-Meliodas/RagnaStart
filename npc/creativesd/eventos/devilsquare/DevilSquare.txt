@@ -1,0 +1,955 @@
+/*.-----------------------------------------------------------------------------.
+  .          ____                          __                                   .
+  .         /\  _`\                       /\ \__  __                            .
+  .         \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __            .
+  .          \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\          .
+  .           \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/          .
+  .            \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\         .
+  .             \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/         .
+  .                                                                             .
+  .                  2014~2015 © Creative Services and Developent               .
+  .                            www.creativesd.com.br                            .
+  .                          www.sbkmod.ragnagreen.com                          .
+  .-----------------------------------------------------------------------------.
+  . Script:                                                                     .
+  .    Devil Square                                                             .
+  .-----------------------------------------------------------------------------.
+  . Auto: Romulo SM (sbk_)                                         Versão: 1.0  .
+  .                                                                             .
+  . Compatível:	Hercules e Derivações.                              	        .
+  .-----------------------------------------------------------------------------.
+  . Termos de Contrato e Autoria: http://www.creativesd.com.br/?p=termos        .
+  .-----------------------------------------------------------------------------.
+  . Descrição:                                                                  .
+  .    Evento aonde invoca hordas de monstros que devem ser combatidos pelos    .
+  .    Guardiões de Rune Midgard.                                               .
+  .                                                                             .
+  .    Este evento é totalmente dinâmico, podendo ser configurado de várias     .
+  .    maneiras, e também pode recarregar scripts com ele em funcionamento      .
+  .    que o evento é restaurado do começo da rodada atual.                     .
+  .-----------------------------------------------------------------------------.
+  . Changelog:                                                                  .
+  .    * 1.0 [sbk_]                                                             .
+  .        - Iniciado o NPC.                                                    .
+  *-----------------------------------------------------------------------------*/
+
+// Configurações e Eventos Principais.
+// ------------------------------------------------------------
+-	script	DevilSquare#main	FAKE_NPC,{
+OnInit:
+OnResetCfg:
+	// ----------------------------------------------------------------
+	// -                     Configurações Gerais                     -
+	// ----------------------------------------------------------------
+	
+	// GroupID mínimo para poder ligar ou desligar o Evento.
+	//
+	set .GroupID, 99;
+
+	// Quantidade Mínima de Jogadores na Devil Square.
+	//
+	// ATENÇÃO: 0 irá desativar esta opção.
+	//
+	set .MinPlayer, 1;
+	
+	// Quantidade Máxima de Jogadores na Devil Square.
+	//
+	// ATENÇÃO: 0 irá desativar esta opção.
+	//
+	set .MaxPlayer, 25;
+	
+	// Nível Máximo para Entrar na Arena.
+	//
+	// ATENÇÃO: 0 irá desativar esta opção.
+	set .BaseLevel, 99;
+	
+	// Mapa e Coordenadas para Saída da Devil Square.
+	//
+	// Exemplo:
+	//	setarray .MapExit$[0], "<mapa>", "<coordenada_x>", "<coordenada_y>";
+	//	setarray .MapExit$[0], "SavePoint", 0, 0;
+	//
+	setarray .MapExit$[0], "SavePoint", 0, 0;
+	
+	// Váriavel dos Pontos de Devil Square.
+	//
+	set .Ds_Var_Name$, "DevilSquarePoint";
+	
+	// ----------------------------------------------------------------
+	// -                   Configurações de Rodadas                   -
+	// ----------------------------------------------------------------
+	
+	// Quantos Rounds terá a Devil Square?
+	// Os Rounds deve ser configurado um pouco abaixo.
+	//
+	set .MaxRounds, 6;
+	
+	// Monstros a ser invocado na Devil Square.
+	// Máximo de  30 montros diferentes por round em emuladores eAthena.
+	//
+	// <tipo_da_horda>:
+	//		0: Monstros Comuns.
+	//		1: Mini-Boss.
+	//		2: MvP.
+	//
+	// ATENÇÃO: A ordem deve ser continua, ou seja, (1, 2, 3, 4) e não (1, 3, 5, 7) !
+	// ATENÇÃO: Não utilize o mesmo ID de monstro mesmo sendo para pontos difentes no mesmo Round. !
+	//
+	// Exemplo:
+	// setarray .Mob_Round_<RoundNumber>[0], <tipo_da_horda>, <ganho_de_exp>, <permitir_drop_de_item_monstros>, <ganho_de_recompensa_mvp>, <mob_id>, <amount>, <pontos> {, <mob_id>, <amount>, <points>, ...}
+	//
+	setarray .Mob_Round_1[0], 0, 0, 0, 0, 2281, 5, 3, 2471, 5, 3, 2284, 5, 3, 2283, 5, 3, 2252, 5, 3, 1016, 10, 0, 1020, 10, 0, 1023, 10, 0, 1029, 10, 0, 1100, 10, 0;
+	setarray .Mob_Round_2[0], 0, 0, 0, 0, 2285, 5, 3, 2371, 5, 3, 2162, 5, 3, 2471, 5, 3, 2132, 10, 3, 1016, 10, 0, 1020, 10, 0, 1023, 10, 0, 1029, 10, 0, 1100, 10, 0, 1101, 10, 0, 1109, 10, 1;
+	setarray .Mob_Round_3[0], 0, 0, 0, 0, 2132, 14, 3, 2282, 14, 3, 2470, 14, 3, 2471, 14, 3, 2468, 14, 3, 1016, 20, 0, 1020, 20, 0, 1023, 20, 0, 1029, 20, 0, 1100, 20, 0, 1101, 20, 0, 1109, 20, 0, 1122, 20, 0, 1113, 20, 0;
+	setarray .Mob_Round_4[0], 0, 0, 0, 0, 2281, 16, 3, 2282, 14, 3, 2285, 16, 3, 2132, 16, 3, 2472, 16, 3, 1016, 20, 0, 1020, 20, 0, 1023, 20, 0, 1029, 20, 0, 1100, 20, 0, 1101, 20, 0, 1109, 20, 0, 1122, 20, 0, 1113, 20, 0, 1149, 20, 0, 1115, 20, 0;
+	setarray .Mob_Round_5[0], 1, 0, 0, 0, 2281, 18, 3, 2285, 1, 3, 2132, 18, 3, 2472, 18, 3, 1800, 3, 3, 1808, 3, 3, 1804, 3, 3, 1809, 3, 3, 1805, 3, 3, 1801, 3, 3, 1016, 20, 0, 1020, 20, 0, 1023, 20, 0, 1029, 20, 0, 1100, 20, 0, 1101, 20, 0, 1109, 20, 0, 1122, 20, 0, 1113, 20, 0, 1149, 20, 0, 1115, 20, 0, 1179, 20, 0, 1189, 20, 0, 1283, 4, 5, 1302, 4, 5, 1582, 4, 5, 1205, 4, 5, 1681, 4, 5, 1259, 4, 5, 1702, 4, 5, 1707, 4, 5, 1706, 4, 5, 1704, 4, 5, 1765, 4, 5;
+	setarray .Mob_Round_6[0], 2, 0, 0, 0, 1038, 1, 10, 1039, 1, 10, 1087, 1, 10, 1112, 1, 10, 1147, 1, 10, 1150, 1, 10, 1190, 1, 10, 1251, 1, 10, 1272, 1, 10, 1373, 1, 10, 1492, 1, 10, 1511, 1, 10, 1708, 1, 10, 1719, 1, 10, 1734, 1, 10, 1751, 1, 10, 1874, 1, 10, 2235, 1, 10, 1651, 1, 10;
+	
+	// Id dos Monstros Assassinos.
+	// O Sistema irá reconhecer automáticamente quando o monstro for invocado.
+	//
+	// Exemplo:
+	// setarray .Ds_Mob_Assassin[0], <mob_id>,{mob_id,...};
+	//
+	// Para desativar, comente essa linha.
+	//
+	setarray .Mob_Assassin[0], 2281, 1302, 1582, 1702;
+	
+	// Recompensas de Monstros Assassinos?
+	//
+	//	<habilitar>
+	//		1: Sim.
+	//		2: Desabilitar.
+	//
+	//	<reward_type>
+	//		0: Uma das recompensas aleatória.
+	//		1: Todas as recompensas configuradas.
+	//
+	//	<type>
+	//		0: Item
+	//		1: Variável
+	//
+	// Exemplos:
+	//	Em Itens:
+	//		setarray .Mob_Ass_Reward$[0], <habilitar>, <reward_type>, <item_id>, <type>, "<name>", <amount>{, <item_id>, <type>, "<name>", <amount>...};
+	//  Em Variáveis:
+	// 		setarray .Mob_Ass_Reward$[0], <habilitar>, <reward_type>, "variable", <type>, "<name>", <amount>{, "<variable>", <type>, "<name>", <amount>..};
+	//	Em Ambos:
+	//		ATENÇÃO: Não é necessário seguir esta ordem!
+	// 		setarray .Mob_Ass_Reward$[0], <habilitar>, <reward_type>, <item_id>, <type>, "<name>", <amount>, "variable", <type>, "<name>", <amount>{, "<variable>", <type>, "<name>", <amount>, <item_id>, <type>, "<name>", <amount>..};
+	//
+	// ATENÇÃO: Na quantidade utilizar somente números!
+	//
+	setarray .Mob_Ass_Reward$[0], 1, 0, 41001, getitemname(41001), 0, 10; //501, 0, getitemname(501), 10, 502, 0, getitemname(501), 30, "DevilSquarePoint", 1, "pontos de DevilSquare", 15;
+	
+	
+	// ----------------------------------------------------------------
+	// -              Configurações das Arcas do Tesouro              -
+	// ----------------------------------------------------------------
+	
+	// Habilitar Arcas do Tesouro?
+	//
+	//	0: Nao.
+	//	1: Sim.
+	set .Treasure, 1;
+	
+	// Jogadores podem abrir mais de uma Arca do Tesouro por vez?
+	//
+	// ATENÇÃO: Caso o jogador estiver com o inventário carregado, ele não irá conseguir entrar na Devil Square.
+	// ATENÇÃO: Caso esta opção não esteja ativada, as Drops Naturais não irão funcionar para este jogador, pois o mesmo será retirado da arena.
+	//
+	//	0: Não.
+	//	1: Sim.
+	//
+	set .Treasure_Multiple_Kill, 1;
+	
+	// Como será invocado as Arcas do Tesouro?
+	//
+	//	0: Caso você ponha zero, todas Arcas do Tesouro configurada mais abaixo será invocada.
+	//  <outro número>: Caso ponha outro número, a quantidade que você por, desde que seja no máximo a mesma quantidade das Arcas do Tesour configurado, será invocado aleatóriamente,
+	//					exemplo, se você tem 10 Arcas configurada, utilize a opção 0, pois irá invocar todas, caso você tenha 10 e deseja que somente 9 será invocada, ponha 9.
+	//
+	set .Max_Treasure, 0;
+	
+	// Habilitar Habilidades em Arcas do Tesouro?
+	//
+	//	0: Não.
+	//	1: Sim.
+	//
+	set .Treause_Skill, 0;
+	
+	// Habilitar drops naturais das Arcas do Tesouro?
+	//
+	//	0: Não.
+	//	1: Sim.
+	//
+	set .Treasure_Natural_Drops, 0;
+	
+	// Habilitar EXP naturais das Arcas do Tesouro?
+	set .Treasure_Natural_Exp, 0;
+	
+	// Arcas do Tesouro.
+	//
+	//	<numero>: Começa partir do 1, ponha o número para arca do tesouro.
+	//			  ATENÇÃO: A ordem deve ser continua, ou seja, (1, 2, 3, 4) e não (1, 3, 5, 7).
+	//
+	//	<reward_type>
+	//		0: Uma das recompensas aleatória.
+	//		1: Todas as recompensas configuradas.
+	//
+	//	<type>
+	//		0: Item
+	//		1: Variável
+	//
+	// Exemplos:
+	//	Em Itens:
+	//		setarray .Treasure_<numero>$[0], <reward_type>, <mob_id>, <item_id>, <type>, "<name>", <amount>{, <item_id>, <type>, "<name>", <amount>...};
+	//  Em Variáveis:
+	// 		setarray .Treasure_<numero>$[0], <reward_type>, <mob_id>, "variable", <type>, "<name>", <amount>{, "<variable>", <type>, "<name>", <amount>..};
+	//	Em Ambos:
+	//		ATENÇÃO: Não é necessário seguir esta ordem!
+	// 		setarray .Treasure_<numero>$[0], <reward_type>, <mob_id>, <item_id>, <type>, "<name>", <amount>, "variable", <type>, "<name>", <amount>{, "<variable>", <type>, "<name>", <amount>, <item_id>, <type>, "<name>", <amount>..};
+	//
+	// ATENÇÃO: Na quantidade utilizar somente números!
+	// ATENÇÃO: Não ponha o mesmo mob_id em múltiplas linhas, isto irá fazer com que o sistema não saiba qual recompensa entreguar!
+	// ATENÇÃO: Caso não deseje dar uma recompensa, não a ponha!
+	//
+	setarray .Treasure_1$[0], 0, 1324, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 5, 502, 0, getitemname(502), 5, "DevilSquarePoint", 1, "pontos de Devil Square", 5;
+	setarray .Treasure_2$[0], 0, 1328, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 7, 502, 0, getitemname(502), 7, "DevilSquarePoint", 1, "pontos de Devil Square", 7;
+	setarray .Treasure_3$[0], 0, 1332, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 10, 502, 0, getitemname(502), 10, "DevilSquarePoint", 1, "pontos de Devil Square", 10;
+	setarray .Treasure_4$[0], 0, 1336, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 15, 502, 0, getitemname(502), 15, "DevilSquarePoint", 1, "pontos de Devil Square", 15;
+	setarray .Treasure_5$[0], 0, 1340, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 5, 502, 0, getitemname(502), 5, "DevilSquarePoint", 1, "pontos de Devil Square", 5;
+	setarray .Treasure_6$[0], 0, 1344, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 7, 502, 0, getitemname(502), 7, "DevilSquarePoint", 1, "pontos de Devil Square", 7;
+	setarray .Treasure_7$[0], 0, 1348, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 10, 502, 0, getitemname(502), 10, "DevilSquarePoint", 1, "pontos de Devil Square", 10;
+	setarray .Treasure_8$[0], 0, 1352, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 15, 502, 0, getitemname(502), 15, "DevilSquarePoint", 1, "pontos de Devil Square", 15;
+	setarray .Treasure_9$[0], 0, 1356, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 5, 502, 0, getitemname(502), 5, "DevilSquarePoint", 1, "pontos de Devil Square", 5;
+	setarray .Treasure_10$[0], 0, 1360, 41001, 0, getitemname(41001), 100; //501, 0, getitemname(501), 7, 502, 0, getitemname(502), 7, "DevilSquarePoint", 1, "pontos de Devil Square", 7;
+	
+	if( $DS_Flag > 1 && !getmapusers("ordeal_1-1") ) // Previne de não houver jogadores em um @reloadscript.
+		donpcevent "DevilSquare#main::OnReset";
+	else if( $DS_Flag )
+	{
+		if( $DS_Set_Config$ != "" ) donpcevent $DS_Set_Config$; // Configurações Personalizadas de Horário.
+		donpcevent "DevilSquare#main::OnStart";	
+	}
+	end;
+	
+OnPCDieEvent:
+	getmapxy .@m$, .@x, .@y, 0;
+	if( .@m$ == "ordeal_1-1" )
+	{
+		warp .MapExit$[0], atoi(.MapExit$[1]), atoi(.MapExit$[2]);
+		donpcevent "DevilSquare#main::OnCheck";
+	}
+	end;
+	
+OnCheck:
+	if( $DS_Flag > 1 && !getmapusers("ordeal_1-1") )
+	{
+		if( $DS_Flag >= 3 )
+			announce "[Devil Square]: Houve sobreviventes!! Parabéns a todos que participaram!", bc_all, "0x00FF00";
+		else
+			announce "[Devil Square]: Todos os participantes falharam na Devil Square, os monstros dominaram a Devil Square.", bc_all, "0x00FF00";
+			
+		donpcevent "DevilSquare#main::OnReset";
+	}
+	end;
+	
+OnReset:
+	stopnpctimer;
+	set $DS_Flag, 0;
+	set $DS_Round, 0;
+	set $DS_TimerCount, 0;
+	killmonsterall "ordeal_1-1";
+	disablenpc "Saída#ds_exit";
+	donpcevent "::OnDisableDSWait";
+	removemapflag "ordeal_1-1", mf_nobaseexp;
+	removemapflag "ordeal_1-1", mf_nojobexp;
+	removemapflag "ordeal_1-1", mf_nomobloot;
+	removemapflag "ordeal_1-1", mf_nomvploot;
+	removemapflag "ordeal_1-1", mf_noskill;
+	
+	set $DS_Set_Config$, "";
+	if( $DS_Reset_Config$ != "" )
+	{
+		donpcevent $DS_Reset_Config$;
+		set $DS_Reset_Config$, ""; // Resetar Configurações Personalizadas de Horário.
+	}
+	end;
+
+OnStart:
+	if( !$DS_Flag || ($DS_Flag == 1 && !$DS_TimerCount) )
+	{
+		stopnpctimer;
+		initnpctimer;
+		setnpctimer (240000-2);
+		set $DS_TimerCount, 0;
+		set $DS_Round, 0;
+		set $DS_Flag, 1;
+		donpcevent "::OnEnableDSWait";
+		announce "[Devil Square]: Em 5 minutos a Devil Square irá começar!", bc_all, "0x00FF00";
+	}
+	else if( $DS_Flag == 1 && $DS_TimerCount > 0 && $DS_TimerCount <= 4 )
+	{
+		stopnpctimer;
+		initnpctimer;
+		setnpctimer ($DS_TimerCount*60000);
+		set $DS_Round, 0;
+	}
+	else if( $DS_Flag == 2 )
+		donpcevent "DevilSquare#main::OnSummon";
+	else if( .Treasure && $DS_Flag == 3 )
+		donpcevent "DevilSquare#main::OnTreasureSummon";
+	else
+	{
+		stopnpctimer;
+		enablenpc "Saída#ds_exit";
+		announce "[Devil Square]: Houve sobreviventes!! Parabéns a todos que participaram!", bc_all, "0x00FF00";
+		sleep 3000;
+		mapannounce "ordeal_1-1", "[Devil Square]: Sobreviventes, dirijam-se a saída localizado no Centro da Arena ou em 30 segundos vocês serão teleportados para Prontera!", bc_all, "0x00FF00";
+		sleep 15000;
+		mapannounce "ordeal_1-1", "[Devil Square]: Sobreviventes, dirijam-se a saída localizado no Centro da Arena ou em 15 segundos vocês serão teleportados para Prontera!", bc_all, "0x00FF00";
+		sleep 10000;
+		mapannounce "ordeal_1-1", "[Devil Square]: Sobreviventes, dirijam-se a saída localizado no Centro da Arena ou em 5 segundos vocês serão teleportados para Prontera!", bc_all, "0x00FF00";
+		sleep 5000;
+		mapwarp "ordeal_1-1", "prontera", 156,176;
+		donpcevent "DevilSquare#main::OnReset";
+	}
+	end;
+	
+OnTimer60000:
+	announce "[Devil Square]: Em 4 minutos a Devil Square irá começar!", bc_all, "0x00FF00";
+	enablenpc "Saída#ds_exit";
+	donpcevent "::OnEnableDSWait";
+	set $DS_TimerCount, 1;
+	end;
+
+OnTimer120000:
+	announce "[Devil Square]: Em 3 minutos a Devil Square irá começar!", bc_all, "0x00FF00";
+	enablenpc "Saída#ds_exit";
+	donpcevent "::OnEnableDSWait";
+	set $DS_TimerCount, 2;
+	end;
+	
+OnTimer180000:
+	announce "[Devil Square]: Em 2 minutos a Devil Square irá começar!", bc_all, "0x00FF00";
+	enablenpc "Saída#ds_exit";
+	donpcevent "::OnEnableDSWait";
+	set $DS_TimerCount, 3;
+	end;
+	
+OnTimer240000:
+	announce "[Devil Square]: Em 1 minuto a Devil Square irá começar!", bc_all, "0x00FF00";
+	enablenpc "Saída#ds_exit";
+	donpcevent "::OnEnableDSWait";
+	set $DS_TimerCount, 4;
+	end;
+	
+OnTimer300000:
+	stopnpctimer;
+	
+	// Checagem de Jogadores na Arena.
+	if( getmapusers("ordeal_1-1") < .MinPlayer )
+	{
+		announce "[Devil Square]: A Devil Square foi cancelada por falta de jogadores!", bc_all, "0x00FF00";
+		sleep 3000;
+		donpcevent "DevilSquare#main::OnReset";
+		end;
+	}
+	
+	set $DS_Flag, 2;
+	set $DS_Round, 0;
+	set $DS_TimerCount, 0;
+	donpcevent "::OnDisableDSWait";
+	announce "[Devil Square]: A Devil Square começou!", bc_all, "0x00FF00";
+	donpcevent "DevilSquare#main::OnStartRound";
+	end;
+	
+OnStartRound:
+	set $DS_Round, $DS_Round + 1;
+	if( $DS_Round <= .MaxRounds )
+	{
+		stopnpctimer;
+		initnpctimer;
+		setnpctimer (420000-1);
+		enablenpc "Saída#ds_exit";
+	}
+	else if( .Treasure )
+	{
+		set $DS_Flag, 3;
+		donpcevent "DevilSquare#main::OnTreasureSummon";
+	}
+	else {
+		set $DS_Flag, 4;
+		donpcevent "DevilSquare#main::OnStart";
+	}
+	end;
+
+OnTimer420000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 1 minuto.", bc_all, "0x00FF00";
+	end;
+
+OnTimer450000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 30 segundos.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer465000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 15 segundos.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer475000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 5 segundos.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer476000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 4 segundos.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer477000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 3 segundos.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer478000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 2 segundos.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer479000:
+	mapannounce "ordeal_1-1", "[Devil Square]: Se preparem para " + $DS_Round + "ª Square, a horda será invocada em 1 segundo.", bc_all, "0x00FF00";
+	end;
+	
+OnTimer480000:
+	stopnpctimer;
+	donpcevent "DevilSquare#main::OnSummon";
+	end;
+	
+OnSummon:
+	freeloop(1);
+	
+	disablenpc "Saída#ds_exit"; // Disable NPC Exit...
+	
+	set .MobCount, 0;
+	deletearray .@mob_round;
+	copyarray .@mob_round[0], getd(".Mob_Round_"+$DS_Round), getarraysize(getd(".Mob_Round_"+$DS_Round));
+	
+	// Optional MapFlags
+	//
+	// Ganho de EXP
+	if( .@mob_round[1] == 1 )
+	{
+		removemapflag "ordeal_1-1", mf_nobaseexp;
+		removemapflag "ordeal_1-1", mf_nojobexp;
+	}
+	else {
+		setmapflag "ordeal_1-1", mf_nobaseexp;
+		setmapflag "ordeal_1-1", mf_nojobexp;
+	}
+	// Permitir drop de itens de monstros.
+	if( .@mob_round[2] == 1 )
+		removemapflag "ordeal_1-1", mf_nomobloot;
+	else
+		setmapflag "ordeal_1-1", mf_nomobloot;
+	// Permitir Recompensas de MvP's.
+	if( .@mob_round[3] == 1 )
+		removemapflag "ordeal_1-1", mf_nomvploot;
+	else
+		setmapflag "ordeal_1-1", mf_nomvploot;
+	
+	for( set .@i,4; .@i < getarraysize(.@mob_round); set .@i, .@i + 3 )
+	{
+		set .@mob_id, .@mob_round[.@i];
+		set .@mobname$, getmonsterinfo(.@mob_id,0);
+		if( .@mobname$ == "" ||  .@mobname$ == "-1" || .@mobname$ == "null" )
+			continue;
+		
+		set .@amount, .@mob_round[(.@i+1)];
+		areamonster "ordeal_1-1", 130, 169, 169, 130, .@mobname$, .@mob_id, .@amount, "DevilSquare#main::OnMobDead";
+		set .MobCount, .MobCount + .@amount;
+	}
+	
+	if( .@mob_round[0] == 1 )
+		mapannounce "ordeal_1-1", "[Devil Square]: Começou a " + $DS_Round + "ª Square e os Mini-Boss atacam!", bc_all, "0x00FF00";
+	else if( .@mob_round[0] )
+		mapannounce "ordeal_1-1", "[Devil Square]: Começou a " + $DS_Round + "ª Square e os MvP's atacam!", bc_all, "0x00FF00";
+	else
+		mapannounce "ordeal_1-1", "[Devil Square]: Começou a " + $DS_Round + "ª Square!", bc_all, "0x00FF00";
+		
+	freeloop(0);
+	end;
+	
+OnMobDead:
+	if( $DS_Flag != 2 )
+		end;
+		
+	deletearray .@mob_round;
+	copyarray .@mob_round[0], getd(".Mob_Round_"+$DS_Round), getarraysize(getd(".Mob_Round_"+$DS_Round));
+	set .@mob_killed, ds_killedid;
+	freeloop(1);
+	for( set .@i,4; .@i < getarraysize(.@mob_round); set .@i, .@i + 3 )
+	{
+		set .@mob_id, .@mob_round[.@i];
+		if( .@mob_killed == .@mob_id )
+		{
+			set .MobCount, .MobCount - 1;
+			set .@tmp_count, .MobCount;
+			set .@points, .@mob_round[(.@i+2)];
+			setd .Ds_Var_Name$, getd(.Ds_Var_Name$) + .@points;
+			
+			if( .@points )
+				dispbottom "Você recebeu " + .@points + " pontos, você tem no momento " + getd(.Ds_Var_Name$) + " pontos de Devil Square.";
+			
+			if( callsub(CheckAssassin, .@mob_id) )
+			{
+				mapannounce "ordeal_1-1", "[Devil Square]: O Jogador [" + strcharinfo(0) + "] matou o Monstro " + getmonsterinfo(.@mob_id,0) + " Assassino!", bc_all, "0x00FF00";
+				if( atoi(.Mob_Ass_Reward$[0]) == 1 )
+					callsub AddAssReward;
+				sleep 1500;
+			}
+			else if( getmonsterinfo(.@mob_id, 22) > 0 )
+			{
+				mapannounce "ordeal_1-1", "[Devil Square]: O Jogador [" + strcharinfo(0) + "] matou o MvP " + getmonsterinfo(.@mob_id,0) + "!", bc_all, "0x00FF00";
+				sleep 1500;
+			}
+			
+			if( .@tmp_count )
+				mapannounce "ordeal_1-1", "[Devil Square]: Restam " + .@tmp_count + " monstros!", bc_all, "0x00FF00";
+			else {
+				mapannounce "ordeal_1-1", "[Devil Square]: Todos os monstros foram derrotados!", bc_all, "0x00FF00";
+				donpcevent "DevilSquare#main::OnStartRound";
+			}	
+			break;
+		}
+	}
+	freeloop(0);
+	end;
+	
+OnTreasureSummon:
+	freeloop(1);
+	set .@t,1;
+	set .TreasureCount, 0;
+	
+	if( .Treause_Skill )
+		removemapflag "ordeal_1-1", mf_noskill;
+	else
+		setmapflag "ordeal_1-1", mf_noskill;
+		
+	if( .Treasure_Natural_Drops )
+	{
+		removemapflag "ordeal_1-1", mf_nomobloot;
+		removemapflag "ordeal_1-1", mf_nomvploot;
+	}
+	else {
+		setmapflag "ordeal_1-1", mf_nomobloot;
+		setmapflag "ordeal_1-1", mf_nomvploot;
+	}
+	
+	if( .Treasure_Natural_Exp )
+	{
+		removemapflag "ordeal_1-1", mf_nobaseexp;
+		removemapflag "ordeal_1-1", mf_nojobexp;
+	}
+	else {
+		setmapflag "ordeal_1-1", mf_nobaseexp;
+		setmapflag "ordeal_1-1", mf_nojobexp;
+	}
+	
+	while(1)
+	{
+		if( getarraysize(getd(".Treasure_"+.@t+"$")) < 6 )
+			break;
+		
+		set .@mob_id, getd(".Treasure_"+.@t+"$[1]");
+		set .@mobname$, getmonsterinfo(.@mob_id,0);
+		
+		if( .@mobname$ == "" ||  .@mobname$ == "-1" || .@mobname$ == "null" )
+			break;
+		
+		set .@t, .@t + 1;
+	}
+	set .@t, .@t - 1;
+	
+	if( .@t )
+	{
+		set .@max_treasure, (!.Max_Treasure||.Max_Treasure>.@t?.@t:.Max_Treasure);
+		
+		if( .Max_Treasure && .@max_treasure < .Max_Treasure )
+		{
+			deletearray .@index_list;
+			deletearray .@block_list;
+			for( set .@l, 1; .@l <= .Max_Treasure; set .@l, .@l + 1 )
+			{
+				if( getarraysize(getd(".Treasure_"+.@t+"$")) < 6 )
+					continue;
+					
+				set .@index_list[getarraysize(.@index_list)], .@l;
+			}
+			
+			while(1)
+			{
+				set .@r, rand(0,(getarraysize(.@index_list)-1));
+				set .@ignore, 0;
+				for( set .@c, 0; .@c < getarraysize(.@block_list); set .@c, .@c + 1 )
+				{
+					if( .@block_list[.@c] == .@r )
+					{
+						set .@ignore, 1;
+						break;
+					}
+				}
+				
+				if( .@ignore )
+					continue;
+				
+				set .@block_list[getarraysize(.@block_list)], .@r;
+				
+				set .@mob_id, getd(".Treasure_"+.@index_list[.@r]+"$[1]");
+				set .@mobname$, getmonsterinfo(.@mob_id,0);
+				areamonster "ordeal_1-1", 130, 169, 169, 130, .@mobname$, .@mob_id, 1, "DevilSquare#main::OnTreasureDead";
+				set .TreasureCount, .TreasureCount + 1;
+			}
+		}
+		else {
+			for( set .@t, 1; .@t <= .@max_treasure; set .@t, .@t + 1 )
+			{
+				set .@mob_id, getd(".Treasure_"+.@t+"$[1]");
+				set .@mobname$, getmonsterinfo(.@mob_id,0);
+				areamonster "ordeal_1-1", 130, 169, 169, 130, .@mobname$, .@mob_id, 1, "DevilSquare#main::OnTreasureDead";
+				set .TreasureCount, .TreasureCount + 1;
+			}
+		}
+	}
+	
+	if( .TreasureCount <= 0 )
+	{
+		// Nenhuma Arca do Tesouro foi invocada.
+		set $DS_Flag, 4;
+		donpcevent "DevilSquare#main::OnStartRound";
+	}
+	else {
+		set $DS_Flag, 3;
+		mapannounce "ordeal_1-1", "[Devil Square]: " + .TreasureCount + " Arcas do Tesouro foram invocadas.", bc_all, "0x00FF00";
+	}
+	freeloop(0);
+	end;
+	
+OnTreasureDead:
+	if( $DS_Flag != 3 )
+		end;
+	
+	freeloop(1);
+	set .@t_index, callsub(PushTreasureID, ds_killedid);
+	
+	if( !.@t_index )
+		end;
+	
+	set .TreasureCount, .TreasureCount - 1;
+	
+	deletearray .@treasure_obj$[0];
+	deletearray .@treasure_type[0];
+	deletearray .@treasure_name$[0];
+	deletearray .@treasure_value[0];
+	set .@count, 0;
+	for( set .@b, 2; .@b < getarraysize(getd(".Treasure_"+.@t_index+"$")); set .@b, .@b + 4 )
+	{
+		set .@treasure_obj$[.@count], getd(".Treasure_"+.@t_index+"$[" + .@b + "]");
+		set .@treasure_type[.@count], atoi(getd(".Treasure_"+.@t_index+"$[" + (.@b+1) + "]"));
+		set .@treasure_name$[.@count], getd(".Treasure_"+.@t_index+"$[" + (.@b+2) + "]");
+		set .@treasure_value[.@count], getd(".Treasure_"+.@t_index+"$[" + (.@b+3) + "]");
+		set .@count, .@count + 1;
+	}
+	
+	set .@reward_type, atoi(getd(".Treasure_"+.@t_index+"$[0]"));
+	
+	if( !.@reward_type )
+	{
+		if( getarraysize(.@treasure_obj$) )
+		{
+			set .@add, rand(0,(getarraysize(.@treasure_obj$)-1));
+			
+			if( .@treasure_type[.@add] == 0 )
+			{
+				set .@item_id, atoi(.@treasure_obj$[.@add]);
+				if( !checkweight(.@item_id,.@treasure_value[.@add]) )
+				{
+					getmapxy .@m$, .@x, .@y, 0;
+					makeitem .@item_id, .@treasure_value[.@add], .@m$, (.@x+1), (.@y+1); 
+				}
+				else
+					getitem .@item_id, .@treasure_value[.@add];
+			}
+			else
+				setd .@treasure_obj$[.@add], getd(.@treasure_obj$[.@add]) + .@treasure_value[.@add];
+				
+			dispbottom "Você recebeu " + .@treasure_value[.@add] + " " + .@treasure_name$[.@add] + " por abrir uma Arca do Tesouro.";
+		}
+	}
+	else {
+		for( set .@i, 0; .@i < getarraysize(.@treasure_obj$); set .@i, .@i + 1 )
+		{
+			if( .@treasure_type[.@i] == 0 )
+			{
+				set .@item_id, atoi(.@treasure_obj$[.@i]);
+				if( !checkweight(.@item_id,.@treasure_value[.@i]) )
+				{
+					getmapxy .@m$, .@x, .@y, 0;
+					makeitem .@item_id, .@treasure_value[.@i], .@m$, (.@x+1), (.@y+1);
+					dispbottom "Dropado " + .@treasure_value[.@i] + " " + .@treasure_name$[.@i] + " por abrir uma Arca do Tesouro, limpe seu inventário para recompensas irem direto para o mesmo.";
+				}
+				else {
+					getitem .@item_id, .@treasure_value[.@i];
+					dispbottom "Você recebeu " + .@treasure_value[.@i] + " " + .@treasure_name$[.@i] + " por abrir uma Arca do Tesouro.";
+				}
+			}
+			else {
+				setd .@treasure_obj$[.@i], getd(.@treasure_obj$[.@i]) + .@treasure_value[.@i];
+				dispbottom "Você recebeu " + .@treasure_value[.@i] + " " + .@treasure_name$[.@i] + " por abrir uma Arca do Tesouro, você possue " + getd(.@treasure_obj$[.@i]) + " " + .@treasure_name$[.@i] + ".";
+			}
+		}
+	}
+	
+	if( .TreasureCount )
+	{
+		mapannounce "ordeal_1-1", "[Devil Square]: O Jogador [" + strcharinfo(0) + "] abriu uma Arca do Tesouro, restam " + .TreasureCount + " Arcas do Tesouro.", bc_all, "0x00FF00";
+		if( !.Treasure_Multiple_Kill )
+		{
+			warp .MapExit$[0], atoi(.MapExit$[1]), atoi(.MapExit$[2]);
+			donpcevent "DevilSquare#main::OnCheck";
+		}
+	}
+	else
+	{
+		set $DS_Flag, 4;
+		donpcevent "DevilSquare#main::OnStart";
+	}
+		
+	freeloop(0);
+	end;
+	
+PushTreasureID:
+	set .@i, 1;
+	while(1)
+	{
+		if( !getarraysize(getd(".Treasure_"+.@i+"$")) )
+			break;
+			
+		if( atoi(getd(".Treasure_"+.@i+"$[1]")) == getarg(0) )
+			return true;
+			
+		set .@i, .@i + 1;
+	}
+	return false;
+	
+CheckAssassin:
+	for( set .@a, 0; .@a < getarraysize(.Mob_Assassin); set .@a, .@a + 1 )
+	{
+		if( .Mob_Assassin == getarg(0) )
+			return 1;
+	}
+	return 0;
+	
+AddAssReward:
+	deletearray .@rw_ass_obj$[0];
+	deletearray .@rw_ass_type[0];
+	deletearray .@rw_ass_name$[0];
+	deletearray .@rw_ass_value[0];
+	set .@count, 0;
+	for( set .@b, 2; .@b < getarraysize(.Mob_Ass_Reward$); set .@b, .@b + 4 )
+	{
+		set .@rw_ass_obj$[.@count], .Mob_Ass_Reward$[.@b];
+		set .@rw_ass_type[.@count], atoi(.Mob_Ass_Reward$[(.@b+1)]);
+		set .@rw_ass_name$[.@count], .Mob_Ass_Reward$[(.@b+2)];
+		set .@rw_ass_value[.@count], atoi(.Mob_Ass_Reward$[(.@b+3)]);
+		set .@count, .@count + 1;
+	}
+	
+	if( !atoi(.Mob_Ass_Reward$[1]) )
+	{
+		set .@add, rand(0,(getarraysize(.@rw_ass_obj$)-1));
+		
+		if( .@rw_ass_type[.@add] == 0 )
+		{
+			set .@item_id, atoi(.@rw_ass_obj$[.@add]);
+			if( !checkweight(.@item_id,.@rw_ass_value[.@add]) )
+			{
+				getmapxy .@m$, .@x, .@y, 0;
+				makeitem .@item_id, .@rw_ass_value[.@add], .@m$, (.@x+1), (.@y+1); 
+			}
+			else
+				getitem .@item_id, .@rw_ass_value[.@add];
+		}
+		else
+			setd .@rw_ass_obj$[.@add], getd(.@rw_ass_obj$[.@add]) + .@rw_ass_value[.@add];
+			
+		dispbottom "Você recebeu " + .@rw_ass_value[.@add] + " " + .@rw_ass_name$[.@add] + " por eliminar um Monstro Assassino.";
+	}
+	else {
+		for( set .@i, 0; .@i < getarraysize(.@rw_ass_obj$); set .@i, .@i + 1 )
+		{
+			if( .@rw_ass_type[.@i] == 0 )
+			{
+				set .@item_id, atoi(.@rw_ass_obj$[.@i]);
+				if( !checkweight(.@item_id,.@rw_ass_value[.@i]) )
+				{
+					getmapxy .@m$, .@x, .@y, 0;
+					makeitem .@item_id, .@rw_ass_value[.@i], .@m$, (.@x+1), (.@y+1); 
+					dispbottom "Dropado " + .@rw_ass_value[.@i] + " " + .@rw_ass_name$[.@i] + " por eliminar um Monstro Assassino, limpe seu inventário para recompensas irem direto para o mesmo.";
+				}
+				else
+				{
+					getitem .@item_id, .@rw_ass_value[.@i];
+					dispbottom "Você recebeu " + .@rw_ass_value[.@i] + " " + .@rw_ass_name$[.@i] + " por eliminar um Monstro Assassino.";
+				}
+			}
+			else
+			{
+				setd .@rw_ass_obj$[.@i], getd(.@rw_ass_obj$[.@i]) + .@rw_ass_value[.@i];
+				dispbottom "Você recebeu " + .@rw_ass_value[.@i] + " " + .@rw_ass_name$[.@i] + " por eliminar um Monstro Assassino, você possue " + getd(.@rw_ass_obj$[.@i]) + " " + .@rw_ass_name$[.@i] + ".";
+			}
+			
+		}
+	}
+	return;
+}
+
+// Saída do Evento.
+// ------------------------------------------------------------
+ordeal_1-1,149,149,3	script	Saída#ds_exit	4_F_VALKYRIE2,{
+	mes "^483D8B[Saída]^000000";
+	mes "Deseja saír da ^0000FFDevilSquare^000000?";
+	next;
+	if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 2 )
+	{
+		mes "^483D8B[Saída]^000000";
+		mes "Estarei aqui caso deseja saír da ^0000FFDevilSquare^000000.";
+		close;
+	}
+	else {
+		mes "^483D8B[Saída]^000000";
+		mes "Muito bem, vamos lá.";
+		close2;
+		set .@map$, getvariableofnpc(.MapExit$[0], "DevilSquare#main");
+		set .@x, atoi(getvariableofnpc(.MapExit$[1], "DevilSquare#main"));
+		set .@y, atoi(getvariableofnpc(.MapExit$[2], "DevilSquare#main"));
+		warp .@map$, .@x, .@y;
+		donpcevent "DevilSquare#main::OnCheck";
+		end;
+	}
+	end;
+	
+OnInit:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+// Recrutador do Evento.
+// ------------------------------------------------------------
+event_room,105,114,4	script	Recrutador Devil Square#1	4_M_JOB_KNIGHT1,{
+	// Importando Configurações
+	set .@group_id, getvariableofnpc(.GroupID, "DevilSquare#main");
+	set .@min_players, getvariableofnpc(.MinPlayer, "DevilSquare#main");
+	set .@max_players, getvariableofnpc(.MaxPlayer, "DevilSquare#main");
+	set .@base_level, getvariableofnpc(.BaseLevel, "DevilSquare#main");
+	set .@max_rounds, getvariableofnpc(.MaxRounds, "DevilSquare#main");
+	set .@treasure, getvariableofnpc(.Treasure, "DevilSquare#main");
+	
+	mes "^483D8B[Recrutador]^000000";
+	mes "Bem-vindo a ^FF0000Devil Square^000000.";
+	mes "^FF0000Se você falhar, é porque está morto!^000000";
+	if( $DS_Flag == 1 )
+		mes "Sou responsável por recrutar jogadores para a batalha.";
+	else if( $DS_Flag > 1 )
+		mes "No momento nosso portal está fechado por estar ocorrendo uma Batalha.";
+	mes "Em que posso ajudar?";
+	next;
+	switch( select((getgroupid()>=.@group_id?($DS_Flag?"^FF0000- Desligar Evento.^000000":"^0000FF- Ligar Evento.^000000"):""), ($DS_Flag==1?"- Entrar na Devil Square.":""), "^FFA500- Informações.^000000", "^FF0000- Cancelar.^000000") )
+	{
+		case 1:
+			mes "^483D8B[Recrutador]^000000";
+			mes "Tem certeza que deseja " + (!$DS_Flag?"^0000FFLigar":"^FF0000Desligar") + "^000000 o Evento?";
+			next;
+			if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 1 )
+			{
+				if( $DS_Flag )
+				{
+					donpcevent strnpcinfo(0) + "::OnStop";
+					sleep2 3000;
+					mes "^483D8B[Recrutador]^000000";
+					mes "O Evento foi ^FF0000desligado^000000 com sucesso!";
+					close;
+				}
+				else {
+					donpcevent "DevilSquare#main::OnStart";
+					mes "^483D8B[Recrutador]^000000";
+					mes "O Evento foi ^0000FFligado^000000 com sucesso!";
+					close;
+				}
+			}
+			break;
+		case 2:
+			mes "^483D8B[Recrutador]^000000";
+			mes "A ^FF0000Devil Square^000000 possuí ^FF0000hordas em grande quantidade de Monstros Agressivos^000000, talvez você não possa combatê-los sozinho.";
+			mes "Você tem certeza que deseja entrar na ^FF0000Devil Square^000000?";
+			next;
+			if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 1 )
+			{
+				if( .@max_players && getmapusers("ordeal_1-1") >= .@max_players )
+				{
+					mes "^483D8B[Recrutador]^000000";
+					mes "A arena já está lotada, não estamos recrutando mais jogadores para a ^FF0000Devil Square^000000.";
+					close;
+				}
+				
+				if( .@base_level && BaseLevel < .@base_level )
+				{
+					mes "^483D8B[Recrutador]^000000";
+					mes "É necessário ter o ^FF0000Nível " + .@base_level + " de Base ou superior^000000 para se alistar na ^FF0000Devil Square^000000.";
+					close;
+				}
+				
+				warp "ordeal_1-1", 148, 148;
+				end;
+			}
+			break;
+		case 3:
+			mes "^483D8B[Recrutador]^000000";
+			mes "A ^FF0000Devil Square^000000 é uma arena no qual hordas de monstros são invocadas para dominar esta area estratégica que também é uma poderosa fonte de poder maligno, e os ^FF0000Guardiões de Rune Midgard^000000 devem protegê-la a qualquer custo.";
+			next;
+			mes "^483D8B[Recrutador]^000000";
+			mes "São ^FF0000" + .@max_rounds + "^000000 hordas de monstros que devem ser combátidas pelos ^FF0000Guardiões de Rune Midgard^000000.";
+			mes "Dependendo do monstros que você eliminar, você pode ganhar recompensas e pontos para trocar por itens.";
+			if( .@treasure ) 
+				mes "Também, ao eliminar a última horda, ^FF0000Arcas do Tesouro^000000 são invocadas e recompensas será entregue para aquele que abri-lá.";
+			if( .@base_level )
+				mes "Para se alistar nesta batalha os ^FF0000Guardiões de Rune Midgard^000000 deve ter no mínimo o ^FF0000Nível " + .@base_level + " de Base^000000.";
+			if( .@min_players && .@max_players )
+				mes "Para seguirmos nesta Batalha é necessário pelo menos ^FF0000" + .@min_players + " Guardiões de Rune Midgard^000000, mais temos capacidade de ^FF0000" + .@max_players + " Guardiões de Rune Midgard^000000.";
+			else if( .@min_players )
+				mes "Para seguirmos nesta Batalha é necessário pelo menos ^FF0000" + .@min_players + " Guardiões de Rune Midgard^000000.";
+			else
+				mes "Temos capacidade de por ^FF0000" + .@max_players + " Guardiões de Rune Midgard^000000 em batalha, esse é o nosso limite.";
+			close;
+		default:
+			break;
+	}
+	
+	mes "^483D8B[Recrutador]^000000";
+	mes "Volte quando desejar entrar na ^FF0000Devil Square^000000.";
+	close;
+	
+OnStop:
+	donpcevent "DevilSquare#main::OnReset";
+	sleep 3000;
+	announce "[Devil Square]: A Devil Square foi cancelada pelo GameMaster", bc_all, "0x00FF00";
+	end;
+	
+OnEnableDSWait:
+	delwaitingroom;
+	waitingroom "Aberto Recrutamento", 0;
+	end;
+	
+OnDisableDSWait:
+	delwaitingroom;
+	end;
+}
+
+// MapFlags Fixos
+ordeal_1-1	mapflag	monster_noteleport

@@ -1,0 +1,825 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Mestra das Classes                                           .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena                                                      .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .  - Muda a classe de um jogador de acordo com as configurações.  .
+  .  - Resetadora e Aluguel Embutida.                               .
+  *-----------------------------------------------------------------*/
+  
+// [Nota 1]: 0 desabilita esta opção.
+// [Nota 2]: Tabela de evoluções de classes:
+//		 0: Habilita as 1ª classes.
+//		 1: Habilita as 2ª classes.
+//		 2: Habilita as classes expandidas.
+//		 3: Habilita as transclasses.
+//		 4: Habilita as classes expandidas e as transclasses.
+//		 5: Habilita as evoluções para classes expandidas. (Ninja/Justiceiro/Taekwon)
+//		 6: Habilita as transclasses e evoluções de classes expandidas.
+//		 7: Habilita as 3ª classes.
+//		 8: Habilita as 3ª classes e evoluções de classes expandidas.
+//	  mini: Classes Babys seguem o grau hierárquico dessas configurações, tenha em mente que pode ser desativado nas configurações.
+//
+// [Nota 3]: Exigencia de pontos de habilidades:
+//		 0: Desabilita exigencias em distribuição de pontos ao evoluir.
+//		 1: Força com que o jogador distribua os pontos para evoluir.
+//		 2: Remove os pontos restantes do jogador ao evoluir.
+//
+-	script	JobMasterConfigure	-1,{
+
+OnInit:
+	// Configurações Gerais do Script
+	//
+	// Configurações Gerais
+	setarray .MainConfig[0],	 6,		// Habilitar hierarquia de evoluções de classes. [Nota 2]
+							 	 1,		// Exigir que os pontos de habilidades sejam distribuidos para evoluir uma classe. [Nota 3]
+								 0,		// Exigir que o jogador guarde seus itens no iventário ao renascer? [Nota 1]
+								 1,		// Entregar habilidades extras? [Nota 1]
+								 1,		// Habilitar Classes Mini-Classes? [Nota 1]
+								 0,		// Habilitar opção de resetar os atributos. [Nota 1]
+								 5000000,	// Valor de Zeny a ser cobrado para resetar os atributos. [Nota 1]
+								 0,		// Habilitar opção de resetar habilidades. [Nota 1]
+								 5000000,	// Valor de Zeny a ser cobrado para resetar as habilidades. [Nota 1]
+								 1,		// Habilitar montárias. [Nota 1]
+								 0	// Valor de Zeny a ser cobrado de montarias. [Nota 1]
+	;
+	
+	// Níveis exigidos para evoluções de classes.
+	setarray .LevelRequire[0],		10, 10,	// <base_lvl_firstclass>, <job_lvl_firstclass>
+									10, 40,  // <base_lvl_advclass>, <job_lvl_advclass>
+									10, 40,  // <base_lvl_expandedclass>, <job_lvl_expandedclass>
+									99, 50,	// <base_lvl_rebornclass>, <job_lvl_rebornclass>
+									10, 10,	// <base_lvl_hfirstclass>, <job_lvl_hfirstclass>
+									40, 40,	// <base_lvl_transclass>, <job_lvl_transclass>
+									10, 60,	// <base_lvl_3rdclass>, <job_lvl_3rdclass>
+									10, 10,	// <base_lvl_babyfirstclas>, <job_lvl_babyfirstclass>
+									10, 30,	// <base_lvl_babyadvclass>, <job_lvl_babyadvclass>
+									99, 40	// <base_lvl_baby3rdclass>, <job_lvl_baby3rdclass>
+	;
+	
+	// Comandos.
+	bindatcmd "jobmaster", "JobMaster::OnStart";
+	end;
+
+}
+
+-	script	#jobmaster::JobMaster	-1,{
+OnStart:
+	function checkjob;			// Operadores de comparações por grupos de classes.
+	function checkjobend;		// Operadores de comparações por grupos de modo.
+	function checkmode;			// Checagem de modos.
+	function classname;			// Nome das classes.
+	function mountname;			// Checagem de Montarias.
+	function job_menu;			// Menu das classes.
+	function job_optional_menu;	// Funções do menu opcional.
+	
+	copyarray .@Config[0], getvariableofnpc(.MainConfig, "JobMasterConfigure"), getarraysize(getvariableofnpc(.MainConfig, "JobMasterConfigure"));
+	if( checkjobend(.@Config[0],Class) || Class == Job_Ninja || Class == Job_Gunslinger || Class == Job_SuperNovice || Class == Job_Baby_Summoner || (!.@Config[4] && 1==2 && Class == Job_Summoner) ) // Temp Disable Baby Summoner
+	{
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Muito bem, você conseguiu chegar ao topo de sua classe hierárquica.";
+		mes "Seus transcendentes devem estar muito orgulhoso de você ^0000FF" + strcharinfo(0) + "^000000!";
+		if( .@Config[5] || .@Config[7] || .@Config[9] )
+			job_optional_menu 0, .@Config[5], .@Config[6], .@Config[7], .@Config[8], .@Config[9], .@Config[10], .@Config[3];
+		close;
+	}
+	
+	// Fazendo conversão de valores no script.
+	set .@base, (!Class||Class==Job_Summoner?0:(checkjob(10,Class)?14:(checkjob(11,Class)?16:(checkjob(12,Class)?18:(checkjob(0,Class)?2:(checkjob(2,Class)?4:(checkjob(1,Class)?6:(Class==Job_Novice_High?8:(checkjob(3,Class)?10:(checkjob(5,Class)?12:-1))))))))));
+	set .@BaseLevel, getvariableofnpc(.LevelRequire[.@base], "JobMasterConfigure");
+	set .@JobLevel, getvariableofnpc(.LevelRequire[(.@base+1)], "JobMasterConfigure");
+	
+	if( BaseLevel < .@BaseLevel )
+	{
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Você precisa ter o ^0000FFNível " + .@BaseLevel + " de Base^000000 para poder evoluir sua classe.";
+		if( .@Config[5] || .@Config[7] || .@Config[9] )
+			job_optional_menu 0, .@Config[5], .@Config[6], .@Config[7], .@Config[8], .@Config[9], .@Config[10], .@Config[3];
+		close;
+	}
+	
+	if( JobLevel < .@JobLevel )
+	{
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Você precisa ter o ^0000FFNível " + .@JobLevel + " de Classe^000000 para poder evoluir sua classe.";
+		if( .@Config[5] || .@Config[7] || .@Config[9] )
+			job_optional_menu 0, .@Config[5], .@Config[6], .@Config[7], .@Config[8], .@Config[9], .@Config[10], .@Config[3];
+		close;
+	}
+	
+	/*if( .@Config[1] && SkillPoint )
+	{
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Você precisa utilizar todos seus ^0000FFPontos de Habilidade^000000 para poder evoluir sua classe.";
+		mes "Deseja remover seus ^0000FFPontos de Habilidade^000000?";
+		next;
+		if( select("^0000FF- Sim, por favor.","^FF0000- Não, obrigado.^000000") == 1 )
+			set SkillPoint, 0;
+		else {
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Tudo bem, utilize os seus ^0000FFPontos de Habilidade^000000 para poder evoluir sua classe.";
+			close;
+		}
+	}*/
+	
+	if( SkillPoint )
+	{
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Você precisa utilizar todos seus ^0000FFPontos de Habilidade^000000 para poder evoluir sua classe.";
+		close;
+	}
+	
+	if( checkriding() || checkdragon() || checkcart() || checkwug() || checkmadogear() )
+	{
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Você não pode evoluir sua classe utilizando um ^0000FF" + mountname() + "^000000.";
+		close;
+	}
+	
+	if( checkjob(8,Class) || checkjob(0,Class) || (checkmode(0,.@Config[0])&&checkjob(2,Class)) || checkjob(11,Class) )
+	{
+		set .@loop_1, 1;
+		while(.@loop_1)
+		{
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Selecione a ^0000FFClasse^000000 que você deseja se tornar.";
+			next;
+			set .@class, job_menu(Class, Sex);
+		
+			if( !.@class )
+				break;
+		
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Tem certeza que deseja se tornar um ^0000FF" + classname(.@class,Sex) + "^000000?";
+			next;
+			switch( select("^0000FF- Sim, por favor.^000000", "^FFA500- Não, desejo mudar a classe.^000000", "^FF0000- Cancelar.^000000") )
+			{
+				case 1:
+					setlook 7, 0;
+					set clother_color, 0;
+					jobchange .@class;
+					set job_master_alert, 0;
+					mes "^4B0082[Mestra das Classes]^000000";
+					mes "Muito bem, você se tornou um ^0000FF" + classname(.@class,Sex) + "^000000.";
+					close;
+				case 2:
+					break;
+				case 3:
+					set .@loop_1, 0;
+					break;
+			}
+		}
+	}
+	else if( checkjob(1, Class) || checkjob(12,Class) )
+	{
+		if( checkjob(12,Class) )
+		{
+			set .@roclass, roclass(eaclass()|EAJL_THIRD);
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Você deseja se tornar um ^FF0000" + classname(.@roclass,Sex) + "^000000?";
+			next;
+			set .@choose, select("", "^0000FF- Sim, por favor.^000000", "", "^FF0000- Não, obrigado.^000000");
+		}
+		else if( checkmode(1,.@Config[0]) )
+		{
+			set .@roclass, roclass(eaclass()|EAJL_THIRD);
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Você deseja ^0000FFRenascer^000000 ou se tornar um ^FF0000" + classname(.@roclass,Sex) + "^000000?";
+			next;
+			set .@choose, select("^0000FF- Desejo Renaser.^000000", "- Quero me tornar ^FF0000" + classname(.@roclass,Sex) + "^000000.", "^FF0000- Não, obrigado.^000000"); 
+		}
+		else {
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Você deseja ^0000FFRenascer^000000?";
+			next;
+			set .@choose, select("^0000FF- Sim, por favor.^000000", "", "^FF0000- Não, obrigado.^000000");
+			
+		}
+		
+		switch( .@choose )
+		{
+			case 1:
+				if( .@Config[2] )
+				{
+					getinventorylist;
+					if( getarraysize(@inventorylist_id) )
+					{
+						mes "^4B0082[Mestra das Classes]^000000";
+						mes "Você deve guardar todos os seus itens no Armazém para e tornar um ^0000FF" + classname(4001, Sex) + "^000000.";
+						close;
+					}
+				}
+				
+				set jobmaster_reborn, 4001+Class;
+				setlook 7, 0;
+				set clother_color, 0;
+				jobchange 4001;
+				set job_master_alert, 0;
+				resetlvl 1;
+				mes "^4B0082[Mestra das Classes]^000000";
+				mes "Muito bem, você se tornou um ^0000FF" + classname(Class, Sex) + "^000000?";
+				close;
+			case 2:
+				setlook 7, 1;
+				set clother_color, 0;
+				jobchange .@roclass;
+				set job_master_alert, 0;
+				mes "^4B0082[Mestra das Classes]^000000";
+				mes "Muito bem, você se tornou um ^0000FF" + classname(Class, Sex) + "^000000.";
+				close;
+			case 3:
+				break;
+		}
+	}
+	else if( checkjob(5,Class) )
+	{
+		set .@class, (roclass(eaclass(jobmaster_reborn)&EAJL_THIRD)?jobmaster_reborn:(!checkjob(3,Class)?(roclass(eaclass(jobmaster_reborn)&EAJ_BASEMASK)+4001):jobmaster_reborn));
+		mes "^4B0082[Mestra das Classes]^000000";
+		mes "Você deseja se tornar um ^0000FF" + classname(.@class,Sex) + "^000000?";
+		next;
+		if( select("^0000FF- Sim, por favor.^000000", "^FF0000- Não, obrigado.^000000") == 1 )
+		{
+			setlook 7, 0;
+			set clother_color, 0;
+			jobchange .@class;
+			set job_master_alert, 0;
+			if( .@class == jobmaster_reborn ) set jobmaster_reborn,  roclass(eaclass()|EAJL_THIRD);
+			mes "^4B0082[Mestra das Classes]^000000";
+			mes "Muito bem, você se tornou um ^0000FF" + classname(Class, Sex) + "^000000.";
+			close;
+		}
+	}
+	
+	mes "^4B0082[Mestra das Classes]^000000";
+	mes "Muito bem, volte quando desejar trocar de classe.";
+	close;
+	
+	// Menu de classes.
+	function	job_menu	{
+		switch( getarg(0) )
+		{
+			case 0:
+				setarray .@jobmenu[0], 1, 2, 3, 4, 5, 6, 23;
+				
+				// Habilitar Classes Expandidas.
+				set .@Mode, getvariableofnpc(.MainConfig[0], "JobMasterConfigure");
+				set .@Baby, getvariableofnpc(.MainConfig[4], "JobMasterConfigure");
+				if( checkmode(2,.@Mode) ) setarray .@jobmenu[7], 24, 25, 4046;
+				if( .@Baby ) setarray .@jobmenu[getarraysize(.@jobmenu)], 4023;
+				break;
+			case 1:
+				setarray .@jobmenu[0], 7, 14;
+				break;
+			case 2:
+				setarray .@jobmenu[0], 9, 16;
+				break;
+			case 3:
+				setarray .@jobmenu[0], 11, 19;
+				break;
+			case 4:
+				setarray .@jobmenu[0], 8, 15;
+				break;
+			case 5:
+				setarray .@jobmenu[0], 10, 18;
+				break;
+			case 6:
+				setarray .@jobmenu[0], 12, 17;
+				break;
+			case 24:
+				setarray .@jobmenu[0], 4215;
+				break;
+			case 25:
+				setarray .@jobmenu[0], 4211, 4212;
+				break;
+			case 4023:
+				setarray .@jobmenu[0], 4024, 4025, 4026, 4027, 4029, 4045;
+				break;
+			case 4024:
+				setarray .@jobmenu[0], 4030, 4037;
+				break;
+			case 4025:
+				setarray .@jobmenu[0], 4032, 4039;
+				break;
+			case 4026:
+				setarray .@jobmenu[0], 4034, 4042;
+				break;
+			case 4027:
+				setarray .@jobmenu[0], 4031, 4038;
+				break;
+			case 4028:
+				setarray .@jobmenu[0], 4033, 4041;
+				break;
+			case 4029:
+				setarray .@jobmenu[0], 4035, 4040;
+				break;
+			case 4046:
+				setarray .@jobmenu[0], 4047, 4049;
+				break;
+			case 4218:
+				setarray .@jobmenu[0], 4220;
+				break;
+		}
+		
+		set .@job_menu$, "";
+		for( set .@i, 0; .@i < getarraysize(.@jobmenu); set .@i, .@i + 1 )
+			set .@job_menu$, .@job_menu$ + "^0000FF- " + classname(.@jobmenu[.@i],getarg(1)) + ".:";
+			
+		set .@choose_job, select(.@job_menu$+"^FF0000- Cancelar.^000000")-1;
+		return (.@choose_job>=getarraysize(.@jobmenu)?0:.@jobmenu[.@choose_job]);
+	}
+	
+	// Checagem de modos.
+	function checkmode	{
+		switch(getarg(0))
+		{
+			case 0:
+				return (getarg(1)==5||getarg(1)==6||getarg(1)==8?true:false);
+			case 1:
+				return (getarg(1)==7||getarg(1)==8?true:false);
+			case 2:
+				return (getarg(1)==2||getarg(1)==4||getarg(1)==5||getarg(1)==6||getarg(1)==8?true:false);
+			default:
+				break;
+		}
+		return false;
+	}
+
+	// Checagem de classe.
+	function	checkjob	{
+		set .@eac, eaclass(getarg(1));
+		
+		switch( getarg(0) )
+		{
+			// Checar se pertence a uma classe iniciante.
+			case 0:
+				return (getarg(1)>=Job_Swordman&&getarg(1)<=Job_Thief?true:false);
+			// Checa se pertence a uma classe avançada.
+			case 1:
+				return (.@eac&EAJL_2&&getarg(1)<Job_Novice_High?true:false);
+			// Checa se pertence a uma classe Expandida.
+			case 2:
+				return (getarg(1)>=Job_Gunslinger&&getarg(1)<=Job_Ninja||getarg(1)>=Job_Taekwon&&getarg(1)<=Job_Soul_Linker?true:false);
+			// Checa se pertence a uma transclasse iniciante.
+			case 3:
+				if( getarg(1) >= Job_Swordman_High && getarg(1) <= Job_Thief_High )
+					return true;
+				else
+					return false;
+			// Checa se pertence a uma transclasse avançada.
+			case 4:
+				return (getarg(1)>=Job_Lord_Knight&&getarg(1)<=Job_Paladin2?true:false);
+			// Checa se pertence a uma transclasse.
+			case 5:
+				return (.@eac&EAJL_UPPER?true:false);
+			// Checa se pertence a uma terceira classe.
+			case 6:
+				return (.@eac&EAJL_THIRD?true:false);
+			// Checa se é evolução de uma classe expandida
+			case 7:
+				return (getarg(1)>=Job_Kagerou&&getarg(1)<=Job_Rebellion||getarg(1)>=Job_Star_Gladiator&&getarg(1)<=Job_Soul_Linker?true:false);
+			// Checa se é um Aprendiz ou Mini Aprendiz
+			case 8:
+				return (getarg(1)==Job_Novice||getarg(1)==Job_Baby||getarg(1)==Job_Summoner?true:false);
+			// Checa se é um Aprendiz.
+			case 9:
+				return (!getarg(1)?true:false);
+			case 10:
+			// Checa se é um Mini Aprendiz.
+				return (getarg(1)==Job_Baby?true:false);
+			// Checa se é uma primeira classe das Mini.
+			case 11:
+				return (getarg(1)>=Job_Baby_Swordman&&getarg(1)<=Job_Baby_Thief?true:false);
+			// Checa se é uma classe avançada das Mini.
+			case 12:
+				return (getarg(1)>=Job_Baby_Knight&&getarg(1)<=Job_Super_Baby?true:false);
+			// Checa se é uma classe que utiliza  um Carrinho de Mão.
+			case 13:
+				return (BaseClass==Job_Merchant?true:false);
+			// Checa se é uma classe que utiliza um Peco-Peco.
+			case 14:
+				return (getarg(1)!=Job_Swordman&&BaseClass==Job_Swordman&&!checkjob(6,getarg(1))?true:false);
+			case 15:
+			// Checa se é uma classe que utiliza um Dragão.
+				return (getarg(1)==Job_Rune_Knight||getarg(1)==Job_Rune_Knight_T?true:false);
+			case 16:
+			// Checa se é uma classe que utiliza um Grifo.
+				return (getarg(1)==Job_Royal_Guard||getarg(1)==Job_Royal_Guard_T?true:false);
+			// Checa se é uma classe que utiliza um M.E.C.H.A.
+			case 17:
+				return (getarg(1)==Job_Mechanic||getarg(1)==Job_Mechanic_T?true:false);
+			// Checa se é uma classe que utiliza um Falcão.
+			case 18:
+				return (getarg(1)==Job_Archer||getarg(1)==Job_Archer_T||getarg(1)==Job_Hunter||getarg(1)==Job_Sniper||getarg(1)==Job_Ranger||getarg(1)==Job_Ranger_T);
+			default:
+				break;
+		}
+		
+		return false;
+	}
+	
+	// Checa se a classe chegou a sua evolução final de acordo com a configuração requisitada.
+	function checkjobend {
+		// Classes Super (Sem transcendentes)
+		if( getarg(1) == Job_SuperNovice || getarg(1) == Job_Super_Baby )
+			return true;
+
+		set .@eac, eaclass(getarg(1));
+		switch( getarg(0) )
+		{
+			case 0:
+				return (checkjob(0,getarg(1))||checkjob(11,getarg(1))?true:false);
+			case 1:
+				return (checkjob(1,getarg(1))||checkjob(12,getarg(1))?true:false);
+			case 2:
+				return (checkjob(1,getarg(1))||checkjob(12,getarg(1))||checkjob(2,getarg(1))?true:false);
+			case 3:
+				return (checkjob(4,getarg(1))||checkjob(12,getarg(1))?true:false);
+			case 4:
+				return (checkjob(2,getarg(1))||checkjob(12,getarg(1))||checkjob(4,getarg(1))?true:false);
+			case 5:
+				return (checkjob(1,getarg(1))||checkjob(12,getarg(1))||checkjob(7,getarg(1))?true:false);
+			case 6:
+				return (checkjob(4,getarg(1))||checkjob(12,getarg(1))||checkjob(7,getarg(1))?true:false);
+			case 7:
+				return (checkjob(2,getarg(1))||checkjob(6,getarg(1))?true:false);
+			case 8:
+				return (checkjob(6,getarg(1))||checkjob(7,getarg(1))?true:false);
+			default:
+				break;
+		} 
+		return false;
+	}
+	
+	// Opções dos Menus Opcionais.
+	function job_optional_menu	{
+		switch(getarg(0))
+		{
+			case 0:
+				mes " ";
+				mes "Posso te ajudar em mais alguma coisa?";
+				next;
+				switch( select((getarg(1)?"^0000FF- Resetar Atributos.":""), (getarg(3)?"^0000FF- Resetar Habilidades.":""), (getarg(5)&&checkjob(13,Class)?"^0000FF- Adquirir um Carrinho de Mão.":""), (getarg(5)&&checkjob(14,Class)?"^0000FF- Adquirir um PecoPeco.":""), (getarg(5)&&checkjob(15,Class)?"^0000FF- Adquirir um Dragão.":""), (getarg(5)&&checkjob(16,Class)?"^0000FF- Adquirir um Grifo.":""), (getarg(5)&&checkjob(17,Class)?"^0000FF- Adquirir um M.E.C.H.A.^000000":""), (getarg(5)&&checkjob(18,Class)?"^0000FF- Adquirir um Falcão.^000000":""), (getarg(7)?"^0000FF- Habilidades Extras.^000000":""), "^FF0000- Não, obrigado.^000000") )
+				{
+					case 1:
+						job_optional_menu 1, getarg(2);
+						break;
+					case 2:
+						job_optional_menu 2, getarg(4);
+						break;
+					case 3:
+						job_optional_menu 3, 0, getarg(6);
+						break;
+					case 4:
+						job_optional_menu 3, 1, getarg(6);
+						break;
+					case 5:
+						job_optional_menu 3, 2, getarg(6);
+						break;
+					case 6:
+						job_optional_menu 3, 3, getarg(6);
+						break;
+					case 7:
+						job_optional_menu 3, 4, getarg(6);
+						break;
+					case 8:
+						job_optional_menu 3, 5, getarg(6);
+						break;
+					case 9:
+						job_optional_menu 4;
+						break;
+					case 10:
+						mes "^4B0082[Mestra das Classes]^000000";
+						mes "Tudo bem, se precisar de mim estarei aqui!";
+						return;
+				}
+				break;
+			case 1:
+				set .@ZenyCost, getarg(1);
+				mes "^4B0082[Mestra das Classes]^000000";
+				if( .@ZenyCost )
+				{
+					mes "Para resetar seus ^0000FFatributos^000000 é nescessário de ^FF0000" + .@ZenyCost + "^000000 Zenys.";
+					if( Zeny < .@ZenyCost )
+					{
+						mes "Você não tem Zeny suficiente para resetar seus atributos!";
+						return;
+					}
+				}
+				mes "Deseja resetar seus atributos?";
+				next;
+				if( select("^0000FF- Sim, por favor.^000000", "^FF0000- Não, obrigado.^000000") == 1 )
+				{
+					set StatusPoint, 0;
+					resetstatus;
+					if( .@ZenyCost ) set Zeny, Zeny - .@ZenyCost;
+					
+					mes "^4B0082[Mestra das Classes]^000000";
+					mes "Seus ^0000FFatributos^000000 foram resetados.";
+				}
+				else {
+					mes "^4B0082[Mestra das Classes]^000000";
+					mes "Tudo bem, volte quando desejar resetar seus ^0000FFatributos^000000.";
+				}
+				break;
+			case 2:
+				set .@ZenyCost, getarg(1);
+				mes "^4B0082[Mestra das Classes]^000000";
+				if( .@ZenyCost )
+				{
+					mes "Para resetar suas ^0000FFhabilidades^000000 é nescessário de ^FF0000" + .@ZenyCost + "^000000 Zenys.";
+					if( Zeny < .@ZenyCost )
+					{
+						mes "Você não tem Zeny suficiente para resetar suas habilidades!";
+						return;
+					}
+				}
+				mes "Deseja resetar suas habilidades?";
+				next;
+				if( select("^0000FF- Sim, por favor.^000000", "^FF0000- Não, obrigado.^000000") == 1 )
+				{
+					set SkillPoint, jobmaster_skpoint;
+					resetskill;
+					set jobmaster_skpoint, SkillPoint;
+					if( .@ZenyCost ) set Zeny, Zeny - .@ZenyCost;
+					
+					mes "^4B0082[Mestra das Classes]^000000";
+					mes "Suas ^0000FFhabilidades^000000 foram resetados.";
+				}
+				else {
+					mes "^4B0082[Mestra das Classes]^000000";
+					mes "Tudo bem, volte quando desejar resetar suas ^0000FFhabilidades^000000.";
+				}
+				break;
+			case 3:
+				set .@ZenyCost, getarg(2);
+				set .@mount_name$, (getarg(1)==0?mountname(0):(getarg(1)==4?mountname(3):(getarg(1)==5?mountname(1):(getarg(1)==1?mountname(2):(getarg(1)==2?mountname(4):mountname(5))))));
+				mes "^4B0082[Mestra das Classes]^000000";
+				if( checkriding() || checkdragon() || checkcart() || checkfalcon() )
+					mes "Você não pode adquirir mais um ^0000FF" + .@mount_name$ + "^000000 possuindo um ^FF0000" + mountname() + "^000000.";
+				else if( getarg(1) > 0 &&  getarg(1) <= 3 && !getskilllv("KN_RIDING") )
+					mes "Você não pode adquirir um ^0000FF" + .@mount_name$ + "^000000 enquanto não aprender a habilidade ^FF0000Montaria^000000.";
+				else if( getarg(1) == 2 && !getskilllv("RK_DRAGONTRAINING") )
+					mes "Você não pode adquirir um ^0000FF" + .@mount_name$ + "^000000 enquanto não aprender a habilidade ^FF0000Adestrar Dragão^000000.";
+				else if( (getarg(1) == 4 || getarg(0)) && checkcart() )
+					mes "Você não pode adquirir um ^0000FF" + .@mount_name$ + "^000000 enquanto estiver utilizando um ^FF0000Carrinho de Mão^000000.";
+				else if( getarg(1) == 4 && !getskilllv("NC_MADOLICENCE") )
+					mes "Você não pode adquirir um ^0000FF" + .@mount_name$ + "^000000 enquanto não aprender a habilidade ^FF0000Licença de Pilotagem^000000.";
+				else if( getarg(1) == 5 && !getskilllv("HT_FALCON") )
+					mes "Você não pode adquirir um ^0000FF" + .@mount_name$ + "^000000 enquanto não aprender a habilidade ^FF0000Adestrar Falcão^000000.";
+				else if( !getarg(1) && !getskilllv("MC_PUSHCART") )
+					mes "Você não pode adquirir um ^0000FF" + .@mount_name$ + "^000000 enquanto não aprender a habilidade ^FF0000Usar Carrinho^000000.";
+				else {
+					if( .@ZenyCost )
+					{
+						mes "Para adquirir um ^0000FF" + .@mount_name$ + "^000000 você precisa de ^FF0000" + .@ZenyCost + "^000000 Zenys.";
+						if( Zeny < .@ZenyCost )
+						{
+							mes "Você não tem Zeny suficiente para adquirir um ^0000FF" + .@mount_name$ + "^000000!";
+							return;
+						}
+					}
+					mes "Deseja adquirir um ^0000FF" + .@mount_name$ + "^000000?";
+					next;
+					if( select("^0000FF- Sim, por favor.^000000", "^FF0000- Não, obrigado.^000000") == 1 )
+					{
+						if( !getarg(1) )
+							setcart;
+						else if( getarg(1) == 5 )
+							setfalcon;
+						else
+							setriding;
+							
+						if( .@ZenyCost ) set Zeny, Zeny - .@ZenyCost;
+						mes "^4B0082[Mestra das Classes]^000000";
+						mes "Agora você possue um ^0000FF" + .@mount_name$ + "^000000.";
+					}
+					else {
+						mes "^4B0082[Mestra das Classes]^000000";
+						mes "Volte quando desejar adquirir um ^0000FF" + .@mount_name$ + "^000000.";
+					}
+					break;
+				}
+				break;
+			case 4:
+				skill 142,1,0;
+				switch(BaseClass) {
+					case 0: if (Class !=23) skill 143,1,0; break;
+					case 1: skill 144,1,0; skill 145,1,0; skill 146,1,0; break;
+					case 2: skill 157,1,0; break;
+					case 3: skill 147,1,0; skill 148,1,0; break;
+					case 4: skill 156,1,0; break;
+					case 5: skill 153,1,0; skill 154,1,0; skill 155,1,0; break;
+					case 6: skill 149,1,0; skill 150,1,0; skill 151,1,0; skill 152,1,0; break;
+					default: break;
+				}
+				switch(BaseJob) {
+					case 7: skill 1001,1,0; break;
+					case 8: skill 1014,1,0; break;
+					case 9: skill 1006,1,0; break;
+					case 10: skill 1012,1,0; skill 1013,1,0; break;
+					case 11: skill 1009,1,0; break;
+					case 12: skill 1003,1,0; skill 1004,1,0; break;
+					case 14: skill 1002,1,0; break;
+					case 15: skill 1015,1,0; skill 1016,1,0; break;
+					case 16: skill 1007,1,0; skill 1008,1,0; skill 1017,1,0; skill 1018,1,0; skill 1019,1,0; break;
+					case 17: skill 1005,1,0; break;
+					case 18: skill 238,1,0; break;
+					case 19: skill 1010,1,0; break;
+					case 20: skill 1011,1,0; break;
+					default: break;
+				}
+				mes "^4B0082[Mestra das Classes]^000000";
+				mes "Aqui está suas ^0000FFHabilidades Extra^000000.";
+				close;
+			case 5:
+				mes "^4B0082[Mestra das Classes]^000000";
+				mes "Tudo bem, estarei aqui se precisar dos meus serviços.";
+				close;
+			default:
+				break;
+		}
+		return;
+	}
+	
+	// Retorna com o Nome da Classe.
+	function	classname	{
+		switch( getarg(0) )
+		{
+			case 0: return "Apendiz";
+			case 1: return "Espadachim";
+			case 2: return (getarg(1)?"Mago":"Maga");
+			case 3: return (getarg(1)?"Arqueiro":"Arqueira");
+			case 4: return (getarg(1)?"Noviço":"Noviça");
+			case 5: return (getarg(1)?"Mercador":"Mercadora");
+			case 6: return (getarg(1)?"Gatuno":"Gatuna");
+			case 7: case 13: return (getarg(1)?"Cavaleiro":"Cavaleira");
+			case 8: return (getarg(1)?"Sacerdote":"Sacerdotisa");
+			case 9: return (getarg(1)?"Bruxo":"Bruxa");
+			case 10: return (getarg(1)?"Ferreiro":"Ferreira");
+			case 11: return (getarg(1)?"Caçador":"Caçadora");
+			case 12: return (getarg(1)?"Mercenário":"Mercenária");
+			case 14: case 21: return (getarg(1)?"Templário":"Templária");
+			case 15: return (getarg(1)?"Monge":"Monja");
+			case 16: return (getarg(1)?"Sábio":"Sábia");
+			case 17: return (getarg(1)?"Arruaceiro":"Arruaceirá");
+			case 18: return "Alquimista";
+			case 19: case 20: return (getarg(1)?"Bardo":"Odalisca");
+			case 23: return "Super Aprendiz";
+			case 24: return (getarg(1)?"Justiceiro":"Justiceira");
+			case 25: return "Ninja";
+			case 4001: return "Aprendiz T.";
+			case 4002: return "Espadachim T.";
+			case 4003: return (getarg(1)?"Mago":"Maga")+" T.";
+			case 4004: return (getarg(1)?"Arqueiro":"Arqueira")+" T.";
+			case 4005: return (getarg(1)?"Noviço":"Noviça")+" T.";
+			case 4006: return (getarg(1)?"Mercador":"Mercadora")+" T.";
+			case 4007: return (getarg(1)?"Gatuno":"Gatuna")+" T.";
+			case 4008: case 4014: return (getarg(1)?"Lorde":"Lady");
+			case 4009: return (getarg(1)?"Sumo-Sacerdote":"Sumo-Sacerdotisa");
+			case 4010: return (getarg(1)?"Arquimago":"Arquimaga");
+			case 4011: return (getarg(1)?"Mestre-Ferreiro":"Mestra-Ferreira");
+			case 4012: return (getarg(1)?"Atirador de Elite":"Atiradora de Elite");
+			case 4013: return "Algoz";
+			case 4015: case 4022: return (getarg(1)?"Paladino":"Paladina");
+			case 4016: return (getarg(1)?"Mestre":"Mestra");
+			case 4017: return (getarg(1)?"Professor":"Professora");
+			case 4018: return (getarg(1)?"Desordeiro":"Desordeira");
+			case 4019: return (getarg(1)?"Criador":"Criadora");
+			case 4020: case 4021: return (getarg(1)?"Minestrél":"Cigana");
+			case 4023: return "Mini Aprendiz";
+			case 4024: return "Mini Espadachim";
+			case 4025: return "Mini "+(getarg(1)?"Mago":"Maga");
+			case 4026: return "Mini "+(getarg(1)?"Arqueiro":"Arqueira");
+			case 4027: return "Mini "+(getarg(1)?"Noviço":"Noviça");
+			case 4028: return "Mini "+(getarg(1)?"Mercador":"Mercadora");
+			case 4029: return "Mini "+(getarg(1)?"Gatuno":"Gatuna");
+			case 4030: case 4036: return "Mini "+(getarg(1)?"Cavaleiro":"Cavaleira");
+			case 4031: return "Mini "+(getarg(1)?"Sacerdote":"Sacerdotisa");
+			case 4032: return "Mini "+(getarg(1)?"Bruxo":"Bruxa");
+			case 4033: return "Mini "+(getarg(1)?"Ferreiro":"Ferreira");
+			case 4034: return "Mini "+(getarg(1)?"Caçador":"Caçadora");
+			case 4035: return "Mini "+(getarg(1)?"Mercenário":"Mercenária");
+			case 4037: case 4044: return "Mini "+(getarg(1)?"Templário":"Templária");
+			case 4038: return "Mini "+(getarg(1)?"Monje":"Monja");
+			case 4039: return "Mini "+(getarg(1)?"Sábio":"Sábia");
+			case 4040: return "Mini "+(getarg(1)?"Arruaceiro":"Arruaceira");
+			case 4041: return "Mini Alquimista";
+			case 4042: case 4043: return "Mini "+(getarg(1)?"Bardo":"Odalisca");
+			case 4045: return "Mini Super Aprendiz";
+			case 4046: return "Taekwon";
+			case 4047: case 4048: return (getarg(1)?"Mestre":"Mestra")+ " Taekwon";
+			case 4049: return "Espiritualista";
+			case 4054: case 4080: return (getarg(1)?"Cavaleiro Rúnico":"Cavaleira Rúnica");
+			case 4055: return (getarg(1)?"Arcano":"Arcana");
+			case 4056: case 4084: return "Sentinela";
+			case 4057: return (getarg(1)?"Arceispo":"Arcebispa");
+			case 4058: case 4086: return (getarg(1)?"Mecânico":"Mecânica");
+			case 4059: return "Sicário";
+			case 4060: case 4081: return (getarg(1)?"Cavaleiro Rúnico":"Cavaleira Rúnica")+" .T";
+			case 4061: return (getarg(1)?"Arcano":"Arcana")+" .T";
+			case 4062: case 4085: return "Sentinela"+" .T";
+			case 4063: return (getarg(1)?"Arceispo":"Arcebispa")+" .T";
+			case 4064: case 4087: return (getarg(1)?"Mecânico":"Mecânica")+" .T";
+			case 4065: return "Sicário"+" .T";
+			case 4066: case 4082: return (getarg(1)?"Guardião Runico":"Guardiã Runica");
+			case 4067: return (getarg(1)?"Feiticeiro":"Feiticeira");
+			case 4068: case 4069: return (getarg(1)?"Travador":"Musa");
+			case 4070: return "Shura";
+			case 4071: return (getarg(1)?"Bioquímico":"Bioquímica");
+			case 4072: return (getarg(1)?"Renegado":"Renegada");
+			case 4073: case 4083: return (getarg(1)?"Guardião Runico":"Guardiã Runica")+" .T";
+			case 4074: return (getarg(1)?"Feiticeiro":"Feiticeira")+" .T";
+			case 4075: case 4076: return (getarg(1)?"Travador":"Musa")+" .T";
+			case 4077: return "Shura T.";
+			case 4078: return (getarg(1)?"Bioquímico":"Bioquímica")+" .T";
+			case 4079: return (getarg(1)?"Renegado":"Renegada")+" .T";
+			case 4096: case 4109: return "Mini "+(getarg(1)?"Cavaleiro Rúnico":"Cavaleira Rúnica");
+			case 4097: return "Mini "+(getarg(1)?"Arcano":"Arcana");
+			case 4098: case 4111: return "Mini Sentinela";
+			case 4099: return "Mini "+(getarg(1)?"Arceispo":"Arcebispa");
+			case 4100: case 4112: return "Mini "+(getarg(1)?"Mecânico":"Mecânica");
+			case 4101: return "Mini Sicário";
+			case 4102: case 4110: return "Mini "+(getarg(1)?"Guardião Runico":"Guardiã Runica");
+			case 4103: return "Mini "+(getarg(1)?"Feiticeiro":"Feiticeira");
+			case 4104: case 4105: return "Mini "+(getarg(1)?"Trovador":"Musa");
+			case 4106: return "Mini Shura";
+			case 4107: return "Mini "+(getarg(1)?"Bioquímico":"Bioquímica");
+			case 4108: return "Mini "+(getarg(1)?"Renegado":"Renegada");
+			case 4211: return "Kagerou";
+			case 4212: return "Oboro";
+			case 4215: return "Rebelde";
+			case 4218: return "Summoner";
+			case 4220: return "Mini Summoner";
+			default: return "Desconhecida";
+		}
+		
+		// Retorna com o nome de uma montaria.
+		function mountname	{
+			if( !getargcount() )
+			{
+				if( checkcart() )
+					return "Carrinho de Mão";
+				if( checkfalcon() )
+					return "Falcão";
+				if( checkriding() )
+					return "Falcão";
+				if( checkdragon() )
+					return "Dragão";
+				if( checkwug() )
+					return "Wug";
+				if( checkmadogear() )
+					return "M.E.C.H.A";
+					
+				return "Desconhecido";
+			}
+			else
+				return (getarg(0)==0?"Carrinho de Mão":(getarg(0)==1?"Falcão":(getarg(0)==2?"PecoPeco":(getarg(0)==3?"M.E.C.H.A":(getarg(0)==4?"Dragão":"Grifo")))));
+		}
+	}
+	
+OnPCLoginEvent:
+OnPCBaseLvUpEvent:
+OnPCJobLvUpEvent:
+	if( job_master_alert )
+		end;
+		
+	copyarray .@Config[0], getvariableofnpc(.MainConfig, "JobMasterConfigure"), getarraysize(getvariableofnpc(.MainConfig, "JobMasterConfigure"));
+	if( checkjobend(.@Config[0],Class) || Class == Job_Ninja || Class == Job_Gunslinger || Class == Job_SuperNovice || Class == Job_Baby_Summoner || (!.@Config[4] && 1==2 && Class == Job_Summoner) ) // Temp Disable Baby Summoner
+		end;
+		
+	sleep2 2000;
+	
+	if( checkjobend(.@Mode,Class) ) end;
+	
+	// Fazendo conversão de valores no script.
+	set .@base, (!Class?0:(checkjob(10,Class)?14:(checkjob(11,Class)?16:(checkjob(12,Class)?18:(checkjob(0,Class)?2:(checkjob(2,Class)?4:(checkjob(1,Class)?6:(Class==Job_Novice_High?8:(checkjob(3,Class)?10:(checkjob(5,Class)?12:-1))))))))));
+
+	set .@BaseLevel, getvariableofnpc(.LevelRequire[.@base], "JobMasterConfigure");
+	set .@JobLevel, getvariableofnpc(.LevelRequire[(.@base+1)], "JobMasterConfigure");
+	
+	if( BaseLevel >= .@BaseLevel && JobLevel >= .@JobLevel )
+	{
+		message strcharinfo(0), "Você já tem nível suficiente para trocar de classe.";
+		dispbottom "Utilize o comando @jobmaster para acionar a Mestra das Classes.";
+		set job_master_alert, 1;
+	}
+	end;
+}
+
+prontera,150,186,5	duplicate(JobMaster)	Mestra das Classes#job1	2_F_MAGICMASTER

@@ -1,0 +1,331 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Arena PvP Ranqueada                                          .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compátivel:	eAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Arenas Balançeada de acordo com os Grupos de Rank.           .
+  *-----------------------------------------------------------------*/
+  prontera,162,192,4	script	PvP Ranqueada#ranked_01	4_M_EIN_SOLDIER,{
+	// Configurações de Arenas pelo Rank
+	//
+	// Estrutura do Array
+	//	RankID_Min, RankID_Max, <Min_BaseLevel>, <Max_BaseLevel>, <Max_User>, "<mapname>", <coord_x>, <coord_y>
+	//
+	//	RankID_Min: Rank mínimo para entrar na Arena. (0: Não Ranqueados)
+	//	RankID_Max: Rank máximo para entrar na Arena.
+	//	Min_BaseLevel: Nível de Base mínimo para entrar na Arena.
+	//	Max_BaseLevel: Nível de Base máximo para entrar na Arena.
+	//	Max_User: Máximo de Usuários que podem estar na Arena.
+	//	mapname: Mapa aonde os jogadores serão teleportados.
+	//	coord_x: Coordenada X aonde os jogadores serão teleportados. (0: será aleatório)
+	//	coord_y: Coordenada Y aonde os jogadores serão teleportados. (0: será aleatório)
+	//
+	// * Arena PvP
+	setarray .@PvPRank_Arenas$[0],
+		0, 0, 245, 255, 0, "pvp_y_1-1", 156, 191,		// Para não ranqueados
+		1, 3, 245, 255, 0, "pvp_y_2-1", 156, 191,		// Ranqueado do nível 1 ao nível 3
+		4, 6, 245, 255, 0, "pvp_y_3-1", 156, 191,		// Ranqueado do nível 4 ao nível 6
+		7, 9, 245, 255, 0, "pvp_y_4-1", 156, 191,		// Ranqueado do nível 7 ao nível 9
+		10, 12, 245, 255, 0, "pvp_y_5-1", 156, 191,	// Ranqueado do nível 10 ao nível 12
+		13, 15, 245, 255, 0, "pvp_y_6-1", 156, 191	// Ranqueado do nível 13 ao nível 15
+	;
+	//
+	// * Arena GvG
+	setarray .@GvGRank_Arenas$[0],
+		0, 0, 245, 255, 0, "guild_vs1-1", 0, 0,		// Para não ranqueados
+		1, 3, 245, 255, 0, "guild_vs1-2", 0, 0,		// Ranqueado do nível 1 ao nível 3
+		4, 6, 245, 255, 0, "guild_vs1-3", 0, 0,		// Ranqueado do nível 4 ao nível 6
+		7, 9, 245, 255, 0, "guild_vs1-4", 0, 0,		// Ranqueado do nível 7 ao nível 9
+		10, 12, 245, 255, 0, "guild_vs2-1", 0, 0,		// Ranqueado do nível 10 ao nível 12
+		13, 15, 245, 255, 0, "guild_vs2-2", 0, 0		// Ranqueado do nível 13 ao nível 15
+	;
+	//
+	// * Arena Party vs Party
+	setarray .@PvP2Rank_Arenas$[0],
+		0, 0, 245, 255, 0, "pvp_y_1-2", 128, 145,		// Para não ranqueados
+		1, 3, 245, 255, 0, "pvp_y_2-2", 128, 145,		// Ranqueado do nível 1 ao nível 3
+		4, 6, 245, 255, 0, "pvp_y_3-2", 128, 145,		// Ranqueado do nível 4 ao nível 6
+		7, 9, 245, 255, 0, "pvp_y_4-2", 128, 145,		// Ranqueado do nível 7 ao nível 9
+		10, 12, 245, 255, 0, "pvp_y_5-2", 128, 145,	// Ranqueado do nível 10 ao nível 12
+		13, 15, 245, 255, 0, "pvp_y_6-2", 128, 145	// Ranqueado do nível 13 ao nível 15
+	;
+	
+	cutin "ein_soldier", 2;
+	set .@loop_1,1;
+	while(.@loop_1)
+	{
+		set .@mode, getbattleflag("ranked_account");
+		mes "^8B4513[Porteiro PvP]^000000";
+		mes "Bem-vindo a Arena PvP Ranqueada!";
+		mes "Em que posso ajudar?";
+		next;
+		switch( select("- Jogadores vs Jogadores.", "- Clãs vs Clãs.", "- Grupos vs Grupos.", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				callsub sub_Warper, "Arena PvP", .@PvPRank_Arenas$, getarraysize(.@PvPRank_Arenas$), 0;
+				break;
+			case 2:
+				callsub sub_Warper, "Arena GvG", .@GvGRank_Arenas$, getarraysize(.@GvGRank_Arenas$), 1;
+				break;
+			case 3:
+				callsub sub_Warper, "Arena PtvsPt", .@PvP2Rank_Arenas$, getarraysize(.@PvP2Rank_Arenas$), 2;
+				break;
+			case 4:
+				set .@loop_1,0;
+				break;
+		}
+	}
+	
+	mes "^8B4513[Porteiro PvP]^000000";
+	mes "Muito bem, volte quando desejar entrar na ^0000FFArena PvP Ranqueada^000000.";
+	close2;
+	cutin "", 255;
+	end;
+	
+sub_Warper:
+	deletearray .@Arenas$;
+	copyarray .@Arenas$, getarg(1), getarg(2);
+	set .@loop_2,1;
+	while(.@loop_2)
+	{
+		set .@n,0;
+		set .@buildmenu$, "";
+		mes "^8B4513[Porteiro PvP]^000000";
+		mes "Escolha a ^0000FF" + getarg(0) + "^000000 que deseja acessar:";
+		next;
+		for( set .@i,0; .@i < getarraysize(.@Arenas$); set .@i, .@i + 8 )
+		{
+			set .@rank_name$, atoi(.@Arenas$[.@i]) ? getrankinfo(atoi(.@Arenas$[.@i]),1) : "Não Ranqueados";
+			set .@buildmenu$, .@buildmenu$ + "^0000FF- " + .@rank_name$ + "";
+						
+			if( atoi(.@Arenas$[.@i+1]) && atoi(.@Arenas$[.@i]) != atoi(.@Arenas$[.@i+1]) )
+			{
+				set .@rank_name$, getrankinfo(atoi(.@Arenas$[.@i+1]),1);
+				set .@buildmenu$, .@buildmenu$ + " ao " + .@rank_name$;
+			}
+						
+			set .@buildmenu$, .@buildmenu$+"^000000 ^FF0000[" + getmapusers(.@Arenas$[.@i+5]);
+						
+			if( atoi(.@Arenas$[.@i+4]) > 0 )
+				set .@buildmenu$, .@buildmenu$ + "/" + atoi(.@Arenas$[.@i+4]);
+						
+			set .@buildmenu$, .@buildmenu$ + "]^000000.";
+			set .@buildmenu$, .@buildmenu$ + ":";
+			set .@n,.@n+1;
+		}
+		
+		set .@buildmenu$, .@buildmenu$ + "^FFA500- Voltar.:^FF0000- Cancelar.^000000";
+		set .@choose, select(.@buildmenu$)-1;
+					
+		if( .@choose == .@n )
+			break;
+					
+		if( .@choose > .@n )
+		{
+			set .@loop_1,0;
+			break;
+		}
+
+		set .@idx, .@choose*8;
+		set .@type, .@mode?1:0;
+		set .@rank_id, getcharrankinfo(.@mode);
+		set .@rank_min, atoi(.@Arenas$[.@idx]);
+		set .@rank_max, atoi(.@Arenas$[.@idx+1]);
+		set .@rank_name$, .@rank_min ? getrankinfo(.@rank_min,1) : "Não Ranqueados";
+		set .@base_min, atoi(.@Arenas$[.@idx+2]);
+		set .@base_max, atoi(.@Arenas$[.@idx+3]);
+		set .@max_user, atoi(.@Arenas$[.@idx+4]);
+		set .@mapname$, .@Arenas$[.@idx+5];
+		set .@coord_x, atoi(.@Arenas$[.@idx+6]);
+		set .@coord_y, atoi(.@Arenas$[.@idx+7]);
+					
+		if( .@rank_max && .@rank_min != .@rank_max )
+			set .@rank_name$, .@rank_name$ + " ao " + getrankinfo(.@rank_max,1);
+					
+		if( BaseLevel < .@base_min || BaseLevel > .@base_max ) {
+			mes "^8B4513[Porteiro PvP]^000000";
+			mes "Somente Jogadores com ^FF0000Nível " + .@base_min + "~" + .@base_max + "^000000 podem acessar esta Arena!";
+			next;
+		}
+		else if( .@rank_id < .@rank_min || .@rank_id > .@rank_max ) {
+			mes "^8B4513[Porteiro PvP]^000000";
+			mes "Somente Jogadores ^FF0000" + .@rank_name$ + "^000000 podem acessar esta Arena.";
+			next;
+		}
+		else if( getarg(3) == 0 && getcharid(1) ) {
+			mes "^8B4513[Porteiro PvP]^000000";
+			mes "Você deve sair do seu ^FF0000Grupo^000000 para entrar nesta Arena.";
+			next;
+		}
+		else if( getarg(3) == 1 && getcharid(2) <= 0 ) {
+			mes "^8B4513[Porteiro PvP]^000000";
+			mes "Somente Jogadores com ^FF0000Clã^000000 podem acessar esta Arena.";
+			next;
+		}
+		else if( getarg(3) == 1 && getcharid(1) <= 0 ) {
+			mes "^8B4513[Porteiro PvP]^000000";
+			mes "Somente Jogadores com ^FF0000Grupo^000000 podem acessar esta Arena.";
+			next;
+		}
+		else {
+			mes "^8B4513[Porteiro PvP]^000000";
+			mes "Tem certeza que deseja entrar na ^0000FF" + getarg(0) + " " + .@rank_name$ + "^000000?";
+			next;
+			switch( select("- Sim, por favor.", "^FFA500- Voltar.", "^FF0000- Cancelar.^000000") )
+			{
+				case 1:
+					if( .@max_user && getmapusers(.@mapname$) > .@max_user )
+					{
+						mes "^8B4513[Porteiro PvP]^000000";
+						mes "A ^0000FF" + .@rank_name$ + "^000000 está cheia, tente novamente mais tarde.";
+						next;
+						break;
+					}
+					cutin "", 255;
+					warp .@mapname$, .@coord_x, .@coord_y;
+					end;
+				case 2:
+					break;
+				case 3:
+					set .@loop_1, 0;
+					set .@loop_2, 0;
+					break;
+			}
+		}
+	}
+	return;
+	
+OnInit:
+	waitingroom "PvP Ranqueada",0;
+	end;
+}
+
+// Mapflags
+pvp_y_1-1	mapflag	ranked
+pvp_y_1-1	mapflag	pvp
+pvp_y_1-1	mapflag	pvp_noparty
+pvp_y_1-1	mapflag	pvp_noguild
+pvp_y_1-1	mapflag	nowarp
+pvp_y_1-1	mapflag	nowarpto
+
+pvp_y_2-1	mapflag	ranked
+pvp_y_2-1	mapflag	pvp
+pvp_y_2-1	mapflag	pvp_noparty
+pvp_y_2-1	mapflag	pvp_noguild
+pvp_y_2-1	mapflag	nowarp
+pvp_y_2-1	mapflag	nowarpto
+
+pvp_y_3-1	mapflag	ranked
+pvp_y_3-1	mapflag	pvp
+pvp_y_3-1	mapflag	pvp_noparty
+pvp_y_3-1	mapflag	pvp_noguild
+pvp_y_3-1	mapflag	nowarp
+pvp_y_3-1	mapflag	nowarpto
+
+pvp_y_4-1	mapflag	ranked
+pvp_y_4-1	mapflag	pvp
+pvp_y_4-1	mapflag	pvp_noparty
+pvp_y_4-1	mapflag	pvp_noguild
+pvp_y_4-1	mapflag	nowarp
+pvp_y_4-1	mapflag	nowarpto
+
+pvp_y_5-1	mapflag	ranked
+pvp_y_5-1	mapflag	pvp
+pvp_y_5-1	mapflag	pvp_noparty
+pvp_y_5-1	mapflag	pvp_noguild
+pvp_y_5-1	mapflag	nowarp
+pvp_y_5-1	mapflag	nowarpto
+
+pvp_y_6-1	mapflag	ranked
+pvp_y_6-1	mapflag	pvp
+pvp_y_6-1	mapflag	pvp_noparty
+pvp_y_6-1	mapflag	pvp_noguild
+pvp_y_6-1	mapflag	nowarp
+pvp_y_6-1	mapflag	nowarpto
+
+guild_vs1-1	mapflag	ranked
+guild_vs1-1	mapflag	gvg
+guild_vs1-1	mapflag	pvp_noparty
+guild_vs1-1	mapflag	nowarp
+guild_vs1-1	mapflag	nowarpto
+
+guild_vs1-2	mapflag	ranked
+guild_vs1-2	mapflag	gvg
+guild_vs1-2	mapflag	pvp_noparty
+guild_vs1-2	mapflag	nowarp
+guild_vs1-2	mapflag	nowarpto
+
+guild_vs1-3	mapflag	ranked
+guild_vs1-3	mapflag	gvg
+guild_vs1-3	mapflag	pvp_noparty
+guild_vs1-3	mapflag	nowarp
+guild_vs1-3	mapflag	nowarpto
+
+guild_vs1-4	mapflag	ranked
+guild_vs1-4	mapflag	gvg
+guild_vs1-4	mapflag	pvp_noparty
+guild_vs1-4	mapflag	nowarp
+guild_vs1-4	mapflag	nowarpto
+
+guild_vs2-1	mapflag	ranked
+guild_vs2-1	mapflag	gvg
+guild_vs2-1	mapflag	pvp_noparty
+guild_vs2-1	mapflag	nowarp
+guild_vs2-1	mapflag	nowarpto
+
+guild_vs2-2	mapflag	ranked
+guild_vs2-2	mapflag	gvg
+guild_vs2-2	mapflag	pvp_noparty
+guild_vs2-2	mapflag	nowarp
+guild_vs2-2	mapflag	nowarpto
+
+pvp_y_1-2	mapflag	ranked
+pvp_y_1-2	mapflag	pvp
+pvp_y_1-2	mapflag	pvp_noguild
+pvp_y_1-2	mapflag	nowarp
+pvp_y_1-2	mapflag	nowarpto
+
+pvp_y_2-2	mapflag	ranked
+pvp_y_2-2	mapflag	pvp
+pvp_y_2-2	mapflag	pvp_noguild
+pvp_y_2-2	mapflag	nowarp
+pvp_y_2-2	mapflag	nowarpto
+
+pvp_y_3-2	mapflag	ranked
+pvp_y_3-2	mapflag	pvp
+pvp_y_3-2	mapflag	pvp_noguild
+pvp_y_3-2	mapflag	nowarp
+pvp_y_3-2	mapflag	nowarpto
+
+pvp_y_4-2	mapflag	ranked
+pvp_y_4-2	mapflag	pvp
+pvp_y_4-2	mapflag	pvp_noguild
+pvp_y_4-2	mapflag	nowarp
+pvp_y_4-2	mapflag	nowarpto
+
+pvp_y_5-2	mapflag	ranked
+pvp_y_5-2	mapflag	pvp
+pvp_y_5-2	mapflag	pvp_noguild
+pvp_y_5-2	mapflag	nowarp
+pvp_y_5-2	mapflag	nowarpto
+
+pvp_y_6-2	mapflag	ranked
+pvp_y_6-2	mapflag	pvp
+pvp_y_6-2	mapflag	pvp_noguild
+pvp_y_6-2	mapflag	nowarp
+pvp_y_6-2	mapflag	nowarpto

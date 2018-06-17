@@ -1,0 +1,19 @@
+//===== rAthena Script ======================================= 
+//= Izlude Airport NPCs
+//===== By: ================================================== 
+//= rAthena Dev Team
+//===== Current Version: =====================================
+//= 1.0
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//===== Description: ========================================= 
+//= Izlude Airport NPCs
+//===== Additional Comments: ================================= 
+//= 1.0 First version.
+//============================================================ 
+
+izlude,202,75,3	duplicate(Airship_Staff_izlude)	Assist. do Aeroplano#izlude	90
+izlude_a,202,75,3	duplicate(Airship_Staff_izlude)	Assist. do Aeroplano#izlude_a	90
+izlude_b,202,75,3	duplicate(Airship_Staff_izlude)	Assist. do Aeroplano#izlude_b	90
+izlude_c,202,75,3	duplicate(Airship_Staff_izlude)	Assist. do Aeroplano#izlude_c	90
+izlude_d,202,75,3	duplicate(Airship_Staff_izlude)	Assist. do Aeroplano#izlude_d	90

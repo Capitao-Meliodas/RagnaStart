@@ -1,0 +1,145 @@
+// ===== SQL ================================
+// CREATE TABLE `gdt` (
+// `guild_id` int(11) unsigned NOT NULL auto_increment,
+// `tesouros` int(11) unsigned NOT NULL default '0',
+// `pontos` int(11) unsigned NOT NULL default '0',
+//  PRIMARY KEY  (`guild_id`)
+// ) TYPE=MyISAM
+
+
+// Warps
+
+arena_room.gat,99,25,0	warp	tesouro1	1,1,prt_are_in.gat,98,23
+prt_are_in.gat,97,30,0	warp	tesouro2	1,1,arena_room.gat,99,28
+prt_are_in.gat,142,13,0	warp	tesouro3	1,1,prt_are_in.gat,177,79
+prt_are_in.gat,177,74,0	warp	tesouro4	1,1,prt_are_in.gat,138,13
+prt_are_in.gat,55,13,0	warp	tesouro5	1,1,prt_are_in.gat,125,78
+prt_are_in.gat,125,74,0	warp	tesouro6	1,1,prt_are_in.gat,60,13
+arena_room.gat,92,95,0	warp	tesouro7	1,1,izlude.gat,128,245
+arena_room.gat,107,95,0	warp	tesouro8	1,1,izlude_b.gat,128,245
+arena_room.gat,107,80,0	warp	tesouro9	1,1,izlude_c.gat,128,245
+arena_room.gat,92,80,0	warp	tesouro10	1,1,izlude_d.gat,128,245
+prt_are_in.gat,74,127,0	warp	tesouro11	1,1,prt_are_in.gat,98,10
+prt_are_in.gat,97,7,0	warp	tesouro12	1,1,prt_are_in.gat,74,129
+
+izlude.gat,125,257,0	script	iz431	45,1,1,{
+
+	if(getcharid(2) == 0){
+	mes "Desculpe, mas você precisa de um clã para poder entrar na guerra.";
+	close;
+	}else{
+	set @rand, rand(6);
+		if(@rand == 0) warp "arena_room.gat",120,87;
+		if(@rand == 1) warp "arena_room.gat",114,102;
+		if(@rand == 2) warp "arena_room.gat",87,102;
+		if(@rand == 3) warp "arena_room.gat",79,88;
+		if(@rand == 4) warp "arena_room.gat",113,74;
+		if(@rand == 5) warp "arena_room.gat",85,74;
+	}
+	end;
+}
+izlude.gat,130,257,0	duplicate(iz431)	warp#2	45,1,1,
+
+izlude_a.gat,125,257,0	duplicate(iz431)	warp#9	45,1,1,
+izlude_a.gat,130,257,0	duplicate(iz431)	warp#10	45,1,1,
+
+izlude_b.gat,125,257,0	duplicate(iz431)	warp#3	45,1,1,
+izlude_b.gat,130,257,0	duplicate(iz431)	warp#4	45,1,1,
+
+izlude_c.gat,125,257,0	duplicate(iz431)	warp#5	45,1,1,
+izlude_c.gat,130,257,0	duplicate(iz431)	warp#6	45,1,1,
+
+izlude_d.gat,125,257,0	duplicate(iz431)	warp#7	45,1,1,
+izlude_d.gat,130,257,0	duplicate(iz431)	warp#8	45,1,1,
+
+prt_are_in.gat,0,0,0	script	TesouroEvent::TesouroKill	-1,{
+
+
+OnKilled:
+	Tesouro:
+	set @check, query_sql("SELECT tesouros,pontos FROM gdt WHERE guild_id='"+getcharid(2)+"' LIMIT 1", @tesouros, @pontos);
+	set @check_p, query_sql("SELECT charkill,pontokill FROM chargdt WHERE char_idd ='"+getcharid(0)+"' LIMIT 1", @charkill, @pontokill);
+	if(@check == 1){
+		set @tesouros, @tesouros + 1;
+		set @pontos, @pontos + 100;
+		query_sql("UPDATE gdt SET tesouros = '"+@tesouros+"' WHERE guild_id='"+getcharid(2)+"'");
+		query_sql("UPDATE gdt SET pontos = '"+@pontos+"' WHERE guild_id='"+getcharid(2)+"'");
+			if(@check_p == 1){
+			set @charkill, @charkill + 1;
+			set @pontokill, @pontokill + 10;
+			query_sql("UPDATE chargdt SET charkill = '"+@charkill+"' WHERE char_idd = '"+getcharid(0)+"'");
+			query_sql("UPDATE chargdt SET pontokill = '"+@pontokill+"' WHERE char_idd = '"+getcharid(0)+"'");
+			}
+				if(@check_p == 0){
+				query_sql("INSERT INTO chargdt (char_idd,charkill,char_name,pontokill) VALUES ('"+getcharid(0)+"','1','"+strcharinfo(0)+"','10')");
+				}
+	}else{
+		query_sql("INSERT INTO gdt (guild_id,tesouros,pontos) VALUES ('"+getcharid(2)+"','1','100')");
+			if(@check_p == 1){
+			set @charkill, @charkill + 1;
+			set @pontokill, @pontokill + 10;
+			query_sql("UPDATE chargdt SET charkill = '"+@charkill+"' WHERE char_idd = '"+getcharid(0)+"'");
+			query_sql("UPDATE chargdt SET pontokill = '"+@pontokill+"' WHERE char_idd = '"+getcharid(0)+"'");
+			}
+
+				if(@check_p == 0){
+				query_sql("INSERT INTO chargdt (char_idd,charkill,char_name,pontokill) VALUES ('"+getcharid(0)+"','1','"+strcharinfo(0)+"','10')");
+				}
+
+	}
+		announce "Guerra do Tesouro: " +strcharinfo(0)+ " do Clã ["+ getguildname(getcharid(2)) +"] conquistou um dos baús.",0;
+		end;
+
+}
+
+prt_are_in.gat,0,0,0	script	TesouroEvent::TesouroEvent	-1,{
+
+end;
+
+OnClock1245:
+OnClock1445:
+OnClock1645:
+OnClock1845:
+OnClock2045:
+OnClock2245:
+OnClock0045:
+OnClock0245:
+OnClock0445:
+OnClock0645:
+OnClock0845:
+OnClock1045:
+
+announce "Guerra do Tesouro: Os tesouros vão surgir a qualquer momento!",0;
+end;
+
+OnHour13:
+OnHour15:
+OnHour17:
+OnHour19:
+OnHour21:
+OnHour23:
+OnHour01:
+OnHour03:
+OnHour05:
+OnHour07:
+OnHour09:
+OnHour11:
+
+killmonsterall "prt_are_in.gat";
+
+set $@tesourocount, 1;
+
+announce "Guerra do Tesouro: Os tesouros acabaram de surgir!",0;
+
+set $@mob, 1324 + rand(13);
+monster "prt_are_in.gat",178,88,"Baú do Tesouro",$@mob,1,"TesouroKill::OnKilled";
+
+set $@mob, 1338 + rand(12);
+monster "prt_are_in.gat",126,88,"Baú do Tesouro",$@mob,1,"TesouroKill::OnKilled";
+
+set $@mob, 1352 + rand(11);
+monster "prt_are_in.gat",74,141,"Baú do Tesouro",$@mob,1,"TesouroKill::OnKilled";
+
+end;
+
+}

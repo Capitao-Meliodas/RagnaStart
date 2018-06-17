@@ -1,0 +1,136 @@
+// CoinsTrader v1.0 por Rafael Perrella
+// =====================================
+prontera,154,193,3	script	Trocador	47,{
+
+// ==== Configurações ===========
+set .@Name$, "[^FF0000Funcionário - banco^000000]";
+set .@GIName$, "Sacola";
+
+setarray .Itens,
+	670, 500000000,
+	676, 200000000,
+	672, 50000000;
+setarray @id[0],674; // Id das moedas [Padrão: 674 = Moeda de Mythril / 675 = Moeda de Prata]
+set @w,1; // Quantas moedas irá receber por cada troca [Padrão: 1]
+setarray @p[0],607; // Ids dos itens que será cobrado para trocar pelas moedas [607 = Fruto de Yggdrasil / 608 = Semente de Yggdrasil]
+setarray @a[0],250; // Quantas Yggs/Seed serão cobradas por 1 moeda [Padrão: 250 Frutos de Yggdrasil / 250 Semenetes de Yggdrasil]
+// ==============================
+
+function	addDelimiter	{
+	set .@value, getarg (0);
+	set .@delimiter$, getarg (1, ".");
+
+	while (.@value > 999) {
+		set .@temp$, .@value % 1000;
+		set .@value, .@value / 1000;
+		while (getstrlen (.@temp$) < 3)
+			set .@temp$, "0" + .@temp$;
+		set .@value$, .@delimiter$ + .@temp$ + .@value$;
+	}
+	return .@value + .@value$;
+}
+
+mes .@Name$;
+mes "Olá ^FF8000"+ strcharinfo (0) +"^000000!";
+mes "Veio em busca de meus serviços?";
+mes "O que deseja?";
+next;
+menu " Sacola",M," YGG",Y," Sair",S;
+
+M:
+if (select ("Trocar "+ .@GIName$ +"s por Zenys", "Trocar Zenys por "+ .@GIName$ +"s","Por enquanto, nada...") == 3)
+	close;
+set .@Choose, @menu - 1;
+mes "Escolha o item:";
+for (; .Itens[.@i]; set .@i, .@i + 2) {
+	set .@max, .@Choose ? (Zeny / .Itens[.@i + 1]) : countitem (.Itens[.@i]);
+	set .@menu$, .@menu$ + "- ^"+ (.@max ? "008000" : "FF0000") + .@GIName$ +" de "+ addDelimiter (.Itens[.@i + 1]) +"Z^000000 (máximo "+ .@max +"):";
+}
+if (select (.@menu$ + "Cancelar transação.") == .@i / 2 + 1)
+	close;
+set .@index, (@menu - 1) * 2;
+next;
+mes .@Name$;
+mes "Digite o número de "+ .@GIName$ +"s:";
+if (.@Choose) {
+	input .@i, 0, Zeny / .Itens[.@index + 1];
+	set Zeny, Zeny - .Itens[.@index + 1] * .@i;
+	getitem .Itens[.@index], .@i;
+} else {
+	input .@i, 0, (countitem (.Itens[.@index]) < (2000000000 - Zeny) / .Itens[.@index + 1]) ? countitem (.Itens[.@index]) : ((2000000000 - Zeny) / .Itens[.@index + 1]);
+	set Zeny, Zeny + .Itens[.@index + 1] * .@i;
+	delitem .Itens[.@index], .@i;
+close;
+	
+Y:
+mes .@Name$;
+mes "Aqui voce pode trocar^2d66b5 250 Frutos de Yggdrasil^000000 em ^FF00001 Moeda de Mythril^000000";
+mes "Alem de trocar ^FF00001 Moeda de Mythril^000000 em ^2d66b5250 Frutos de Yggdrasil^000000";
+mes "Ah, gostou ne?";
+next;
+menu " Fruto de Yggdrasil por Moeda Mythirl",A," Moeda Mythirl Por Fruto de Yggdrasil",B," Por enquanto, nada....",C;
+
+A:
+	mes .@Name$;
+	mes "Deseja Trocar?";
+	menu "Sim",Sim,"Não",Nao;
+	next;
+		Sim:
+		next;
+		mes "Irei verificar se você possui os itens ...";
+		next;
+		if(countitem(607)<250)goto l_semitem;
+			mes .@Name$;
+			mes "Hmm, você parece ter os itens...";
+			mes "Então vamos fazer a troca então!";
+			next;
+			mes "A Troca foi efetuada com sucesso!";
+			delitem 607,250;
+			getitem 674,1;
+			close;
+	l_semitem:
+	mes .@Name$;
+	mes "Você nao possui todos os itens necessários!!";
+	mes " Volte assim que consegui-los...";
+	close;
+		Nao:
+		next;
+		mes .@Name$;
+		mes "Volte quando tiver os itens necessarios para a troca!";
+close;
+B:
+	mes .@Name$;
+	mes "Deseja Trocar?";
+	menu "Sim",Yes,"Não",No;
+	next;
+		Yes:
+		next;
+		mes "Irei verificar se você possui os itens ...";
+		next;
+		if(countitem(674)<1)goto l_semtem;
+			mes .@Name$;
+			mes "Hmm, você parece ter os itens...";
+			mes "Então vamos fazer a troca então!";
+			next;
+			mes "A Troca foi efetuada com sucesso!";
+			delitem 674,1;
+			getitem 607,250;
+			close;
+	l_semtem:
+	mes .@Name$;
+	mes "Você nao possui todos os itens necessários!!";
+	mes " Volte assim que consegui-los...";
+	close;
+		No:
+		next;
+		mes .@Name$;
+		mes "Volte quando tiver os itens necessarios para a troca!";
+close;
+C:
+close;
+S:
+close;
+}
+close;
+
+}    

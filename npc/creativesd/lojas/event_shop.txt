@@ -1,0 +1,47 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Sala de Espera de Eventos                                    .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena                                                      .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .  Envia os jogadores a Sala de Espera aonde localiza-se os npcs  .
+  .  de eventos.                                                    .
+  *-----------------------------------------------------------------*/
+event_room,88,81,7	script	Loja de Eventos#event_shop	4_F_KAFRA6,{
+	cutin "kafra_06", 2;
+	mes "^FFA500[Funcionária Kafra]^000000";
+	mes "Bem-vindo a ^0000FFLoja de Eventos^000000,";
+	mes "aqui você pode trocar suas ^FF0000" + getitemname(41001) + "^000000 por itens.";
+	mes " ";
+	mes "Deseja abrir a ^0000FFLoja de Eventos^000000?";
+	next;
+	if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 1 )
+	{
+		mes "^FFA500[Funcionária Kafra]^000000";
+		mes "Tudo bem, boa compras!";
+		close2;
+		callshop "Shop#event_shop", 1;
+		cutin "kafra_06", 255;
+		end;
+	}
+	mes "^FFA500[Funcionária Kafra]^000000";
+	mes "Tudo bem, volte quando desejar trocar suas moedas na ^0000FFLoja de Eventos^000000.";
+	close;
+}
+
+-	itemshop	Shop#event_shop	FAKE_NPC,41001,5013:15000,2629:15000,2630:10000,2410:15000,2541:15000,5518:10000,5361:5000,5377:5000,2202:5000,5137:7000,5374:10000,5314:5000

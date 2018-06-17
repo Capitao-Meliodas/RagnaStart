@@ -1,0 +1,61 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    War of Treasure (Guerra do Tesouro)                          .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compatível:	eAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Exemplo de personalização entre horários.                    .
+  *-----------------------------------------------------------------*/
+-	script	wot#automatic_event	FAKE_NPC,{
+OnClock1600:
+	if( $@WOT_FLAG )
+		end;
+	
+	// Carrega o evento com suas configurações padrões.
+	donpcevent "wot#main::OnStart";
+	end;
+	
+OnClock2200:
+	if( $@WOT_FLAG )
+		end;
+	
+	deletearray $@WOT_Treasure_Rewards$;
+	
+	// Definir novas configurações no evento.
+	set $@WOT_MinGuild, 3; 	// Define o mínimo de Clã para começar o Evento.
+	set $@WOT_MaxGuild, 5; 	// Define o máximo de Clã para começar o Evento.
+	set $@WOT_MinPlayer, 5; // Define o mínimo de jogadores para 5.
+	set $@WOT_MaxPlayer, 20; // Define o máximo de jogadores para 20.
+	set $@WOT_BaseLevel, 0; // Define Nível mínimo de Base para 0.
+	set $@WOT_Waiting, 5; // Define o tempo de coleta de jogadores para 5 minutos.
+	set $@WOT_RuneMode, 0; // Desativa o Modo Rúnico
+	set $@WOT_RuneReward_Enable, 0; // Desativa recompensas em Runas.
+	set $@WOT_GuardReward_Enable, 0; // Desativa recompensas em Guardiões de Emboscada.
+	set $@WOT_TreasureReward_Enable, 2; // Será entregue todas recompensas dos Baús.
+	setarray $@WOT_Treasure_Rewards$[0], // Define novas recompensas
+		504, 0, 100, getitemname(504),
+		504, 0, 100, getitemname(505),
+		"WOT_POINTS", 1, 300, "Pontos de WOT"
+	;
+	donpcevent "wot#main::OnStart";
+	end;
+	
+OnClock2300:
+	if( $WOT_FLAG )
+		donpcevent "wot#main::OnFail";
+	end;
+}

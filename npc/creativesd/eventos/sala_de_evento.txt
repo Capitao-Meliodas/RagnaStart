@@ -1,0 +1,78 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Sala de Espera de Eventos                                    .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena                                                      .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .  Envia os jogadores a Sala de Espera aonde localiza-se os npcs  .
+  .  de eventos.                                                    .
+  *-----------------------------------------------------------------*/
+prontera,149,192,5	script	Sala de Eventos#event_room	4_F_KAFRA5,{
+	mes "^4B0082[Funcionária Kafra]^000000";
+	mes "Deseja ír a ^0000FFSala de Espera de Eventos^000000?";
+	next;
+	if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 1 )
+	{
+		mes "^4B0082[Funcionária Kafra]^000000";
+		mes "Tudo bem, boa viagem!";
+		close2;
+		warp "event_room", 99, 82;
+		end;
+	}
+	mes "^4B0082[Funcionária Kafra]^000000";
+	mes "Tudo bem, volte quando desejar acessar a ^0000FFSala de Espera de Eventos^000000.";
+	close;
+	
+OnInit:
+	waitingroom "Eventos", 0;
+	end;
+}
+
+event_room,111,81,1	script	Saída#event_room	4_F_KAFRA5,{
+OnTouch:
+	cutin "kafra_05", 2;
+	mes "^4B0082[Funcionária Kafra]^000000";
+	mes "Tem certeza que deseja retornar para ^0000FFProntera^000000?";
+	next;
+	if( select("- Sim, por favor.", "^FF0000- Não, obrigado.^000000") == 1 )
+	{
+		mes "^4B0082[Funcionária Kafra]^000000";
+		mes "Tudo bem, boa viagem!";
+		close2;
+		cutin "", 255;
+		warp "prontera", 156, 191;
+		end;
+	}
+	mes "^4B0082[Funcionária Kafra]^000000";
+	mes "Tudo bem, volte quando desejar retornar para ^0000FFProntera^000000.";
+	close2;
+	cutin "", 255;
+	end;
+}
+
+event_room,102,72,0	duplicate(Saída#event_room)	#ev_room_exit_01	WARPNPC,5,5
+event_room,98,72,0	duplicate(Saída#event_room)	#ev_room_exit_02	WARPNPC,5,5
+
+// MapFlags
+event_room	mapflag	noreturn
+event_room	mapflag	noteleport
+event_room	mapflag	nowarp
+event_room	mapflag	nowarpto
+event_room	mapflag	nomemo
+event_room	mapflag	nochat
+event_room	mapflag	novending

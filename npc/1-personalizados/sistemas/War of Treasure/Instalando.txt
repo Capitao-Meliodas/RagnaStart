@@ -1,0 +1,35 @@
+1: Abra o arquivo script_athena do seu emulador npc/script_athena.conf
+
+Procure:
+// --------------Izlude Battle Arena ---------------
+npc: npc/outros/arena/arena_room.txt
+npc: npc/outros/arena/arena_lvl50.txt
+npc: npc/outros/arena/arena_lvl60.txt
+npc: npc/outros/arena/arena_lvl70.txt
+npc: npc/outros/arena/arena_lvl80.txt
+npc: npc/outros/arena/arena_party.txt
+npc: npc/outros/arena/arena_point.txt
+
+Troque Por:
+// --------------Izlude Battle Arena ---------------
+//npc: npc/outros/arena/arena_room.txt
+//npc: npc/outros/arena/arena_lvl50.txt
+//npc: npc/outros/arena/arena_lvl60.txt
+//npc: npc/outros/arena/arena_lvl70.txt
+//npc: npc/outros/arena/arena_lvl80.txt
+//npc: npc/outros/arena/arena_party.txt
+//npc: npc/outros/arena/arena_point.txt
+
+2: Abra o arquivo script_athena do seu emulador npc/script_warps.conf
+Procure:
+npc: npc/warps/outro/arena.txt
+
+Troque Por:
+//npc: npc/warps/outro/arena.txt
+
+3: conf/mapflag abra o arquivo noskill.txt
+Procure:
+prt_are_in mapflag noskill
+
+Troque Por:
+//prt_are_in mapflag noskill

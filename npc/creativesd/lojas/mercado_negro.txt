@@ -1,0 +1,309 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2017 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Mercado Negro                                                .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                          Versão: 1.0    .
+  .                                                                 .
+  . Compatibilidade:                                                .
+  .    rAthena e derivações.                                        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Mercado com diversos itens a venda, ideal para FULL PVP.     .
+  *-----------------------------------------------------------------*/
+prontera,147,188,5	script	Mercado Negro#mg	4_M_HUMERCHANT,{
+	mes "^FF0000[Mercado Negro]^000000";
+	mes "Hey... tenho alguns itens interessantes.";
+	mes "Gostária de alguma coisa?";
+	next;
+	switch( select("- Acessórios.", "- Armaduras.", "^0000FF- Armamentos.^000000", "- Bonecas.", "- Calçados.", "- Capas.", "- Chapéus.", "- Criação de Veneno.", "- Escudos.", "- Gemas.", "- Itens de Captura.", "- Itens para Pet.", "- Tintas e Pincéis.", "- Utilidades.", "- Outros.", "^FF0000- Cancelar.^000000") )
+	{
+		case 1:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFAcessórios^000000 que tenho à venda.";
+			close2;
+			callshop "Acessórios#mg", 1;
+			end;
+		case 2:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFArmaduras^000000 que tenho à venda.";
+			close2;
+			callshop "Armaduras#mg", 1;
+			end;
+		case 3:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Tenho um ^0000FFArsenal^000000 enorme, o que você está procurando?";
+			next;
+			switch( select("- Adagas.", "- Alquimia.", "- Arcos.", (checkre(0)?"- Aresenal Arcano":""), (checkre(0)?"- Aresenal Geneticista":""), (checkre(0)?"- Aresenal Mecânico":""), (checkre(0)?"- Aresenal Rúnico":""), (checkre(0)?"- Aresenal Sicário":""), "- Bombas.", "- Cajados.", "- Chicotes.", "- Espadas de uma Mão.", "- Espadas de duas Mãos.", "- Instrumentos.", "- Itens Arremessáveis", "- Katar's.", "- Lanças.", "- Livros.", "- Machados.", "- Maças.", "- Ninjutsu.", "- Pistolas e Projéteis.", "- Soqueiras.", "^FF0000- Cancelar.^000000") )
+			{
+				case 1:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFAdagas^000000 que tenho à venda.";
+					close2;
+					callshop "Adagas#mg", 1;
+					end;
+				case 2:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFAlquimia^000000 que tenho à venda.";
+					close2;
+					callshop "Alquimia#mg", 1;
+					end;
+				case 3:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFArcos^000000 que tenho à venda.";
+					close2;
+					callshop "Arcos e Flechas#mg", 1;
+					end;
+				case 4:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFArsenal Arcano^000000 que tenho à venda.";
+					close2;
+					callshop "Arsenal Arcano#mg", 1;
+					end;
+				case 5:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFArsenal Geneticista^000000 que tenho à venda.";
+					close2;
+					callshop "Arsenal Geneticista#mg", 1;
+					end;
+				case 6:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFArsenal Mecânico^000000 que tenho à venda.";
+					close2;
+					callshop "Arsenal Mecânico#mg", 1;
+					end;
+				case 7:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFArsenal Sicário^000000 que tenho à venda.";
+					close2;
+					callshop "Arsenal Sicário#mg", 1;
+					end;
+				case 8:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFArsenal Rúnico^000000 que tenho à venda.";
+					close2;
+					callshop "Arsenal Rúnico#mg", 1;
+					end;
+				case 9:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFBombas^000000 que tenho à venda.";
+					close2;
+					callshop "Bombas#mg", 1;
+					end;
+				case 10:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFCajados^000000 que tenho à venda.";
+					close2;
+					callshop "Cajados#mg", 1;
+					end;
+				case 11:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFChicotes^000000 que tenho à venda.";
+					close2;
+					callshop "Chicotes#mg", 1;
+					end;
+				case 12:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFEspadas de uma Mão^000000 que tenho à venda.";
+					close2;
+					callshop "Espadas de uma Mão#mg", 1;
+					end;
+				case 13:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFEspadas de duas Mãos^000000 que tenho à venda.";
+					close2;
+					callshop "Espadas de duas Mãos#mg", 1;
+					end;
+				case 14:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFInstrumentos^000000 que tenho à venda.";
+					close2;
+					callshop "Instrumentos#mg", 1;
+					end;
+				case 15:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFItens Arremessáveis^000000 que tenho à venda.";
+					close2;
+					callshop "Itens Arremessáveis#mg", 1;
+					end;
+				case 16:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFKatar's^000000 que tenho à venda.";
+					close2;
+					callshop "Katar's#mg", 1;
+					end;
+				case 17:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFLanças^000000 que tenho à venda.";
+					close2;
+					callshop "Lanças#mg", 1;
+					end;
+				case 18:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFLivros^000000 que tenho à venda.";
+					close2;
+					callshop "Livros#mg", 1;
+					end;
+				case 19:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFMachados^000000 que tenho à venda.";
+					close2;
+					callshop "Machados#mg", 1;
+					end;
+				case 20:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFMaças^000000 que tenho à venda.";
+					close2;
+					callshop "Maças#mg", 1;
+					end;
+				case 21:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFNinjutsu^000000 que tenho à venda.";
+					close2;
+					callshop "Ninjutsu#mg", 1;
+					end;
+				case 22:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFPistolas e Projéteis^000000 que tenho à venda.";
+					close2;
+					callshop "Pistolas e Projéteis#mg", 1;
+					end;
+				case 23:
+					mes "^FF0000[Mercado Negro]^000000";
+					mes "Muito bem, vou te mostrar a lista de ^0000FFSoqueiras^000000 que tenho à venda.";
+					close2;
+					callshop "Soqueiras#mg", 1;
+					end;
+				default:
+					break;
+			}
+			break;
+		case 4:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFBonecas^000000 que tenho à venda.";
+			close2;
+			callshop "Bonecas#mg", 1;
+			end;
+		case 5:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFCalçados^000000 que tenho à venda.";
+			close2;
+			callshop "Calçados#mg", 1;
+			end;
+		case 6:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFCapas^000000 que tenho à venda.";
+			close2;
+			callshop "Capas#mg", 1;
+			end;
+		case 7:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFChapéus^000000 que tenho à venda.";
+			close2;
+			callshop "Chapéus#mg", 1;
+			end;
+		case 8:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFCriação de Veneno^000000 que tenho à venda.";
+			close2;
+			callshop "Criação de Veneno#mg", 1;
+			end;
+		case 9:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFEscudos^000000 que tenho à venda.";
+			close2;
+			callshop "Escudos#mg", 1;
+			end;
+		case 10:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFGemas^000000 que tenho à venda.";
+			close2;
+			callshop "Gemas#mg", 1;
+			end;
+		case 11:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFItens de Captura^000000 que tenho à venda.";
+			close2;
+			callshop "Itens de Captura#mg", 1;
+			end;
+		case 12:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFItens para Pet^000000 que tenho à venda.";
+			close2;
+			callshop "Itens para Pet#mg", 1;
+			end;
+		case 13:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFTintas e Pincéis^000000 que tenho à venda.";
+			close2;
+			callshop "Tintas e Pincéis#mg", 1;
+			end;
+		case 14:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFUtilidades^000000 que tenho à venda.";
+			close2;
+			callshop "Utilidades#mg", 1;
+			end;
+		case 15:
+			mes "^FF0000[Mercado Negro]^000000";
+			mes "Muito bem, vou te mostrar a lista de ^0000FFOutros itens^000000 que tenho à venda.";
+			close2;
+			callshop "Outros#mg", 1;
+			end;
+		default:
+			break;
+	}
+	mes "^FF0000[Mercado Negro]^000000";
+	mes "Caso esteja procurando algum item, não esqueça estou sempre aqui...";
+	close;
+}
+
+-	shop	Acessórios#mg	-1,2609:-1,2610:30000,2611:25000,2612:15000,2613:40000,2615:100000,2621:30000,2622:50000,2623:30000,2624:90000,2625:30000,2626:30000,2627:-1
+-	shop	Armaduras#mg	-1,2302:50,2304:-1,2306:1000,2308:20000,2310:-1,2311:700000,2313:60000,2315:65000,2317:70000,2318:30000,2320:20000,2322:20000,2324:30000,2326:-1,2327:100000,2329:300000,2331:200000,2333:35000,2334:100000,2336:75000,2337:200000,2339:100000,2342:-1,2343:150000
+-	shop	Bonecas#mg	-1,741:-1,742:-1,743:-1,750:-1,751:-1,752:-1,753:-1,754:-1,7212:-1
+-	shop	Calçados#mg	-1,2402:500,2404:-1,2406:18000,2412:50000,2413:100000
+-	shop	Capas#mg	-1,2502:1000,2503:5000,2504:15000,2506:30000,2509:35000
+-	shop	Chapéus#mg	-1,2218:-1,2208:-1,2212:-1,2220:-1,2203:-1,2205:-1,2201:-1,2241:-1,2232:-1,2216:-1,2239:-1,2226:-1,2243:-1,2242:-1,2228:-1,2230:-1
+-	shop	Criação de Veneno#mg	-1,937:1000,952:1000,939:1000,7033:1000,972:2000,713:50,657:5000
+-	shop	Escudos#mg	-1,2102:500,2104:-1,2106:-1,2108:65000,2109:65000,2110:100000,2111:150000
+-	shop	Gemas#mg	-1,715:-1,716:-1,717:-1
+-	shop	Itens de Captura#mg	-1,619:1000,620:1500,621:1500,622:-1,623:-1,624:-1,625:3000,626:3000,627:-1,628:-1,629:2000,630:2000,631:2000,632:-1,633:3000,634:3000,637:1500,636:1500,638:-1,639:-1,640:3000,641:5000,642:5000,643:-1	  
+-	shop	Itens para Pet#mg	-1,10001:10000,10002:10000,10003:10000,10004:10000,10005:10000,10006:10000,10007:10000,10008:10000,10009:10000,10010:10000,10011:10000,10012:10000,10013:10000,10014:10000,10015:10000,10016:10000,10017:10000,10018:10000,10019:10000,10020:10000
+-	shop	Tintas e Pincéis#mg	-1,6121:200000,6122:200000,6120:200000,6123:200000
+-	shop	Outros#mg	-1,6124:500000,7940:20000,6144:20000,11513:20000,7102:20000,7304:20000,7582:20000
+-	shop	Utilidades#mg	-1,501:-1,502:-1,503:-1,504:-1,506:-1,645:-1,657:-1,656:-1,601:-1,602:-1,1065:-1,611:-1
+
+// Armamentos
+-	shop	Adagas#mg	-1,1202:50,1205:1250,1208:2400,1211:-1,1214:-1,1217:-1,1220:43000,1226:49000,1223:50000,1224:200000,1225:200000,1227:150000,1229:120000,1231:300000,1232:300000,1233:300000,1234:50000,1235:50000,1236:60000,1237:75000,1239:300000,1240:300000,1241:300000
+-	shop	Alquimia#mg	-1,7144:100000,7127:100000,7128:100000,7129:100000,7130:100000,7131:100000,7132:100000,7133:200000,7135:100000,7136:100000,7137:100000,7138:100000,7139:100000
+-	shop	Arcos e Flechas#mg	-1,1702:-1,1705:15000,1708:30000,1711:50000,1716:60000,1715:45000,1718:65000,1719:75000,1721:100000,1722:150000,1750:3,1751:3,1770:3,1752:3,1753:5,1754:3,1755:3,1756:3,1757:3,1758:10,1756:10,1760:10,1761:10,1762:10,1763:10,1764:25,1765:25,1766:50,1767:10,1768:10,1769:10
+-	shop	Arsenal Arcano#mg	-1,6189:200000,6190:200000,6191:200000,6192:200000,6193:200000,6194:200000,6195:200000,6197:200000,6198:200000,6199:200000,6200:200000,6201:200000,6202:200000,6203:200000,6204:200000,6205:200000
+-	shop	Arsenal Geneticista#mg	-1,6211:200000,6212:200000,6210:200000,6214:200000,6215:200000,6216:200000,6213:200000,6244:200000,6245:200000,6246:200000,6247:200000,6265:200000,6263:200000,6264:200000,6279:200000,6280:200000,6282:200000,6283:200000,6284:200000,6285:200000,6297:200000,11022:200000,11023:200000,11024:200000
+-	shop	Arsenal Mecânico#mg	-1,1549:1000000,2139:1000000,2800:1000000,2801:1000000,2802:1000000,2803:1000000,2804:1000000,2805:1000000,2806:1000000,2807:1000000,2808:1000000,2809:1000000,6145:1000000,6146:1000000,6147:1000000,12392:1000000,12393:1000000,12394:1000000,18000:1000000,18002:1000000,18003:1000000,18004:1000000
+-	shop	Arsenal Rúnico#mg	-1,12725:200000,12726:200000,12727:200000,12728:200000,12729:200000,12730:200000,12731:200000,12732:200000,12733:200000,12734:200000,12735:200000,12736:200000,12737:200000,12738:200000
+-	shop	Arsenal Sicário#mg	-1,6128:500000,7931:20000,7932:10000,7933:10000,7934:10000,7935:10000,7936:10000,7937:10000,12717:10000,12718:10000,12719:10000,12720:10000,12721:10000,12722:10000,12723:10000,12724:10000
+-	shop	Bombas#mg	-1,13265:200000,13266:200000,13267:200000,13260:200000,13261:200000,13262:200000,13263:200000,13264:200000,13268:200000
+-	shop	Cajados#mg	-1,1550:-1,1551:-1,1552:-1,1553:-1,1554:30000,1555:30000,1556:30000,1557:50000,1558:35000
+-	shop	Chicotes#mg	-1,1951:15000,1953:18000,1955:25000,1957:-1,1962:100000,1963:100000,1964:100000
+-	shop	Espadas de uma Mão#mg	-1,1102:120,1105:20000,1108:30000,1111:60000,1114:65000,1117:25000,1120:-1,1125:34000,1124:100000,1127:59000,1128:65000,1129:75000,1130:150000,1133:100000,1134:150000,1135:120000,1136:120000,1139:200000,1140:300000,1141:300000,1142:200000,1143:150000,1144:120000,1145:400000
+-	shop	Espadas de duas Mãos#mg	-1,1152:20000,1155:45000,1158:80000,1162:68000,1163:84000,1164:200000,1165:200000,1166:150000,1167:300000,1168:300000,1170:300000
+-	shop	Instrumentos#mg	-1,1902:10000,1904:15000,1906:30000,1908:-1,1910:65000,1912:70000,1913:100000
+-	shop	Itens Arremessáveis#mg	-1,13275:200000,13276:200000,13277:200000,13278:200000,13279:200000,13280:200000,13283:200000,13284:200000,13285:200000,13286:200000,13287:200000,13288:200000,13289:200000,13290:200000
+-	shop	Katar's#mg	-1,1264:15000,1251:-1,1253:-1,1255:40000,1256:100000,1258:100000,1259:100000,1260:100000,1261:120000
+-	shop	Lanças#mg	-1,1402:800,1405:11000,1408:26000,1411:50000,1413:300000,1414:300000,1416:300000,1417:500000,1452:26000,1455:30000,1458:35000,1461:-1,1464:65000,1466:300000,1468:300000,1469:300000,1471:300000
+-	shop	Livros#mg	-1,1602:100,1605:2500,1608:10000,1611:-1,1613:50000,1614:55000,1615:100000
+-	shop	Machados#mg	-1,1352:60000,1355:75000,1358:55000,1361:80000,1363:300000,1364:300000,1365:300000,1366:350000,1367:200000,1302:800,1304:80000,1305:120000,1306:300000
+-	shop	Maças#mg	-1,1502:-1,1505:-1,1508:-1,1511:-1,1514:-1,1517:-1,1520:30000,1522:50000,1523:60000,1524:75000,1525:75000,1526:80000,1527:100000,1528:100000,1529:100000,1531:100000
+-	shop	Ninjutsu#mg	-1,13006:240000,13008:20000,13009:48000,13011:32000,13013:48000,13015:120000,13250:-1,13251:-1,13252:-1,13253:-1,13254:-1,13255:10,13256:10,13257:10,13258:10,13259:10,13300:-1,13302:-1,13303:-1,2118:10000,2120:40000,7521:150,7522:150,7523:150,7524:10000
+-	shop	Pistolas e Projéteis#mg	-1,13103:-1,13105:-1,13106:-1,13150:-1,13152:-1,13153:-1,13154:-1,13155:-1,13156:-1,13157:-1,13159:-1,13161:-1,13162:-1,13200:-1,13201:-1,13202:-1,13203:-1,13204:-1,13205:-1,13206:-1,13207:-1
+-	shop	Soqueiras#mg	-1,1802:-1,1804:-1,1806:-1,1807:65000,1810:-1,1812:-1,1813:100000,1814:500000

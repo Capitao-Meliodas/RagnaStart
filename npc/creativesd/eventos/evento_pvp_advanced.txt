@@ -1,0 +1,570 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Comandos de Ineração                                             .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Evento PvP no qual o vencedor é o que mais derrota outros        .
+  .   jogadores.                                                        .
+  *---------------------------------------------------------------------*/
+  
+// ================================================================
+// =					Configurações							  =
+// ================================================================
+-	script	PvP Advanced#config	-1,{
+OnInit:
+	// -----------------------------------------------------------
+	// -				Configurações Globais					 -
+	// -----------------------------------------------------------
+	//
+	//	Nível de Grupo de Administração para poder ligar/desligar o evento através do comando.
+	.@GroupID = 99;
+	
+	// Mapa aonde será feito o evento com suas respectivas coordenadas.
+	//
+	setarray $@pvp_adv_event_mapevent$[0], "ev_pvp_adv", 95, 88;
+	
+	// Mapa para aonde os jogadores vão quando morre/saí do evento com suas respectivas coordenadas.
+	//
+	setarray $@pvp_adv_event_mapexit$[0], "prontera", 155, 179;
+	
+	// Nível Minimo de Base para entrar no Evento. (0 desabilita esta opção)
+	//
+	$@pvp_adv_event_base_level = 1;
+	
+	// Mínimo de Jogadores para entrar no Evento. (Nunca ponha menor que 2)
+	//
+	$@pvp_adv_event_min_users = 2;
+	
+	// Máximo de Jogadores que pode entrar no Evento. (0 desabilita esta opção)
+	//
+	$@pvp_adv_event_max_users = 120;
+	
+	// Caso não haja o minimo de jogadores para começar o Evento, o que o NPC deve fazer?
+	//
+	// 	0: Encerrar o Evento
+	//	(outro número): Deverá ser posto em minutos para prorrogação do evento.
+	//
+	$@pvp_adv_event_cancel = 0;
+	
+	
+	// Lista de MapFlags utilizado no Evento.
+	//
+	setarray $@pvp_adv_event_mapflaglist[0], mf_pvp, mf_pvp_noguild, mf_pvp_noparty, mf_nowarp, mf_nowarpto, mf_noreturn, mf_noteleport;
+	
+	
+	// -----------------------------------------------------------
+	// -			Configurações de Recompensas			  	 -
+	// -----------------------------------------------------------
+	//
+	// Modo em que será entregue a Recompensa ao Jogador Vencedor.
+	//
+	//		0: Um item/variável será entregue de forma aleatória ao jogador.
+	//		1: Todos itens/variáveis configuradas será entregue ao jogador.
+	//		2: O Jogador poderá escolher um item/variável configurada.
+	//
+	$@pvp_adv_event_reward_mode = 1;
+	
+	// Configuração de Recompensas, segue o modelo abaixo:
+	//
+	//	setarray $@pvp_adv_event_reward$[0], <item1_id>|"<var1_name>", <amount1>, <type1>, <name1>, <item2_id>|"<var2_name>", <amount2>, <type2>, "<name2>"....
+	//
+	//		<item_id>|<var_name>: Id do item ou variável que será entregue. (Variáveis tem que ser do tipo integer e sempre postas em áspas)
+	//		<amount>: A quantidade dos itens/variável que será entregue.
+	//		<type>: Tipo da Recompensa. (0 é item e 1 é variável)
+	//		<name>: Nome do Item/Variável que será exibido em menus e diálogos.
+	//
+	//	Pode ser configurado no máximo 30 recompensas.
+	//
+	setarray $@pvp_adv_event_reward$[0],
+											//501,				// Poção Vermelha
+											//1,					// Será entregue 1 (uma)
+											//0,					// Tipo 0 é item
+											//getitemname(501),	// Pegando o nome padrão no Banco de Dados
+											//502,				// Poção Laranja
+											//2,					// Será entregue 2 (duas)
+											//0,					// Tipo 0 é item
+											//getitemname(502),	// Pegando o nome padrão no Banco de Dados
+											//"Zeny",				// Zeny
+											//10000,				// Será entregue 10.000 (Dez mil)
+											//1,					// Tipo 1 é variável
+											//"Zenys",			// Nome dado a variável Zeny.
+											//"KafraPoints",		// KafraPoints
+											//5000,				// Será entregue 5.000 (Cinco mil)
+											//1,					// Tipo 1 é variável
+											//"Pontos Kafra"		// Nome dado a variável KafraPoints.
+							41001, 100, 0, getitemname(41001)
+	;
+	
+	// -----------------------------------------------------------
+	// -					Bind de Comando			  	 		 -
+	// -----------------------------------------------------------
+	bindatcmd "pvpadvc", strnpcinfo(0)+"::OnCmd", .@GroupID, .@GroupID;
+	end;
+	
+OnCmd:
+	if( !.@atcmd_numparameters )
+		message strcharinfo(0), "Você deve digitar @pvpadvc ligar/desligar neste comando.";
+	else if( .@atcmd_parameters$[0] == "ligar" )
+	{
+		if( $pvp_adv_event_flag )
+			message strcharinfo(0), "O Evento PvP Advanced já está ligado.";
+		else
+			donpcevent "Evento PvP Advanced#event::OnStart";
+	}
+	else if( .@atcmd_parameters$[0] == "desligar" )
+	{
+		if( !$pvp_adv_event_flag )
+			message strcharinfo(0), "O Evento PvP Advanced já está desligado.";
+		else {
+			donpcevent "Evento PvP Advanced#event::OnCmdEnd";
+			announce "[Evento PvP Advanced]: O Evento foi terminado pelo GameMaster.",bc_all,"0x00FF00";
+		}
+	}
+	else if( .@atcmd_parameters$[0] == "resetar" )
+	{
+		$pvp_adv_event_name$ = "";
+		$pvp_adv_event_charid = 0;
+		$pvp_adv_event_status = 1;
+		donpcevent "WarpPvPAdvanced::OnStart";
+	}
+	else
+		message strcharinfo(0), "As opções válidas são ligar/desligar neste comando.";
+	end;
+	
+OnClock0000:
+	if( !$pvp_adv_event_flag )
+		donpcevent "Evento PvP Advanced#event::OnStart";
+	end;
+}
+
+// ================================================================
+// =			Recompensador e Teleportador			  		  =
+// ================================================================	
+event_room,84,114,5	script	Evento PvP Advanced#warp::WarpPvPAdvanced	4_M_EIN_SOLDIER,{
+
+	// -----------------------------------------------------------
+	// -					Recompensador					  	 -
+	// -----------------------------------------------------------
+	if( !$pvp_adv_event_status && $pvp_adv_event_charid == getcharid(0) )
+	{
+		deletearray .@tmpids[0], 120;
+		.@buildmenu$ = "";
+		.@c=0;
+		for( .@i=0; .@i < getarraysize($@pvp_adv_event_reward$); .@i+=4 )
+		{
+			.@tmpids[.@c] = .@i;
+			if( $@pvp_adv_event_reward_mode == 2 )
+				.@buildmenu$ += "- " + $@pvp_adv_event_reward$[(.@i+1)] + "x " + $@pvp_adv_event_reward$[(.@i+3)] + ":";
+			.@c++;
+		}
+			
+		if( !$@pvp_adv_event_reward_mode || $@pvp_adv_event_reward_mode == 2 )
+		{	
+			if( !$@pvp_adv_event_reward_mode  )
+			{
+				.@rand = .@tmpids[rand(0,(getarraysize(.@tmpids)-1))];
+				mes "^8B4513[Evento PvP Advanced]^000000";
+				mes "Você foi o vencedor, sua recompensa é ^0000FF" + $@pvp_adv_event_reward$[(.@rand+1)] + "x " + $@pvp_adv_event_reward$[(.@rand+3)] + "^000000.";
+				next;
+			}
+			else {
+				mes "^8B4513[Evento PvP Advanced]^000000";
+				mes "Você foi o vencedor, selecione uma recompensa:";
+				next;
+				.@choose = select(.@buildmenu$)-1;
+				.@rand = .@tmpids[.@choose];
+			}
+			
+			freeloop(1);
+			while(1)
+			{	
+				if( !atoi($@pvp_adv_event_reward$[(.@rand+2)]) )
+				{
+					if( !checkweight(atoi($@pvp_adv_event_reward$[.@rand]),atoi($@pvp_adv_event_reward$[(.@rand+1)])) )
+					{
+						openstorage();
+						mes "^8B4513[Evento PvP Advanced]^000000";
+						mes "Você está com muitos itens no seu inventário, guarde alguns para pegar a recompensa e selecione 'Continuar'.";
+						next;
+						prompt("Continuar");
+					}
+					else {
+						getitem atoi($@pvp_adv_event_reward$[.@rand]), atoi($@pvp_adv_event_reward$[(.@rand+1)]);
+						$pvp_adv_event_status = 1;
+						break;
+					}
+				}
+				else {
+					setd $@pvp_adv_event_reward$[.@rand], getd($@pvp_adv_event_reward$[.@rand]) + atoi($@pvp_adv_event_reward$[(.@rand+1)]);
+					$pvp_adv_event_status = 1;
+					break;
+				}
+			}
+			freeloop(0);
+		}
+		else if( $@pvp_adv_event_reward_mode == 1 )
+		{
+			.@count = 1;
+			for( .@i=0; .@i < getarraysize(.@tmpids); .@i++ )
+			{
+				.@rand = .@tmpids[.@i];
+				mes "^8B4513[Evento PvP Advanced]^000000";
+				mes "Você foi o vencedor, sua "  + .@count + "ª recompensa é ^0000FF" + $@pvp_adv_event_reward$[(.@rand+1)] + "x " + $@pvp_adv_event_reward$[(.@rand+3)] + "^000000.";
+				next;
+				freeloop(1);
+				while(1)
+				{	
+					if( !atoi($@pvp_adv_event_reward$[(.@rand+2)]) )
+					{
+						if( !checkweight(atoi($@pvp_adv_event_reward$[.@rand]),atoi($@pvp_adv_event_reward$[(.@rand+1)])) )
+						{
+							openstorage();
+							mes "^8B4513[Evento PvP Advanced]^000000";
+							mes "Você está com muitos itens no seu inventário, guarde alguns para pegar a recompensa e selecione 'Continuar'.";
+							next;
+							prompt("Continuar");
+						}
+						else {
+							getitem atoi($@pvp_adv_event_reward$[.@rand]), atoi($@pvp_adv_event_reward$[(.@rand+1)]);
+							$pvp_adv_event_status = 1;
+							break;
+						}
+					}
+					else {
+						setd $@pvp_adv_event_reward$[.@rand], getd($@pvp_adv_event_reward$[.@rand]) + atoi($@pvp_adv_event_reward$[(.@rand+1)]);
+						$pvp_adv_event_status = 1;
+						break;
+					}
+				}
+				.@count++;
+				freeloop(0);
+			}
+		}
+		else {
+			debugmes "[Evento PvP Advanced]: Erro no modo de entrega de recompensas, configuracao incorreta.";
+			message strcharinfo(0), "Houve um erro no modo de entrega de recompensas, reporte ao Administrador do Servidor.";
+		}
+	}
+	
+	// -----------------------------------------------------------
+	// -					Teleportador					  	 -
+	// -----------------------------------------------------------
+	.@w=1;
+	while(.@w)
+	{
+		mes "^8B4513[Evento PvP Advanced]^000000";
+		mes "Bem-vindo ^0000FF" + strcharinfo(0) + "^000000, eu sou responsável por organizar o Evento PvP Advanced.";
+		mes "Em que posso ajudar?";
+		next;
+		switch( select(($pvp_adv_event_flag==1?"^0000FF- Entrar no Evento PvP Advanced.^000000":""), "- Sobre o Evento.", "- Recompensas.", "^FF0000- Saír.^000000") )
+		{
+			case 1:
+				if( BaseLevel < $@pvp_adv_event_base_level )
+				{
+					mes "^8B4513[Evento PvP Advanced]^000000";
+					mes "Me desculpe, você não tem nível de base suficiente.";
+					mes "É necessário no minimo ^0000FF" + $@pvp_adv_event_base_level + " nível de Base^000000.";
+					next;
+				}
+				else if( $@pvp_adv_event_max_users && getmapusers($@pvp_adv_event_mapevent$[0]) > $@pvp_adv_event_max_users )
+				{
+					mes "^8B4513[Evento PvP Advanced]^000000";
+					mes "Me desculpe, mais a arena já está cheia.";
+					next;
+				}
+				else {
+					mes "^8B4513[Evento PvP Advanced]^000000";
+					mes "Tem certeza que deseja entrar no Evento PvP Advanced?";
+					next;
+					if( select("- Sim, entrar no evento.", "^FF0000- Não, obrigado.^000000") == 1 )
+					{
+						mes "^8B4513[Evento PvP Advanced]^000000";
+						mes "Muito bem, vou te mandar agora mesmo para Arena.";
+						close2;
+						callfunc "f_PvP_Advanced", 0, getcharid(0);
+						warp $@pvp_adv_event_mapevent$[0], atoi($@pvp_adv_event_mapevent$[1]), atoi($@pvp_adv_event_mapevent$[2]);
+						end;
+					}
+				}
+				break;
+			case 2:
+				mes "^8B4513[Evento PvP Advanced]^000000";
+				mes "O Evento PvP Advanced, os jogadores devem batalhar entre sí.";
+				mes "Vence o jogador que obter mais mortes dentro da Arena.";
+				next;
+				break;
+			case 3:
+				mes "^8B4513[Evento PvP Advanced]^000000";
+				if( !$@pvp_adv_event_reward_mode )
+					mes "As recompensas são aleatórias, vejam o que vencedor pode ganhar no Evento:";
+				else if( $@pvp_adv_event_reward_mode )
+					mes "Essas são as recompensa que o vencedor ganha no Evento:";
+				else
+					mes "O Vencedor pode escolher uma dessas recompensas se ganhar o Evento:";
+				
+				for( .@i=0; .@i < getarraysize($@pvp_adv_event_reward$); .@i+=4 )
+					mes "^0000FF-" + $@pvp_adv_event_reward$[(.@i+1)] + "x " + $@pvp_adv_event_reward$[(.@i+3)] + ".^000000";
+				next;
+				break;
+			case 4:
+				.@w=0;
+				break;
+		}
+	}
+	
+	mes "^8B4513[Evento PvP Advanced]^000000";
+	mes "Tudo bem, estarei aqui caso necessitar de minha ajuda.";
+	close;
+
+OnInit:
+	if( !$pvp_adv_event_flag )
+		donpcevent "WarpPvPAdvanced::OnStart";
+	else if( $pvp_adv_event_flag == 1 )
+		donpcevent "WarpPvPAdvanced::OnStart2";
+	else
+		donpcevent "WarpPvPAdvanced::OnStart3";
+	end;
+
+OnStart:
+	delwaitingroom;
+	waitingroom "Último vencedor: [" + ($pvp_adv_event_name$!=""?$pvp_adv_event_name$:"Nenhum Vencedor") + "]", 0;
+	end;
+	
+OnStart2:
+	delwaitingroom;
+	waitingroom "Aberto o Evento!", 0;
+	end;
+	
+OnStart3:
+	delwaitingroom;
+	waitingroom "Ocorrendo o Evento!", 0;
+	end;
+}
+
+// ================================================================
+// =						Eventos Globais				  		  =
+// ================================================================		
+-	script	Evento PvP Advanced#event	-1,{
+OnInit:
+	if( $pvp_adv_event_flag == 1 )
+		initnpctimer;
+	else if( $pvp_adv_event_flag == 2 )
+		donpcevent strnpcinfo(0)+"::OnStartEvent";
+	end;
+	
+OnStart:
+	if( $pvp_adv_event_flag )
+		end;
+
+	mapwarp $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapexit$[0], atoi($@pvp_adv_event_mapexit$[1]), atoi($@pvp_adv_event_mapexit$[2]);
+	$pvp_adv_event_flag = 1;
+	callfunc "f_PvP_Advanced", 3;
+	$pvp_adv_event_timer = 5;
+	announce "[Evento PvP Advanced]: Está aberto a Arena do Evento, corram jogadores!", bc_all, "0x00FF00";
+	donpcevent "WarpPvPAdvanced::OnStart2";
+	setmapflag $@pvp_adv_event_mapevent$[0], mf_nowarp;
+	setmapflag $@pvp_adv_event_mapevent$[0], mf_nowarpto;
+	setmapflag $@pvp_adv_event_mapevent$[0], mf_noteleport;
+	setmapflag $@pvp_adv_event_mapevent$[0], mf_nosave;
+	setmapflag $@pvp_adv_event_mapevent$[0], mf_noreturn;
+	initnpctimer;
+	end;
+	
+OnTimer60000:
+	$pvp_adv_event_timer--;
+	if( $pvp_adv_event_timer <= 0 )
+	{
+		if( getmapusers($@pvp_adv_event_mapevent$[0]) < $@pvp_adv_event_min_users )
+		{
+			if( !$@pvp_adv_event_cancel )
+			{
+				$pvp_adv_event_flag = 0;
+				announce "[Evento PvP Advanced]: O Evento foi cancelado por falta de jogadores.", bc_all, "0x00FF00";
+				donpcevent "WarpPvPAdvanced::OnStart";
+				stopnpctimer;
+				sleep 500;
+				mapwarp $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapexit$[0], atoi($@pvp_adv_event_mapexit$[1]), atoi($@pvp_adv_event_mapexit$[2]);
+			}
+			else {
+				announce "[Evento PvP Advanced]: O Evento foi prorrogado em " + $@pvp_adv_event_cancel + " minuto" + ($@pvp_adv_event_cancel>1?"s":"") + " por falta de jogadores, corrão para a Arena!", bc_all, "0x00FF00";
+				setnpctimer 0;
+			}
+		}
+		else {
+			announce "[Evento PvP Advanced]: O Evento começou, boa sorte a todos os jogadores.", bc_all, "0x00FF00";
+			donpcevent strnpcinfo(0)+"::OnStartEvent";
+			stopnpctimer;
+		}
+	}
+	else {
+		announce "[Evento PvP Advanced]: Restão " + $pvp_adv_event_timer + " minuto" + ($pvp_adv_event_timer>1?"s":"") + " para começar o Evento, corrão para Arena!", bc_all, "0x00FF00";
+		setnpctimer 0;
+	}
+	end;
+	
+OnStartEvent:
+	$pvp_adv_event_flag = 2;
+	areapercentheal $@pvp_adv_event_mapevent$[0],1,1,200,200,100,100;
+	for( .@i=0; .@i < getarraysize($@pvp_adv_event_mapflaglist); .@i++ )
+	{
+		if( !getmapflag($@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapflaglist[.@i]) )
+			setmapflag $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapflaglist[.@i];
+	}	
+	donpcevent "WarpPvPAdvanced::OnStart3";
+	end;
+	
+	
+OnPCDieEvent:
+	.@charid = getcharid(0);
+	.@mapchar$ = strcharinfo(3);
+	if( .@mapchar$ == $@pvp_adv_event_mapevent$[0] )
+	{
+		.@name_killed$ = strcharinfo(0);
+		.@name_killer$ = rid2name(killerrid);
+		.@killerid = getcharid(0,.@name_killer$);
+		if( callfunc("f_PvP_Advanced", 4, .@charid) )
+		{
+			callfunc "f_PvP_Advanced", 5, .@killerid;
+			callfunc "f_PvP_Advanced", 2, .@charid, 0;
+			warpchar $@pvp_adv_event_mapexit$[0], atoi($@pvp_adv_event_mapexit$[1]), atoi($@pvp_adv_event_mapexit$[2]), .@charid;
+			mapannounce $@pvp_adv_event_mapevent$[0], "O Jogador [" + .@name_killer$ + "] derrotou o jogador [" + .@name_killed$ + "].", bc_all, "0x00FF00";
+			sleep 5000;
+			if( getmapusers($@pvp_adv_event_mapevent$[0]) <= 1 )
+			{
+				donpcevent "Evento PvP Advanced#event::OnEnd";
+				end;
+			}
+		}
+	}
+	end;
+	
+OnPCLogoutEvent:
+	.@charid = getcharid(0);
+	.@mapchar$ = strcharinfo(3);
+	if( .@mapchar$ == $@pvp_adv_event_mapevent$[0] )
+	{
+		if( callfunc("f_PvP_Advanced", 4, .@charid) )
+		{
+			callfunc "f_PvP_Advanced", 2, .@charid, 0;
+			sleep 5000;
+			if( $pvp_adv_event_flag >= 2 && getmapusers($@pvp_adv_event_mapevent$[0]) <= 1 )
+			{
+				donpcevent "Evento PvP Advanced#event::OnEnd";
+				end;
+			}
+		}
+	}
+	end;
+	
+OnEnd:
+	query_sql "SELECT `char_id`, `kills` FROM `ev_pvp_advanced` ORDER BY `kills` DESC", .@char_id, .@kills;
+	if( getarraysize(.@char_id) )
+	{
+		.@name$ = callfunc("f_PvP_Advanced", 6, .@char_id[0]);
+		announce "O Jogador [" + .@name$ + "] foi o vencedor do Evento PvP Advanced.", bc_all, "0x00FF00";
+		sleep 3000;
+		mapwarp $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapexit$[0], atoi($@pvp_adv_event_mapexit$[1]), atoi($@pvp_adv_event_mapexit$[2]);
+		$pvp_adv_event_charid = .@char_id[0];
+		$pvp_adv_event_name$ = .@name$;
+		$pvp_adv_event_kills = .@kills[0];
+		$pvp_adv_event_status = 0;
+		$pvp_adv_event_flag = 0;
+		callfunc "f_PvP_Advanced", 3;
+		donpcevent "WarpPvPAdvanced::OnStart";
+		
+		for( .@i=0; .@i < getarraysize($@pvp_adv_event_mapflaglist); .@i++ )
+		{
+			if( getmapflag($@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapflaglist[.@i]) )
+				removemapflag $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapflaglist[.@i];
+		}
+	}
+	end;
+
+OnCmdEnd:
+	stopnpctimer;
+	$pvp_adv_event_flag = 0;
+	callfunc "f_PvP_Advanced", 3;
+	donpcevent "WarpPvPAdvanced::OnStart";
+	mapwarp $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapexit$[0], atoi($@pvp_adv_event_mapexit$[1]), atoi($@pvp_adv_event_mapexit$[2]);
+	for( .@i=0; .@i < getarraysize($@pvp_adv_event_mapflaglist); .@i++ )
+	{
+		if( getmapflag($@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapflaglist[.@i]) )
+			removemapflag $@pvp_adv_event_mapevent$[0], $@pvp_adv_event_mapflaglist[.@i];
+	}
+	end;
+}
+
+// ================================================================
+// =						Funções						  		  =
+// ================================================================
+//
+//	callfunc "f_PvP_Advanced", <op> {, <char_id>{, <arg1>{, <arg2>{, <arg3>}}}};
+//
+// <op>: Tipo da Operação
+//		0: Cadastra o Jogador no Evento.
+//			<char_id>: Id do jogador.
+//
+//		1: Remove o Jogador do Evento.
+//			<char_id>: Id do Jogador.
+//
+//		2: Atualiza a morte do jogador.
+//			<char_id>: Id do Jogador.
+//			<arg1>: Flag da atualização
+//					0: Morto
+//					1: Vivo
+//
+//		3: Reseta toda a tabela de Jogadores no Evento.
+//
+//		4: Checa se o jogador está participando do evento.
+//
+//		5: Insere um ponto de Kill para o jogador.
+//			<char_id>: Id do Jogador.
+//
+//		6: Pega o nome do jogador pelo id
+//			<char_id>: Id do Jogador.
+//
+function	script	f_PvP_Advanced	{
+	switch(getarg(0))
+	{
+		case 0:
+			query_sql "INSERT INTO `ev_pvp_advanced` (char_id, kills, status) VALUES (" + getarg(1) + ", 0, 1)";
+			return true;
+		case 1:
+			query_sql "DELETE FROM `ev_pvp_advanced` WHERE `char_id`='" + getarg(1) + "'";
+			return true;
+		case 2:
+			query_sql "UPDATE `ev_pvp_advanced` SET `status`='" + getarg(2) + "' WHERE `char_id`='" + getarg(1) + "'";
+			return true;
+		case 3:
+			query_sql "DELETE FROM `ev_pvp_advanced`";
+			return true;
+		case 4:
+			query_sql "SELECT `status` FROM `ev_pvp_advanced` WHERE `char_id`='" + getarg(1) + "'", .@status;
+			return getarraysize(.@status) ? true : false;
+		case 5:
+			query_sql "UPDATE `ev_pvp_advanced` SET `kills`=`kills`+'1' WHERE `char_id`='" + getarg(1) + "'";
+			return true;
+		case 6:
+			query_sql "SELECT `name` FROM `char` WHERE `char_id`='" + getarg(1) + "'", .@name$;
+			return getarraysize(.@name$) ? .@name$[0] : "Desconhecido";
+		default:
+			debugmes "[Evento_PvP_Advanced]: Argumento de operação invalido.";
+			return false;
+	}
+}

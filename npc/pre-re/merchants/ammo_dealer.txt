@@ -1,0 +1,20 @@
+//===== rAthena Script =======================================
+//= Bullet Dealers
+//===== By ===================================================
+//= Euphy
+//===== Version ==============================================
+//= 1.0
+//===== Compatible With ======================================
+//= rAthena Project
+//===== Description ==========================================
+//= Bullet trader.
+//===== Comments =============================================
+//= 1.0 First version, Pre-Renewal duplicates.
+//============================================================
+
+que_ng,187,156,3	duplicate(bdt)	Vendendor de Munição Tony#ng	86
+izlude,77,104,3	duplicate(bdt)	Vendendor de Munição Tony#iz	86	//Official: (74,106) -> in the water
+izlude_a,77,104,3	duplicate(bdt)	Vendendor de Munição Tony#a	86
+izlude_b,77,104,3	duplicate(bdt)	Vendendor de Munição Tony#b	86
+izlude_c,77,104,3	duplicate(bdt)	Vendendor de Munição Tony#c	86
+izlude_d,77,104,3	duplicate(bdt)	Vendendor de Munição Tony#d	86

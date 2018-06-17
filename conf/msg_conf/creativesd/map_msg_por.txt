@@ -1,0 +1,186 @@
+//*.-----------------------------------------------------------------.
+// .    ____                          __                             .
+// .   /\  _`\                       /\ \__  __                      .
+// .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+// .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+// .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+// .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+// .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+// .                                                                 .
+// .          2014~2018 © Creative Services and Development          .
+// .                      www.creativesd.com.br                      .
+// .-----------------------------------------------------------------.
+// .                  CreativeSD Português (Brasil)                  .
+// *-----------------------------------------------------------------*
+
+// Ranked System
+// ------------------------------------------------------------------
+1600: Lista de Rank's
+1601:  (ID: %d/%s) Pontos Necessário: %.1f
+1602: Você caiu de Rank, você não está em nenhum Rank!
+1603: Parabéns!!! Você alcançou o Rank %s.
+1604: Você foi rebaixado para o Rank %s.
+1605: Cuidado você está em uma zona ranqueada!
+1606: Banco de Dados de Rank re-carregado com sucesso!
+1607: Você não está ranqueado.
+1608: Pontos: %.1f
+1609: Rank Atual: %s
+1610: Falta %.1f pontos para alcançar o Rank %s.
+1611: Por favor, entre com o nome do jogador (usando: @rankinfo3 <jogador>).
+1612: O Jogador '%s' não está ranqueado.
+1613: Jogador: %s
+1614: Você só pode desativar a exibição do seu Rank em Cidades.
+1615: A exibição do seu Rank foi ativada.
+1616: A exibição do seu Rank foi desativada.
+1617: uso: @setrank <id_rank> <tipo>
+1618:  Tipos:
+1619:   0 - Somente Personagem
+1620:   1 - Global da Conta
+1621:   2 - Personagem e Conta
+1622: Rank alterado com sucesso.
+1623: Rank não encontrado.
+1624: uso: @ranksetpoints <tipo> <quantidade>
+1625: Você recebeu %.1f pontos por eliminar um jogador.
+1626: Você perdeu %.1f pontos por ser eliminado.
+1627: Você recebeu %.1f pontos por dar suporte.
+1628: Você perdeu %.1f pontos por dar suporte incorreto.
+1629: Você recebeu %.1f pontos.
+1630: Você perdeu %.1f pontos.
+
+// Battleground Warfare
+// ------------------------------------------------------------------
+// System
+1650: Server : %s desistiu do jogo...
+1651: Server : %s esta saindo do campo de batalha...
+1652: Server : %s foi removido por estar AFK..
+1653: Server : %s foi expulso por %s.
+1654: Batalhas Campais: Você é %s do %s.
+1655: Você iniciou a votação para expulsar o jogador %s.
+1656: Você já votou para expulsar o jogador %s.
+1657: Motivo da Expulsão: %s
+1658: Você deve informar o motivo por querer expulsar o jogador %s.
+1659: %s iniciou uma votação para expulsar %s.
+1660: Expulsar jogador %s.
+1661: Motivo da Expulsão : %s
+1662: %d/%d necessário para expulsão.
+1663: Batalhas Campais: Você recebeu como recompensa %dx %s em seu inventário.
+1664: Batalhas Campais: Você recebeu como recompensa %dx %s em seu Armazém Pessoal.
+1665: Batalhas Campais: Você recebeu como recompensa %dx de %s.
+1666: Batalhas Campais: Você recebeu como recompensa (%d) %s.
+1667: Batalhas Campais: Você recebeu como recompensa +%d %s.
+1668: Não houve recompensas para você nesta Batalha.
+1669: Você está em posse da '%s'. 
+1670: %s está em posse da %s!
+1671: Você capturou a '%s'. 
+1672: Você recapturou a '%s'.
+// Battleground Commands
+1673: Impossível de re-carregar as Batalhas Campais, o script principal não está ativado.
+1674: Uma sinalização foi enviada para recarregar as Batalhas Campal.
+1675: Não foi possível abrir o Registro das Batalhas Campais.
+1676: Não foi possível utilizar o Registro rápido das Batalhas Campais.
+1677: Não foi possível remove-lo da batalha atual.
+1678: Removido da batalha com sucesso.
+1679: Você não está participando de uma Batalha Campais.
+1680: Utilize @bgreportafk <player_name> para reportar um jogador que está ausente na batalha.
+1681: Jogador %s não encontrado.
+1682: O Jogador %s não está em batalha.
+1683: Você não está no mesmo Exército que o jogador.
+1684: O Jogador não está ausente, no momento está interagindo com um NPC.
+1685: O Jogador não está ausente.
+1686: O Jogador já foi reportado ao sistema.
+1687: O Jogador foi reportado com sucesso.
+1688: Batalhas Campais : Você foi reportado por ausência na batalha, você tem %d segundos para entrar em interação.
+1689: Não foi possível abrir a Lista de Espera das Batalhas Campais.
+1690: Não foi possível abrir a Lista de Jogadores das Batalhas Campais.
+1691: Não foi possível abrir o Ranking das Batalhas Campais.
+1692: Você deve digitar a mensagem (usando: @order <mensagem>).
+1693: Este comando é somente para os Capitães de Exército.
+1694: Você tem que estar em uma batalha para enviar uma mensagem para seu Exército.
+1695: Você não está participando de uma Batalha.
+1696: Somente o Capitão do Exército pode utilizar este comando.
+1697: Não há mais jogadores em seu Exército para você nomear como Capitão.
+1698: Este jogador não está no mesmo time que você.
+1699: O Jogador %s foi nomeado Capitão do Exército.
+1700: Não foi possível nomear o Jogador %s como Capitão do Exército.
+1701: Você deve digitar o jogador que deseja (usando: @bgchangeleader <Nickname>).
+1702: Jogador: %s | Nível: %d/%d | Classe: %s
+1703: Recompensas das Batalhas Campais re-carregada com sucesso!
+// Exército e Patentes
+1704: Exército de Guillaume
+1705: General Guillaume Marollo
+1706: Leões Azuis
+1707: Somente a força de nosso Exército pode fortalecer o Reino de Maroll.
+1708: Exército de Croix
+1709: Príncipe Croix Marollo
+1710: Águias Vermelhas
+1711: Ergam suas espadas pela última vez para o bem maior do Reino de Maroll.
+1712: Capitão
+1713: Tenente
+1714: Sargento
+1715: Soldado
+1716: Batalhas Campais : %s ingressou nas Fileiras do Exército.
+
+// Queue System
+// ------------------------------------------------------------------
+// System
+1750: Você não pode entrar na Fila de Espera em %s.
+1751: Para entrar na Fila de Espera você deve conter no mínimo o Nível %d de Base.
+1752: Para entrar na Fila de Espera você deve conter no máximo o Nível %d de Base.
+1753: O Jogador '%s' ingressou na Fila de Espera em %s.
+1754: Você ingressou na Fila de Espera em %s.
+1755: O Jogador '%s' saiu da Fila de Espera em %s por não estar em uma Cidade.
+1756: O Jogador '%s' saiu da Fila de Espera em %s.
+1757: O Jogador '%s' foi expulso da Fila de Espera em %s.
+1758: O jogador '%s' foi removido da Fila de Espera em %s por desconectar-se.
+1759: Você foi removido da Fila de Espera em %s por ter saído da Cidade.
+1760: Você saiu da Fila de Espera em %s.
+1761: Você foi expulso da Fila de Espera em %s.
+1762: Você foi removido da Fila de Espera em %s por não atender os requisitos.
+1763: Você foi removido da Fila de Espera em %s e deve aguardar %s para registrar-se novamente.
+1764: Você foi removido da Fila de Espera em %s porque ela expirou mas você já pode registrar-se em uma nova.
+1765: Você foi removido da Fila de Espera em %s porque ela expirou.
+1766: %d segundos
+1767: %d minutos e %d segundos
+1768: %d horas %d minutos e %d segundos
+1769: %d dias %d horas %d minutos e %d segundos
+// Commands
+1770: Filas de Espera:
+1771: Nenhuma Fila de Espera encontrada.
+1772: Total de %d Filas de Espera.
+1773: Você deve informar a Fila de Espera em que deseja saber os jogadores registrados:
+1774: Não há jogadores aguardando na Fila de Espera em %s.
+1775: Jogadores aguardando na Fila de Espera em %s:
+1776:    (%d) %s | Classe: %s | Nível: %d/%d
+1777: Você deve entrar com o nome ou id da conta do personagem (usando: @queuekick <nome do jogador/id>).
+1778: O personagem não foi encontrado.
+1779: O jogador não está alistado em uma Fila de Espera para você remove-lo.
+1780: O jogador '%s' foi removido da Fila de Espera em %s com sucesso:
+1781: Houve uma falha ao remover o jogador '%s' da Fila de Espera em %s com sucesso:
+1782: Você deve entrar com o valor do delay em segundos (usando: @queuesetdelay <delay>).
+1783: Delay para entrada em Fila de Espera alterado com sucesso.
+1784: Delay da Fila de Espera: %s.
+1785: Você não está com tempo de espera para entrar em uma Fila de Espera e pode registrar-se normalmente.
+1786: Você não será movido para outra fila de espera caso a que você esteja expire.
+1787: Você será movido para outra fila de espera caso a que você esteja expire.
+
+// Organized Shops
+// ------------------------------------------------------------------
+1790: Você não pode abrir mais lojas organizadas neste mapa.
+1791: %s abriu a Loja "%s" em: %s %d %d
+1792: Este não é um mapa de lojas organizadas.
+1793: Houve um problema, todos blocos de lojas organizadas estão cheios.
+1794: Recarregado com sucesso, mais nenhuma loja foi movida de lugar.
+1795: Recarregado com sucesso, %d lojas foi movida de lugar.
+
+// Presença
+// ------------------------------------------------------------------
+1796: Você está com a presença ativada, utilize o comando @bepresence desligar a presença.
+
+// Arealoot
+// ------------------------------------------------------------------
+1797: Arealoot está desligado.
+1798: Arealoot está ligado.
+
+// Sala de Evento
+// ------------------------------------------------------------------
+1799: Não foi possível teleportar para a Sala de Eventos.

@@ -1,0 +1,35 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Mapflags Organized Shops                                     .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compátivel:	eAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Blocos de Lojas Organizadas.                                 .
+  *-----------------------------------------------------------------*/
+  
+// Mapflag Samples
+//	<map>	mapflag	organized_shops	<n>,<sprite_id>,<init_x>,<init_y>,<dir>,<col_amount>,<cell_divisor>,<max_vend>
+//
+//	<n>: Block ID always starts at 0 and ends at MAX_OSHOPS_BLOCK.
+//	<dir>:
+//		0: Top Left to Right
+//		1: Top Right to Left
+//		2: Bottom Left to Right
+//		3: Bottom Right to Left
+//
+prontera	mapflag	organized_shops	0,837,154,171,0,2,2,80
+prontera	mapflag	organized_shops	1,837,154,110,0,5,2,115

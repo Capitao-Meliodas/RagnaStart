@@ -1,0 +1,43 @@
+prontera,168,190,4	script	Mensageiro Global	806,{
+
+// --------- Configurações ----------------------------------
+set .n$,"[Mensageiro VIP]"; //Nome do NPC Aqui.
+set .zeny, 50000000; //Custo da mensagem aqui. Padrão: 5kk
+set .vip, 1; //Level VIP aqui.
+set .delay, 600; //Delay em segundos. Padrão: 600.
+set .time, 10;
+// ----------------------------------------------------------
+
+mes .n$;
+if(getgmlevel() < .vip) {
+mes "Sinto muito.";
+mes "Serviço destinado apenas a usuários VIP.";
+close;
+}
+if(gettimetick(2) < time) {
+mes "Sinto muito, mas você acaba de utilizar meus serviços. Volte mais tarde.";
+close;
+}
+mes "Olá "+strcharinfo(0)+".";
+mes "Eu posso mandar uma mensagem para todo o servidor pelo custo de apenas ^FF0000 50,000,000 zenys.^000000";
+//mes "Eu posso mandar uma mensagem para todo o servidor pelo custo de apenas ^FF0000"+.zeny+" zenys.^000000";
+mes "Ao enviar uma mensagem, você só poderá enviar outra após um tempo de ^FF0000"+.time+" minutos^000000.";
+mes "Deseja continuar usando meus serviços?";
+next;
+if(select("Sim, por favor.:Não, obrigado.") == 2) close;
+mes .n$;
+if(Zeny < .zeny) { mes "Sinto muito, mas você não tem zeny o suficiente."; close;}
+mes "Por favor, digite sua mensagem.";
+input .@msg$;
+next;
+mes .n$;
+mes "Muito bem, sua mensagem foi enviada, até mais.";
+set Zeny, Zeny - .zeny;
+announce strcharinfo(0)+": "+.@msg$,bc_all;
+set time,gettimetick(2) + .delay;
+close;
+
+OnInit:
+waitingroom "Anunciador",0;
+end;
+}

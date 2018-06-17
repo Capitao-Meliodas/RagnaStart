@@ -1,0 +1,96 @@
+airport,143,43,5	script	Equipe do Dirigível#airport1a::airport1	90,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao";
+	mes "Aeroporto de Einbroch,";
+	mes "onde oferecemos constantes";
+	mes "voos para as cidades de";
+	mes "Juno, Lighthalzen e Hugel.";
+	next;
+	if (select("Embarcar no Dirigível:Cancelar") == 1) {
+		mes "[Equipe do Dirigível]";
+		mes "A taxa de embarque do Dirigível";
+		mes "é 1,200 zeny, mas se você";
+		mes "possuir um Ticket Gratuito para Dirigível,";
+		mes "a taxa não será cobrada. Você deseja";
+		mes "embarcar no Dirigível?";
+		next;
+		if (select("Sim:Não") == 1) {
+			if (countitem(7311) > 0) {
+				delitem 7311,1; //Free_Flying_Ship_Ticket
+				warp "airport",148,51;
+				end;
+			}
+			if (Zeny >= 1200) {
+				set Zeny, Zeny - 1200;
+				warp "airport",148,51;
+				end;
+			}
+			mes "[Equipe do Dirigível]";
+			mes "Me desculpe, mas você não";
+			mes "possui uma passagem gratuita para";
+			mes "o Dirigível e você não possui";
+			mes "a quantidade de zenys suficientes para embarcar";
+			mes "no Dirigível. Lembre-se, a";
+			mes "taxa de embarque é 1,200 zeny.";
+			close;
+		}
+	}
+	mes "[Equipe do Dirigível]";
+	mes "Obrigado e";
+	mes "tenha um bom dia.";
+	close;
+}
+
+airport,158,43,5	duplicate(airport1)	Equipe do Dirigível#airport1b	90
+airport,126,43,5	duplicate(airport1)	Equipe do Dirigível#airport1c	90
+
+airport,143,49,3	script	Equipe de Recepção#airport2a::airport2	90,{
+	mes "[Equipe de Recepção]";
+	mes "Bem-vindo ao Aeroporto de Einbroch.";
+	mes "Se você acaba de chegar do seu";
+	mes "voo, deixe-me guiá-lo até o";
+	mes "terminal principal. Caso contrário, por favor, embarque no Dirigível";
+	mes "que vai para Juno, Lighthalzen e Hugel.";
+	next;
+	if (select("Sair do terminal principal.:Cancelar.") == 1) {
+		mes "[Equipe de Recepção]";
+		mes "Uma vez no terminal principal, você terá que pagar a taxa novamente";
+		mes "para embarcar no Dirigível. Você só";
+		mes "deve sair se a cidade de Einbroch";
+		mes "for seu destino final.";
+		mes "Deseja prosseguir para o terminal principal?";
+		next;
+		if (select("Sim:Não") == 1) {
+			warp "airport",142,40;
+			end;
+		}
+	}
+	mes "[Equipe de Recepção]";
+	mes "Certo, obrigado";
+	mes "pelo seu apoio,";
+	mes "e espero que você tenha";
+	mes "um voo agradável~";
+	close;
+}
+
+airport,126,51,3	duplicate(airport2)	Equipe de Recepção#airport2b	90
+airport,158,50,3	duplicate(airport2)	Equipe de Recepção#airport2c	90
+
+einbroch,94,267,3	script	Equipe do Dirigível#ein01	91,{
+	mes "[Equipe do Dirigível]";
+	mes "Bem-vindo ao";
+	mes "Dirigível de Einbroch.";
+	mes "Por favor utilize esta porta para";
+	mes "embarcar no dirigível que o levará";
+	mes "até Juno, Lighthalzen e";
+	mes "Hugel na República de Schwarzwald.";
+	next;
+	mes "[Equipe do Dirigível]";
+	mes "Caso contrário, se Einbroch";
+	mes "é seu destino pretendido,";
+	mes "por favor, desça as escadas";
+	mes "e peça a Equipe de Recepção para levar";
+	mes "você até o terminal principal. Obrigado,";
+	mes "e aproveite a sua viagem.";
+	close;
+}

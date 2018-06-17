@@ -1,0 +1,712 @@
+/*.-----------------------------------------------------------------.
+  .    ____                          __                             .
+  .   /\  _`\                       /\ \__  __                      .
+  .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+  .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+  .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+  .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+  .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+  .                                                                 .
+  .          2014~2018 © Creative Services and Development          .
+  .                      www.creativesd.com.br                      .
+  .-----------------------------------------------------------------.
+  . Script:                                                         .
+  .    Evento NxZ (Aprendiz vs Zumbi)                               .
+  .-----------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                            Versão: 1.0  .
+  .                                                                 .
+  . Compatível:	rAthena e derivações.                    	        .
+  .-----------------------------------------------------------------.
+  . Descrição:                                                      .
+  .    Evento no qual Aprendizes Level 1/1 devem correr de Zumbis.  .
+  *-----------------------------------------------------------------*/
+-	script	noviceVSzombie#main	FAKE_NPC,{
+OnDefaults:
+	// Reset padrão (Não altere aqui)
+	deletearray $@NxZ_MobID;
+	deletearray $@NxZ_DropRewards;
+	deletearray $@NxZ_Rewards$;
+	deletearray $@NxZ_Currency;
+OnInit:
+	// GroupId para gerenciar o evento.
+	// Ligar/Desligar
+	set $@NxZ_GroupID, 99;
+	
+	// Mínimo de Jogadores para começar o evento.
+	set $@NxZ_MinPlayer, 2;
+	
+	// Máximo de Jogadores que podem entrar no evento.
+	set $@NxZ_MaxPlayer, 10;
+	
+	// Máximo de Tempo (em minutos) que os jogadores devem ficarem com o
+	// Zumbi para terminar o evento? (modo sobrevivência)
+	//
+	// 0 Irá desativar esta opção e o evento só acaba quando o último
+	// jogador ficar vivo.
+	set $@NxZ_MaxTimer, 15;
+	
+	// Tempo de espera para os jogadores entrarem no evento (em minutos).
+	set $@NxZ_Waiting, 5;
+	
+	// Ativar modo Horda? (em minutos)
+	// Irá invocar mais Zumbis em x em x minutos.
+	//
+	// 0 Irá desativar esta opção.
+	set $@NxZ_Horde, 1;
+	
+	// Monstros para Invocar
+	setarray $@NxZ_MobID[0],
+		1015, 1
+		//1041, 1,
+		//1197, 1,
+		//1463, 1
+	;
+	
+	// Habilitar recompensas que os monstros irão derrubar?
+	set $@NxZ_DR_Enable, 1;
+	
+	// Itens que os monstros vão derrubar de x em x segundos.
+	// ! Se você usa eAthena, ele suporta até 60 recompensas !
+	setarray $@NxZ_DropRewards[0],
+		//501, 10,
+		//502, 5,
+		41001, 1
+	;
+	
+	// Habilitar recompensas para o campeões do evento?
+	// 0: Desativa.
+	// 1: Todas recompensas configuradas serão entregues.
+	// 2: Uma recompensa aleatória será entregue.
+	set $@NxZ_Reward_Enable, 2;
+	
+	// Itens que os campeões irão receber de recompensa no final do evento.
+	// setarray $@NxZ_Rewards$[0], "<item_id/var>", <type>, <amount>, "<name>",...
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	//
+	setarray $@NxZ_Rewards$[0],
+		41001, 0, 25, getitemname(41001)
+	;
+	
+	// Habilitar a loja de Pontos NxZ?
+	set $@NxZ_Shop_Enable, 0;
+	
+	// Moeda que a loja irá utilizar, e o tipo. (apenas visual)
+	// setarray $@NxZ_Currency$, "<item_id/var>", "<name>", <type>;
+	//
+	//	<type>:
+	//		0: Item
+	//		1: Variável (Suporta apenas variáveis numéricas)
+	setarray $@NxZ_Currency$, 41001, getitemname(41001), 0;
+	
+	// Itens que vendem na loja.
+	// Linha 703.
+	
+	// Não altere a partir desta linha!!
+	deletearray $@NxZ_MobUnit;
+	mapwarp "ev_novzomb", "prontera", 156, 191;
+	end;
+	
+OnStart:
+	// The event is happening!
+	if( $@NxZ_FLAG )
+		end;
+		
+	initnpctimer;
+	set $@NxZ_FLAG, 1;
+	set .TimerCount, 0;
+	announce "[Evento NxZ]: O Evento está aberto, corram para arena!", bc_all, "0xFFFF00";
+	donpcevent "::OnNovZombOn";
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	set .TimerCount, .TimerCount+1;
+	if( .TimerCount >= $@NxZ_Waiting || ($@NxZ_MaxPlayer && getmapusers("ev_novzomb") >= $@NxZ_MaxPlayer) ) {
+		donpcevent "::OnNovZombOff";
+		if( getmapusers("ev_novzomb") < $@NxZ_MinPlayer ) {
+			announce "[Evento NxZ]: O Evento foi cancelado por falta de jogadores!", bc_all, "0xFFFF00";
+			set $@NxZ_FLAG, 0;
+			donpcevent "noviceVSzombie#main::OnEnd";
+		}
+		else {
+			// Start Events
+			set $@NxZ_FLAG, 2;
+			announce "[Evento NxZ]: O Evento está completo, boa sorte participantes!", bc_all, "0xFFFF00";
+			sleep 3000;
+			mapannounce "ev_novzomb", "[Evento NxZ]: Atenção Aprendizes, os Zumbis vão invadir em 5 segundos!", bc_all, "0xFFFF00";
+			sleep 1000;
+			mapannounce "ev_novzomb", "[Evento NxZ]: Atenção Aprendizes, os Zumbis vão invadir em 4 segundos!", bc_all, "0xFFFF00";
+			sleep 1000;
+			mapannounce "ev_novzomb", "[Evento NxZ]: Atenção Aprendizes, os Zumbis vão invadir em 3 segundos!", bc_all, "0xFFFF00";
+			sleep 1000;
+			mapannounce "ev_novzomb", "[Evento NxZ]: Atenção Aprendizes, os Zumbis vão invadir em 2 segundos!", bc_all, "0xFFFF00";
+			sleep 1000;
+			mapannounce "ev_novzomb", "[Evento NxZ]: Atenção Aprendizes, os Zumbis vão invadir em 1 segundos!", bc_all, "0xFFFF00";
+			sleep 1000;
+			mapannounce "ev_novzomb", "[Evento NxZ]: Corram Aprendizes, não deixe com que o Zumbis pegarem você!", bc_all, "0xFFFF00";
+			donpcevent "noviceVSzombie#mob::OnStart";
+			if( $@NxZ_MaxTimer )
+				donpcevent "noviceVSzombie#timer::OnStart";
+		}
+	}
+	else {
+		initnpctimer;
+		set .@count, $@NxZ_Waiting-.TimerCount;
+		announce "[Evento NxZ]: Em " + .@count + " minuto(s) o Evento irá começar!", bc_all, "0xFFFF00";
+	}
+	end;
+	
+OnFail:
+	announce "[Evento NxZ]: Todos falharam e os Zumbis venceram o evento!", bc_all, "0xFFFF00";
+	sleep 3000;
+	donpcevent "noviceVSzombie#main::OnEnd";
+	end;
+	
+OnFinish:
+	set $@NxZ_FLAG,3;
+	killmonsterall "ev_novzomb", 1;
+	donpcevent "noviceVSzombie#drop::OnEnd";
+	donpcevent "noviceVSzombie#timer::OnEnd";
+	sleep 3000;
+	set $@NxZ_CHAMPIONS, getmapusers("ev_novzomb");
+	if( $@NxZ_CHAMPIONS > 1 )
+		mapannounce "ev_novzomb", "[Evento NxZ]: Parabéns!! Vocês foram os Campeões NxZ!", bc_all, "0xFFFF00";
+	else
+		mapannounce "ev_novzomb", "[Evento NxZ]: Parabéns!! Você foi o Campeão NxZ!", bc_all, "0xFFFF00";
+	
+	sleep 3000;
+	if( $@NxZ_Reward_Enable && getarraysize($@NxZ_Rewards$) ) {
+		enablenpc "Evento NxZ#reward";
+		mapannounce "ev_novzomb", "[Evento NxZ]: Fale com a assistente para sair da Arena!", bc_all, "0xFFFF00";
+		sleep 3000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 30 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 3000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Aqueles que não falarem com a assistente, não irá pegar recompensas!", bc_all, "0xFFFF00";
+		sleep 12000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 15 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 3000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Aqueles que não falarem com a assistente, não irá pegar recompensas!", bc_all, "0xFFFF00";
+		sleep 7000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 5 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 4 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 3 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 2 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 1 segundo a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		donpcevent "noviceVSzombie#main::OnEnd";
+	}
+	else {
+		enablenpc "Evento NxZ#exit";
+		mapannounce "ev_novzomb", "[Evento NxZ]: Fale com a nossa assistente para sair da Arena!", bc_all, "0xFFFF00";
+		sleep 3000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 30 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 15000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 15 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 10000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 5 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 4 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 3 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 2 segundos a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		mapannounce "ev_novzomb", "[Evento NxZ]: Em 1 segundo a Arena do evento será esvaziada automaticamente!", bc_all, "0xFFFF00";
+		sleep 1000;
+		donpcevent "noviceVSzombie#main::OnEnd";
+	}
+	end;
+	
+OnStopGM:
+	// Stop by GameMaster
+	killmonsterall "ev_novzomb", 1;
+	if( $@NxZ_FLAG == 1 )
+		donpcevent "::OnNovZombOff";
+	announce "[Evento NxZ]: O Evento foi encerrado pela equipe de GameMaster!", bc_all, "0xFFFF00";
+	sleep 3000;
+	donpcevent "noviceVSzombie#main::OnEnd";
+	end;
+	
+OnEnd:
+	// End Events
+	stopnpctimer;
+	set $@NxZ_FLAG,0;
+	set $@NxZ_CHAMPIONS,0;
+	deletearray $@NxZ_MobUnit;
+	killmonsterall "ev_novzomb", 1;
+	disablenpc "Evento NxZ#exit";
+	disablenpc "Evento NxZ#reward";
+	donpcevent "::OnNovZombOff";
+	donpcevent "noviceVSzombie#drop::OnEnd";
+	donpcevent "noviceVSzombie#timer::OnEnd";
+	donpcevent "noviceVSzombie#main::OnDefaults";
+	sleep 3000;
+	announce "[Evento NxZ]: Evento encerrado, obrigado a todos participantes!", bc_all, "0xFFFF00";
+	end;
+
+OnPCDieEvent:
+	set .@map$, strcharinfo(3);
+	if( $@NxZ_FLAG == 2 && .@map$ == "ev_novzomb" ) {
+		warp "prontera", 156, 191;
+		set .@i, rand(0,3);
+		switch(.@i) {
+			case 0:
+				mapannounce "ev_novzomb", "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " foi pego pelo Zumbi e descansa em paz!", bc_all, "0xFFFF00";
+				break;
+			case 1:
+				mapannounce "ev_novzomb", "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " escorregou e o Zumbi não perdeu a chance!", bc_all, "0xFFFF00";
+				break;
+			case 2:
+				mapannounce "ev_novzomb", "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " virou Pastel de Zumbi!", bc_all, "0xFFFF00";
+				break;
+			case 3:
+				mapannounce "ev_novzomb", "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " ficou encurralado e agora o Zumbi tem mais Cérebro que ele!", bc_all, "0xFFFF00";
+				break;
+		}		
+		if( $@NxZ_MaxTimer <= 0 && getmapusers("ev_novzomb") == 1 )
+			donpcevent "noviceVSzombie#main::OnFinish";
+		else if( getmapusers("ev_novzomb") <= 0 )
+			donpcevent "noviceVSzombie#main::OnFail";
+		
+		// Wait 3 seconds to be able to revive the player and heal him again.
+		sleep2 3000;
+		alive;
+		percentheal 100,100;
+	}
+	end;
+	
+OnMobDead:
+	end; // Empty
+}
+
+// Timer Evento
+-	script	noviceVSzombie#timer	-1,{
+OnStart:
+	// Init timer
+	set .TimerCount,0;
+	initnpctimer;
+	end;
+
+OnTimer60000:
+	stopnpctimer;
+	set .TimerCount, .TimerCount + 1;
+	if( getmapusers("ev_novzomb") > 0 && .TimerCount >= $@NxZ_MaxTimer )
+		donpcevent "noviceVSzombie#main::OnFinish";
+	else
+		initnpctimer;
+	end;
+	
+OnEnd:
+	stopnpctimer;
+	end;
+}
+
+// Spawn Mobs
+-	script	noviceVSzombie#mob	FAKE_NPC,{
+OnStart:
+	// Spawn Event
+	deletearray $@NxZ_MobUnit;
+	donpcevent "noviceVSzombie#mob::OnSpawn";
+	
+	// Start Mob Drops Rewards
+	set .TimerCount, 0;
+	set .HordeCount, 1;
+	if( $@NxZ_DR_Enable )
+		initnpctimer "noviceVSzombie#drop";
+	if( $@NxZ_Horde )
+		initnpctimer;
+	end;
+	
+OnSpawn:
+	for( set .@i,0; .@i < getarraysize($@NxZ_MobID); set .@i, .@i + 2 ) {
+		deletearray $@mobid;
+		areamonster "ev_novzomb", 23, 376, 37, 361, "Zumbi", $@NxZ_MobID[.@i], $@NxZ_MobID[.@i+1], "NoviceVsZombie#main::OnMobDead";
+		copyarray $@NxZ_MobUnit[getarraysize($@NxZ_MobUnit)], $@mobid[0], getarraysize($@mobid);
+	}
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	initnpctimer;
+	set .TimerCount, .TimerCount + 1;
+	if( .TimerCount >= $@NxZ_Horde ) {
+		set .TimerCount, 0;
+		set .HordeCount, .HordeCount + 1;
+		mapannounce "ev_novzomb", "[Evento NxZ]: A " + .HordeCount + "ª horda de Zumbis invadiram o evento!", bc_all, "0xFFFF00";
+		donpcevent "noviceVSzombie#mob::OnSpawn";
+	}
+	end;
+	
+OnEnd:
+	stopnpctimer;
+	end;
+}
+
+// Drop Rewards
+-	script	noviceVSzombie#drop	FAKE_NPC,{
+OnStart:
+	initnpctimer;
+	set .NxZ_drop_timer, rand(0,2);
+	end;
+	
+OnTimer60000:
+	if( .NxZ_drop_timer == 0 )
+		donpcevent "noviceVSzombie#drop::OnDrop";
+	end;
+	
+OnTimer180000:
+	if( .NxZ_drop_timer == 1 )
+		donpcevent "noviceVSzombie#drop::OnDrop";
+	end;
+	
+OnTimer240000:
+	if( .NxZ_drop_timer == 2 )
+		donpcevent "noviceVSzombie#drop::OnDrop";
+	end;
+	
+OnDrop:
+	freeloop(1);
+	set .@size, (getarraysize($@NxZ_DropRewards)/2);
+	if( $@NxZ_FLAG == 2 ) {
+		for( set .@i,0; .@i < getarraysize($@NxZ_MobUnit); set .@i, .@i + 1 ) {
+			set .@a, rand(-1,(.@size-1));
+			if( .@a == -1 )
+				continue;
+				
+			set .@a, .@a*2;
+			set .@item_id, $@NxZ_DropRewards[.@a];
+			set .@amount, $@NxZ_DropRewards[.@a+1];
+			getmapxyunit $@NxZ_MobUnit[.@i], .@map$, .@x, .@y;
+			makeitem .@item_id, .@amount, .@map$, .@x, .@y;
+		}
+		stopnpctimer;
+		initnpctimer;
+		set .NxZ_drop_timer, rand(0,2);
+	}
+	freeloop(0);
+	end;
+	
+OnEnd:
+	stopnpctimer;
+	end;
+}
+
+// Barricades
+ev_novzomb,40,371,0	script	#NxZ_BARRIER_01	1905,{	
+OnInit:
+	if( strnpcinfo(2) == "NxZ_BARRIER_01" ) {
+		//delwall "NxZ_barrier";
+		setwall "ev_novzomb", 40, 371, 5, 4, 0, "NxZ_barrier";
+	}
+	end;
+}
+
+ev_novzomb,40,369,0	duplicate(#NxZ_BARRIER_01)	#NxZ_BARRIER_02	1905
+ev_novzomb,40,367,0	duplicate(#NxZ_BARRIER_01)	#NxZ_BARRIER_03	1905
+
+// Reward NPC
+ev_novzomb,30,370,3	script	Evento NxZ#reward	4_F_NOVICE,{
+	// Get Size 
+	set .@size, (getarraysize($@NxZ_Rewards$)/4);
+	mes "^FF1493[Evento NxZ]^000000";
+	if( $@NxZ_Reward_Enable == 0 || .@size <= 0 )
+		set .@flag, 0;
+	else {
+		set .@flag, 0;
+		if( $@NxZ_Reward_Enable == 2 ) {
+			set .@i, rand(0,(.@size-1));
+			set .@i, .@i*4;
+			set .@amount, atoi($@NxZ_Rewards$[.@i+2]);
+			set .@type, atoi($@NxZ_Rewards$[.@i+1]);
+			if( .@type == 1 ) {
+				setd $@NxZ_Rewards$[.@i], getd($@NxZ_Rewards$[.@i]) + .@amount;
+				set .@flag, 1;
+			}
+			else {
+				set .@item_id, atoi($@NxZ_Rewards$[.@i]);
+				if( checkweight(.@item_id, .@amount) ) {
+					getitem .@item_id, .@amount;
+					set .@flag, 1;
+				}
+			}
+			
+			if( .@flag ) {
+				mes "Parabéns ^0000FF" + strcharinfo(0) + "^000000, você recebeu como recompensa:";
+				mes "^0000FF" + .@amount + "x^000000 " + $@NxZ_Rewards$[.@i+3];
+			}
+		}
+		else {
+			// Count items
+			freeloop(1);
+			for( set .@i,0; .@i < getarraysize($@NxZ_Rewards$); set .@i, .@i + 4 ) {
+				set .@amount, atoi($@NxZ_Rewards$[.@i+2]);
+				set .@type, atoi($@NxZ_Rewards$[.@i+1]);
+				if( .@type == 1 )
+					set .@flag, .@flag + 1;
+				else {
+					set .@item_id, atoi($@NxZ_Rewards$[.@i]);
+					if( checkweight(.@item_id, .@amount) ) {
+						getitem .@item_id, .@amount;
+						set .@flag, .@flag + 1;
+					}
+				}
+			}
+			
+			// Get Rewards
+			if( .@flag ) {
+				mes "Parabéns ^0000FF" + strcharinfo(0) + "^000000, você recebeu como recompensa:";
+				for( set .@i,0; .@i < getarraysize($@NxZ_Rewards$); set .@i, .@i + 4 ) {
+					set .@amount, atoi($@NxZ_Rewards$[.@i+2]);
+					set .@type, atoi($@NxZ_Rewards$[.@i+1]);
+				
+					if( atoi($@NxZ_Rewards$[.@i+1]) == 1 )
+						setd $@NxZ_Rewards$[.@i], getd($@NxZ_Rewards$[.@i]) + $@NxZ_Rewards$[.@i+2];
+					else {
+						set .@item_id, atoi($@NxZ_Rewards$[.@i]);
+						if( checkweight(.@item_id, .@amount) == 0 )
+							continue;
+					}
+					mes "^0000FF" + $@NxZ_Rewards$[.@i+2] + "x^000000 " + $@NxZ_Rewards$[.@i+3];
+				}
+			}
+			freeloop(0);
+		}
+	}
+	
+	if( !.@flag )
+		mes "Parabéns ^0000FF" + strcharinfo(0) + "^000000, embora tenha vencido o evento eu não tenho nada para lhe dar como recompensa.";
+	close2;
+	if( $@NxZ_CHAMPIONS )
+		announce "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " foi um dos Campe" + (Sex?"ões":"ãs") + " NxZ!", bc_all, "0xFFFF00";
+	else
+		announce "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " foi o Campeã" + (Sex?"o":"") + " NxZ!", bc_all, "0xFFFF00";
+	warp "prontera", 156, 191;
+	end;
+	
+	
+OnInit:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+// Exit
+ev_novzomb,30,370,3	script	Evento NxZ#exit	4_F_NOVICE,{
+	mes "^FF1493[Evento NxZ]^000000";
+	mes "Muito bem, vou te mandar para ^0000FFCidade de Prontera^000000.";
+	close2;
+	if( $@NxZ_CHAMPIONS )
+		announce "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " foi um dos Campe" + (Sex?"ões":"ãs") + " NxZ!", bc_all, "0xFFFF00";
+	else
+		announce "[Evento NxZ]: O Aprendiz " + strcharinfo(0) + " foi o Campeã" + (Sex?"o":"") + " NxZ!", bc_all, "0xFFFF00";
+	warp "prontera", 156, 191;
+	end;
+	
+OnInit:
+	disablenpc strnpcinfo(0);
+	end;
+}
+
+// Warper NPC
+event_room,79,101,5	script	Evento NxZ#warp	4_F_NOVICE,{
+	set .@talk, 0;
+	set .@loop_1,1;
+	emotion ET_SCISSORS;
+	while(.@loop_1) {
+		mes "^FF1493[Evento NxZ]^000000";
+		if( !.@talk ) mes "Bem-vindo ao ^0000FFEvento NxZ^000000!";
+		mes "Em que posso ajudar?";
+		set .@talk,1;
+		next;
+		switch( select(
+			(getgroupid()>=$@NxZ_GroupID?($@NxZ_FLAG?"^FF0000- Desligar Evento.^000000":"^0000FF- Ligar Evento.^000000"):""),
+			($@NxZ_FLAG==1?"- Entrar no Evento.":""),
+			($@NxZ_Shop_Enable?"^0000FF- Loja NxZ.^000000":""),
+			"^FFA500- Informações.^000000",
+			"^FF0000- Cancelar.^000000"
+		) ) {
+			// Ligar/Desligar Evento
+			case 1:
+				mes "^FF1493[Evento NxZ]^000000";
+				if( $@NxZ_FLAG ) {
+					donpcevent "noviceVSzombie#main::OnStopGM";
+					sleep2 3000;
+					mes "O Evento foi ^FF0000desligado^000000 com sucesso!";
+				}
+				else {
+					donpcevent "noviceVSzombie#main::OnStart";
+					sleep2 3000;
+					mes "O Evento foi ^0000FFligado^000000 com sucesso!";
+				}
+				next;
+				break;
+			// Entrar no Evento
+			case 2:
+				mes "^FF1493[Evento NxZ]^000000";
+				if( Class != Job_Novice )
+					mes "Hmmm... este evento é somente para os nossos queridos ^0000FFAprendiz^000000.";
+				else if( BaseLevel > 1 || JobLevel > 1 )
+					mes "Hmmm... Você precisar ter ^FF0000Nível 1^000000 de ^0000FFBase^000000 e ^0000FFClasse^000000.";
+				else if( $@NxZ_MaxPlayer && getmapusers("ev_novzomb") >= $@NxZ_MaxPlayer )
+					mes "Hmmm... O evento está lotado, você pode tentar no próximo ok?";
+				else {
+					emotion ET_BEST;
+					sc_end SC_ALL;
+					percentheal 100,100;
+					announce "[Evento NxZ]: " + strcharinfo(0) + " entrou no evento, boa sorte!", bc_all, "0xFFFF00";
+					warp "ev_novzomb", 30, 369;
+					end;
+				}
+				emotion ET_STARE;
+				next;
+				set .@loop_1,0;
+				break;
+			// Loja NxZ
+			case 3:
+				// Get Points
+				if( atoi($@NxZ_Currency$[2]) ) 
+					set .@amount, getd($@NxZ_Currency$[0]);
+				else
+					set .@amount, countitem(atoi($@NxZ_Currency$[0]));
+					
+				emotion ET_MONEY;
+				mes "^FF1493[Evento NxZ]^000000";
+				mes "Você possuí ^FF0000" + .@amount + "x " + $@NxZ_Currency$[1] + "^000000.";
+				mes "Muito bem, vou abrir a ^0000FFLoja NxZ^000000 para você.";
+				close2;
+				announce "A Loja utiliza '" + $@NxZ_Currency$[1] + "' como moeda!", bc_self, "0x00ffff";
+				callshop "noviceVSZombie#shop", 1;
+				end;
+			// Informações
+			case 4:
+				emotion ET_HELP;
+				mes "^FF1493[Evento NxZ]^000000";
+				mes "Bem este evento é bem divertido!";
+				mes "Preste atenção na explicação que vou te dar, pronto?";
+				next;
+				set .@n, 1;
+				mes "^FF1493[Evento NxZ]^000000";
+				mes .@n + "º Você precisa ser um ^0000FFAprendiz Nível 1 de Base e Classe^000000.";
+				next;
+				set .@n, .@n + 1;
+				emotion ET_SMILE;
+				mes "^FF1493[Evento NxZ]^000000";
+				mes .@n + "º Você fica preso com aquele monstro muito feio... como é o nome mesmo?";
+				mes "Ahh! ^32CD32Zumbi^000000! realmente eles são muito feios.";
+				next;
+				if( $@NxZ_MinPlayer && $@NxZ_MaxPlayer ) {
+					set .@n, .@n + 1;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º É necessário no ^0000FFmínimo " + $@NxZ_MinPlayer + "^000000 jogadores para começar o evento,";
+					mes "e só é permitido o ^0000FFmáximo " + $@NxZ_MaxPlayer + "^000000 jogadores.";
+					next;
+				}
+				else if( $@NxZ_MaxPlayer ) {
+					set .@n, .@n + 1;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º É permitido no ^0000FFmáximo " + $@NxZ_MaxPlayer + "^000000 jogadores no evento.";
+				}
+				
+				if( $@NxZ_Horde ) {
+					set .@n, .@n + 1;
+					emotion ET_HUK;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º Tome cuidado com ^0000FFhordas de zumbi^000000 que serão invocada no arena.";
+					mes "Um Zumbi pode aparecer de surpresa do seu lado, esteja atento!";
+					next;
+				}
+				
+				if( $@NxZ_DR_Enable ) {
+					set .@n, .@n + 1;
+					emotion ET_BEST;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º Única coisa boa dos Zumbis é que eles são meios desajeitados e ^0000FFderrubam itens valiosos^000000 no chão.";
+					next;
+				}
+				
+				if( $@NxZ_MaxTimer ) {
+					set .@n, .@n + 1;
+					emotion ET_HUK;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º Você deve ficar ^0000FF" + $@NxZ_MaxTimer + " minutos^000000 preso com aquela coisa nojenta para ser campeão do evento!";
+					next;
+				}
+				else {
+					set .@n, .@n + 1;
+					emotion ET_HUK;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º O ^0000FFúltimo Aprendiz vivo^000000 é o campeão do evento!";
+					next;
+				}
+				
+				if( $@NxZ_Reward_Enable ) {
+					set .@n, .@n + 1;
+					emotion ET_MONEY;
+					mes "^FF1493[Evento NxZ]^000000";
+					mes .@n + "º No final você deve falar com a ^0000FFAssistente do Evento^000000, ela irá te recompensar.";
+					mes "Mais não se esqueça! Não carregue muitos itens com você, se estiver muito pesado não irá receber recompensas de itens.";
+					next;
+				}
+				emotion ET_SMILE;
+				mes "^FF1493[Evento NxZ]^000000";
+				mes "Espero que tenha entendido tudo, agora é só participar!";
+				next;
+				break;
+			// Cancelar
+			default:
+				set .@loop_1,0;
+				break;
+		}
+	}
+	
+	emotion ET_SMILE;
+	mes "^FF1493[Evento NxZ]^000000";
+	mes "Tudo bem, volte se precisar de algo!";
+	close;
+	
+OnInit:
+	initnpctimer;
+	set .npcname$, strnpcinfo(0);
+	donpcevent "::OnNovZombOff";
+	end;
+	
+OnTimer15000:
+	emotion ET_HUK;
+	setarray .@class[0], 1015, 1298;
+	set .@i, rand(0, getarraysize(.@class)-1);
+	setnpcdisplay .npcname$, "Aprendiz vs Zumbi", .@class[.@i];
+	end;
+	
+OnTimer17000:
+	stopnpctimer;
+	initnpctimer;
+	setnpcdisplay .npcname$, "Evento NxZ", 729;
+	end;
+
+OnNovZombOn:
+	waitingroom "Aberto Evento NxZ", 0;
+	end;
+	
+OnNovZombOff:
+	delwaitingroom;
+	end;
+}
+
+// Loja NxZ
+-	pointshop	noviceVSZombie#shop	FAKE_NPC,NxZ_Points,501:1,502:2
+
+// MapFlags Fixos
+ev_novzomb	mapflag	nowarp
+ev_novzomb	mapflag	nowarpto
+ev_novzomb	mapflag	nosave
+ev_novzomb	mapflag	noreturn
+ev_novzomb	mapflag	noteleport
+ev_novzomb	mapflag	nomemo
+ev_novzomb	mapflag	noskill
+ev_novzomb	mapflag	monster_noteleport

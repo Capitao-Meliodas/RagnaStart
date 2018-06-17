@@ -1,0 +1,311 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Teste do Emperium                                                .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 1.0	.
+  .                                                                     .
+  . Compátivel:	rAthena / Hercules e derivações.                    	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Responsável por testar jogadores no Emperium.                    .
+  *---------------------------------------------------------------------*/
+  
+  // ATENÇÃO!
+  // Requer as Funções Globais da CreativeSD.
+  
+prontera,146,165,5	script	Teste do Emperium#warp	4_M_MINSTREL1,{
+	function checkwarp;
+	function warproom;
+	set .@w, 1;
+	while(.@w)
+	{
+		mes "^FF0000[Menestrel]^000000";
+		mes "Yeah! Sou responsável por testar o tempo que um jogador leva para destruír um Emperium!";
+		mes (!checkwarp()?"Nossas salas de teste estão atualmente lotadas, você pode tentar mais tarde, mas posso te ajudar de alguma forma?":"Em que posso te ajudar?");
+		mes "Lembre-se que você deve estar dentro de um clã para fazer o teste.";
+		if( !getskilllv(10000) )
+			mes "^FF0000Você não irá conseguir atacar o Emperium sem a habilidade Autorização Oficial.^000000";
+		next;
+		switch( select((checkwarp()&&getcharid(2)&&getskilllv(10000)?"^0000FF- Fazer o teste.^000000":""), "- Top 5 Jogadores.", "- Informações.", "- Cancelar.") )
+		{
+			case 1:
+				mes "^FF0000[Menestrel]^000000";
+				mes "Vou te mandar para uma sala agora mesmo!";
+				close2;
+				if( !warproom() )
+					dispbottom "Você demorou demais para entrar em uma sala!";
+				end;
+			case 2:
+				query_sql "SELECT `char_id`, `timer` FROM `test_emperium` ORDER BY `timer` ASC LIMIT 0,5", .@charid, .@timer;
+				mes "^FF0000[Menestrel]^000000";
+				if( !getarraysize(.@charid) )
+					mes "Não há nenhum jogador qualificado no teste por momento.";
+				else {
+					for( set .@i, 0; .@i < getarraysize(.@charid); set .@i, .@i + 1 )
+					{
+						set .@countHour, callfunc("format_timer", 0, .@timer[.@i]);
+						set .@countMin, callfunc("format_timer", 1, .@timer[.@i]);
+						set .@countSec, callfunc("format_timer", 2, .@timer[.@i]);
+						mes "^0000FF"+(.@i+1)+"ª Posição:^000000 " + callfunc("getcharname", .@charid[.@i]);
+						mes "^0000FFTempo qualificativo:^000000 " + (.@countHour?(.@countHour>9?.@countHour:"0"+.@countHour)+" horas ":"") + (.@countMin?(.@countMin>9?.@countMin:"0"+.@countMin)+" minutos e ":"") + (.@countSec?(.@countSec>9?.@countSec:"0"+.@countSec)+" segundos":"");
+						mes " ";
+					}
+				}
+				next;
+				break;
+			case 3:
+				mes "^FF0000[Menestrel]^000000";
+				mes "Você pode testar o tempo que você leva para destruír um Emperium, os 5 primeiros do mês serão recompensado pela Equipe.";
+				next;
+				break;
+			case 4:
+				set .@w, 0;
+				break;
+				break;
+		}
+	}
+	mes "^FF0000[Menestrel]^000000";
+	mes "Tudo bem, estarei caso desejar testar sua força!";
+	close;
+	
+	function	checkwarp	{
+		for( set .@i, 0; .@i < getarraysize(.mapwarp$); set .@i, .@i + 1 )
+		{
+			if( !getmapusers(.mapwarp$[.@i]) )
+				return true;
+		}
+		return false;
+	}
+	
+	function	warproom	{
+		for( set .@i, 0; .@i < getarraysize(.mapwarp$); set .@i, .@i + 1 )
+		{
+			if( !getmapusers(.mapwarp$[.@i]) )
+			{
+				warp .mapwarp$[.@i], .warpx[.@i], .warpy[.@i];
+				return true;
+			}
+				
+		}
+		return true;
+	}
+	
+OnInit:
+	setarray .mapwarp$[0], "te_arena_01", "te_arena_02", "te_arena_03", "te_arena_04", "te_arena_05";
+	setarray .warpx[0], 56, 56, 56, 56, 56;
+	setarray .warpy[0], 53, 53, 53, 53, 53;
+	end;
+}
+
+// Eventos do Emperium
+-	script	te_mob_spawn#main	-1,{
+OnInit:
+	if( strnpcinfo(0) == "te_mob_spawn#main" ) end;
+	if( getd("$"+strnpcinfo(2)+"_flag") && getmapusers(strnpcinfo(2)) )
+		donpcevent strnpcinfo(0)+"::OnStart";
+	else
+		setd "$"+strnpcinfo(2)+"_flag", 0;
+	end;
+		
+OnStart:
+	if( strnpcinfo(0) == "te_mob_spawn#main" ) end;
+	setd "$"+strnpcinfo(2)+"_flag", 1;
+	stopnpctimer strnpcinfo(0);
+	sleep 1000;
+	initnpctimer strnpcinfo(0);
+	end;
+	
+OnTimer0001:
+	if( getd("$"+strnpcinfo(2)+"_flag") )
+		mapannounce strnpcinfo(2), "Em 5 segundos o teste vai começar.", bc_map, "0x00FF00";
+	else
+		stopnpctimer strnpcinfo(0);
+	end;
+
+OnTimer2000:
+	if( getd("$"+strnpcinfo(2)+"_flag") )
+		mapannounce strnpcinfo(2), "Em 4 segundos o teste vai começar.", bc_map, "0x00FF00";
+	else
+		stopnpctimer strnpcinfo(0);
+	end;
+	
+OnTimer3000:
+	if( getd("$"+strnpcinfo(2)+"_flag") )
+		mapannounce strnpcinfo(2), "Em 3 segundos o teste vai começar.", bc_map, "0x00FF00";
+	else
+		stopnpctimer strnpcinfo(0);
+	end;
+
+OnTimer4000:
+	if( getd("$"+strnpcinfo(2)+"_flag") )
+		mapannounce strnpcinfo(2), "Em 2 segundos o teste vai começar.", bc_map, "0x00FF00";
+	else
+		stopnpctimer strnpcinfo(0);
+	end;
+	
+OnTimer5000:
+	stopnpctimer strnpcinfo(0);
+	if( getd("$"+strnpcinfo(2)+"_flag") )
+	{
+		setd "$"+strnpcinfo(2)+"_timer", gettimetick(2);
+		setd "$"+strnpcinfo(2)+"_count", getd("$"+strnpcinfo(2)+"_count")+1;
+		mapannounce strnpcinfo(2), "O Teste começou!", bc_map, "0x00FF00";
+		monster strnpcinfo(2), 50, 50, "Emperium", 1288, 1, strnpcinfo(0)+"::OnEmpDie";
+	}
+	end;
+
+OnEmpDie:
+	setd "$"+strnpcinfo(2)+"_flag", 0;
+	set .@timer, gettimetick(2)-getd("$"+strnpcinfo(2)+"_timer");
+	set .@countHour, callfunc("format_timer", 0, .@timer);
+	set .@countMin, callfunc("format_timer", 1, .@timer);
+	set .@countSec, callfunc("format_timer", 2, .@timer);
+	message strcharinfo(0), "Tempo de destruíção: " + (.@countHour?(.@countHour>9?.@countHour:"0"+.@countHour)+" horas ":"") + (.@countMin?(.@countMin>9?.@countMin:"0"+.@countMin)+" minutos e ":"") + (.@countSec?(.@countSec>9?.@countSec:"0"+.@countSec)+" segundos":"") + ".";
+	
+	query_sql "SELECT `char_id`, `timer` FROM `test_emperium` WHERE `char_id`='" + getcharid(0) + "'", .@charid, .@chartimer;
+	
+	if( !getarraysize(.@charid) )
+		query_sql "INSERT INTO `test_emperium` (char_id, timer) VALUES (" + getcharid(0) + ", " + .@timer + ")";
+	else if( .@timer < .@chartimer )
+		query_sql "UPDATE `test_emperium` SET `timer`='" + .@timer + "' WHERE `char_id`='" + getcharid(0) + "'";
+	end;
+
+OnGuildBreak:
+	// Não utilizado...
+	end;
+}
+
+te_arena_01,0,0,0	duplicate(te_mob_spawn#main)	te_mob_spawn#te_arena_01	HIDDEN_NPC
+te_arena_02,0,0,0	duplicate(te_mob_spawn#main)	te_mob_spawn#te_arena_02	HIDDEN_NPC
+te_arena_03,0,0,0	duplicate(te_mob_spawn#main)	te_mob_spawn#te_arena_03	HIDDEN_NPC
+te_arena_04,0,0,0	duplicate(te_mob_spawn#main)	te_mob_spawn#te_arena_04	HIDDEN_NPC
+te_arena_05,0,0,0	duplicate(te_mob_spawn#main)	te_mob_spawn#te_arena_05	HIDDEN_NPC
+
+// Instrutores da Arena
+-	script	te_instructor#main	-1,{
+
+	// Reset timers
+	stopnpctimer strnpcinfo(0);
+	initnpctimer strnpcinfo(0);
+	
+	// Config
+	set .@Chance, 5;
+	set .@ZenyCost, 1500;
+	
+	if( getd("$"+strnpcinfo(2)+"_count") >= .@Chance )
+	{
+		mes "^FF0000[Instrutor]^000000";
+		mes "Você já teve sua oportunidade de testar sua força, agora deixe outros jogadores testar suas capacidades!";
+		close2;
+		donpcevent strnpcinfo(0)+"::OnEnd";
+		end;
+	}
+	
+	mes "^FF0000[Instrutor]^000000";
+	mes "Eu sou o instrutor que irá medir o tempo que você leva para destruír um Emperium.";
+	mes "Yeah! Presenciei muitos jogadores fortes nesse teste.";
+	mes "Para fazer o teste é bem simples, basta você ter " + .@ZenyCost + " Zenys, a cada vez que você desejar testar.";
+	mes "Você pode testar por vez no máximo " + .@Chance + " vezes.";
+	mes "Em que posso ajudar?";
+	next;
+	switch( select(((!.@ZenyCost||.@ZenyCost<Zeny)&&!getd("$"+strnpcinfo(2)+"_flag")?"^0000FF- Invocar o Emperium.^000000":""), "^FF0000- Saír da Arena.^000000", "^FF0000- Cancelar.^000000") )
+	{
+		case 1:
+			if( .@ZenyCost ) set Zeny, Zeny - .@ZenyCost;
+			mes "^FF0000[Instrutor]^000000";
+			mes "Muito bem, vou invocar o Emperium para você!";
+			close2;
+			donpcevent "te_mob_spawn#"+strnpcinfo(2)+"::OnStart";
+			end;
+		case 2:
+			break;
+		case 3:
+			mes "^FF0000[Instrutor]^000000";
+			mes "Tudo bem, vou aguardar você se preparar!";
+			close;
+	}
+	mes "^FF0000[Instrutor]^000000";
+	mes "Tudo bem, vou te retirar da sala de Teste.";
+	close2;
+	donpcevent strnpcinfo(0)+"::OnEnd";
+	end;
+	
+OnTimer60000:
+	stopnpctimer;
+	getmapxy .@map$, .@x, .@y, 1;
+	if( !getmapusers(.@map$) )
+		donpcevent strnpcinfo(0)+"::OnEnd";
+	else
+		initnpctimer;
+	end;
+	
+OnEnd:
+	setd "$"+strnpcinfo(2)+"_timer", 0;
+	setd "$"+strnpcinfo(2)+"_count", 0;
+	setd "$"+strnpcinfo(2)+"_flag", 0;
+	getmapxy .@map$, .@x, .@y, 1;
+	killmonsterall .@map$;
+	mapwarp .@map$, "prontera", 156, 176;
+	end;
+}
+
+te_arena_01,55,57,3	duplicate(te_instructor#main)	Instrutor#te_arena_01	4_M_MINSTREL1
+te_arena_02,55,57,3	duplicate(te_instructor#main)	Instrutor#te_arena_02	4_M_MINSTREL1
+te_arena_03,55,57,3	duplicate(te_instructor#main)	Instrutor#te_arena_03	4_M_MINSTREL1
+te_arena_04,55,57,3	duplicate(te_instructor#main)	Instrutor#te_arena_04	4_M_MINSTREL1
+te_arena_05,55,57,3	duplicate(te_instructor#main)	Instrutor#te_arena_05	4_M_MINSTREL1
+
+// Mapflags
+te_arena_01	mapflag	test_emperium
+te_arena_02	mapflag	test_emperium
+te_arena_03	mapflag	test_emperium
+te_arena_04	mapflag	test_emperium
+te_arena_05	mapflag	test_emperium
+
+te_arena_01	mapflag	nomemo
+te_arena_02	mapflag	nomemo
+te_arena_03	mapflag	nomemo
+te_arena_04	mapflag	nomemo
+te_arena_05	mapflag	nomemo
+
+te_arena_01	mapflag	noreturn
+te_arena_02	mapflag	noreturn
+te_arena_03	mapflag	noreturn
+te_arena_04	mapflag	noreturn
+te_arena_05	mapflag	noreturn
+
+te_arena_01	mapflag	nosave
+te_arena_02	mapflag	nosave
+te_arena_03	mapflag	nosave
+te_arena_04	mapflag	nosave
+te_arena_05	mapflag	nosave
+
+te_arena_01	mapflag	noteleport
+te_arena_02	mapflag	noteleport
+te_arena_03	mapflag	noteleport
+te_arena_04	mapflag	noteleport
+te_arena_05	mapflag	noteleport
+
+te_arena_01	mapflag	nowarp
+te_arena_02	mapflag	nowarp
+te_arena_03	mapflag	nowarp
+te_arena_04	mapflag	nowarp
+te_arena_05	mapflag	nowarp
+
+te_arena_01	mapflag	nowarpto
+te_arena_02	mapflag	nowarpto
+te_arena_03	mapflag	nowarpto
+te_arena_04	mapflag	nowarpto
+te_arena_05	mapflag	nowarpto

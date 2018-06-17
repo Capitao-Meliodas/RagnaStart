@@ -1,0 +1,45 @@
+//*.-----------------------------------------------------------------.
+// .    ____                          __                             .
+// .   /\  _`\                       /\ \__  __                      .
+// .   \ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __      .
+// .    \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\    .
+// .     \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/    .
+// .      \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\   .
+// .       \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/   .
+// .                                                                 .
+// .          2014~2017 © Creative Services and Development          .
+// .                      www.creativesd.com.br                      .
+// .-----------------------------------------------------------------.
+// .                          Rank Database                          .
+// .-----------------------------------------------------------------.
+// . Structure:                                                      .
+// .	ID,Name,Points,Emblem,{ Aura }                               .
+// .                                                                 .
+// .	ID: Identification                                           .
+// .	Name: Rank Name                                              .
+// .	Points: Points Required (float n.0 or n)                     .
+// .	Emblem: Emblem file name.                                    .
+// .	Aura: Aura ID, sample #id1 #id2 #id3                         .
+// .              Effects are listed inside the folder               .
+// .              doc/effect_list.txt                                .
+// .                                                                 .
+// .  Warning: The points must be increment not interfered exactly   .
+// .           by their ID, if not the system will skip the line     .
+// .           jumping to the next ID that points is higher than     .
+// .           the defined.                                          .
+// *-----------------------------------------------------------------*
+1,Silver I,200,rank_01,{ #240 }
+2,Silver II,400,rank_02,{ #200 }
+3,Silver III,600,rank_03,{ #240 #200 }
+4,Silver Elite,800,rank_04,{ #201 }
+5,Silver Master,1000,rank_05,{ #201 #200 }
+6,Gold I,1200,rank_06,{ #242 }
+7,Gold II,1400,rank_07,{ #242 #678 }
+8,Gold III,1600,rank_08,{ #203 }
+9,Gold Elite,1800,rank_09,{ #239 }
+10,Gold Master,2000,rank_10,{ #239 #418 }
+11,Guardian I,2200,rank_11,{ #822 }
+12,Guardian II,2400,rank_12,{ #203 #822 }
+13,Guardian III,2600,rank_13,{ #254 }
+14,Guardian Elite,3000,rank_14,{ #254 #825 }
+15,Supreme Master,3200,rank_15,{ #254 #241 #679 }

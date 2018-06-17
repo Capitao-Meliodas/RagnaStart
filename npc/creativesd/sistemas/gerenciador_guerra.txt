@@ -1,0 +1,1120 @@
+/*.---------------------------------------------------------------------.
+  .		 ____                          __                          		.
+  .		/\  _`\                       /\ \__  __                   		.
+  .		\ \ \/\_\  _ __    __     __  \ \ ,_\/\_\  __  __     __   		.
+  .		 \ \ \/_/_/\`'__\/'__`\ /'__`\ \ \ \/\/\ \/\ \/\ \  /'__`\ 		.
+  .		  \ \ \s\ \ \ \//\  __//\ \d\.\_\ \ \_\ \ \ \ \_/ |/\  __/ 		.
+  .		   \ \____/\ \_\\ \____\ \__/.\_\\ \__\\ \_\ \___/ \ \____\		.
+  .		    \/___/  \/_/ \/____/\/__/\/_/ \/__/ \/_/\/__/   \/____/		.
+  .																		.
+  .				2014~2015 © Creative Services and Developent			.
+  .						  www.creativesd.com.br							.
+  .					    www.sbkmod.ragnagreen.com                       .
+  .---------------------------------------------------------------------.
+  . Script:													            .
+  .	   Gerenciador da Guerra do Emperium                                .
+  .---------------------------------------------------------------------.
+  . Autor: Romulo SM (sbk_)                                 Versão: 3.0	.
+  .                                                                     .
+  . Compátivel:	Hercules.                                            	.
+  .---------------------------------------------------------------------.
+  . Descrição:															.
+  .	   Gerencia Horários e Castelos da Guerra do Emperium PE/SE.        .
+  *---------------------------------------------------------------------*/
+-	script	#woe_castle_manager	-1,{
+OnInit:
+	function enable_warps;
+	function disable_warps;
+	
+	// Informações Fixas do Castelo.
+	setarray .castle_map$[0], "aldeg_cas01", "aldeg_cas02", "aldeg_cas03", "aldeg_cas04", "aldeg_cas05", "gefg_cas01", "gefg_cas02", "gefg_cas03", "gefg_cas04", "gefg_cas05", "payg_cas01", "payg_cas02", "payg_cas03", "payg_cas04", "payg_cas05", "prtg_cas01", "prtg_cas02", "prtg_cas03", "prtg_cas04", "prtg_cas05", "nguild_alde", "nguild_gef", "nguild_pay", "nguild_prt", "schg_cas01", "schg_cas02", "schg_cas03", "schg_cas04", "schg_cas05", "arug_cas01", "arug_cas02", "arug_cas03", "arug_cas04", "arug_cas05";
+	setarray .castle_type[0], 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2;
+	
+	// Bind de Clocks
+	query_sql "SELECT `group_id`, `init_hour`, `init_minute`, `end_hour`, `end_minute` FROM `m_woe_timer`", .@group_id, .@init_hour, .@init_minute, .@end_hour, .@end_minute;
+	
+	for( set .@i,0; .@i < getarraysize(.@group_id); set .@i,.@i+1 )
+	{
+		// Bind Start/End Woe
+		bindclock .@init_hour[.@i]+":"+.@init_minute[.@i], "#woe_castle_manager::OnStartWoe";
+		bindclock .@end_hour[.@i]+":"+.@end_minute[.@i], "#woe_castle_manager::OnEndWoe";
+	}
+	
+	// Clear and Start/Stop Woe
+	deletearray .@group_id;
+	deletearray .@init_hour;
+	deletearray .@init_minute;
+	deletearray .@end_hour;
+	deletearray .@end_minute;
+	query_sql "SELECT `group_id`, `init_hour`, `init_minute`, `end_hour`, `end_minute` FROM `m_woe_timer` WHERE `week`='" + gettime(4) + "'", .@group_id, .@init_hour, .@init_minute, .@end_hour, .@end_minute;
+	
+	for( set .@i,0; .@i < getarraysize(.@group_id); set .@i, .@i + 1 )
+	{
+		if( (agitcheck() || agitcheck2()) && (gettime(3) > .@end_hour[.@i] || (gettime(3) == .@end_hour[.@i] && gettime(2) >= .@end_minute[.@i])) )
+		{
+			// Stop War of Emperium
+			if( agitcheck() ) agitend;
+			if( agitcheck2() ) agitend2;
+			enable_warps;
+		}
+		
+		if( 
+			(gettime(3) == .@init_hour[.@i] && gettime(2) >= .@init_minute[.@i]) ||
+			(gettime(3) > .@init_hour[.@i] && gettime(3) < .@end_hour[.@i]) ||
+			(gettime(3) == .@end_hour[.@i] && gettime(2) < .@end_minute[.@i])
+		)
+		{
+			// Init War of Emperium
+			deletearray .@castle_id;
+			deletearray .@type;
+			deletearray .@status;
+			query_sql "SELECT `castle_id`, `type`, `status` FROM `m_woe_restrictions` WHERE `group_id`='" + .@group_id[.@i] + "'", .@castle_id, .@type, .@status;
+			
+			if( getarraysize(.@castle_id) )
+			{
+				for( set .@c,0; .@c < getarraysize(.@castle_id); set .@c, .@c + 1 )
+				{
+					if( .@status[.@c] == 0 )
+						disable_warps .@castle_id[.@c];
+					else if( .@status[.@c] == 1 && .@type[.@c] == 1 && !agitcheck() )
+						agitstart();
+					else if( .@status[.@c] == 1 && .@type[.@c] == 2 && !agitcheck2() )
+						agitstart2();
+				}
+			}
+		}
+	}
+	
+	// Bind Atcmd
+	bindatcmd "woemanager", "#woe_castle_manager::OnStart", 99, 99;
+	
+	if( !agitcheck() && !agitcheck2() )
+		enable_warps;
+	end;
+	
+OnStartWoe:
+	set .@display, 0;
+	query_sql "SELECT `group_id`, `init_hour`, `init_minute`, `end_hour`, `end_minute` FROM `m_woe_timer` WHERE `week`='" + gettime(4) + "' AND `init_hour`='" + gettime(3) + "' AND `init_minute`='" + gettime(2) + "'", .@group_id, .@init_hour, .@init_minute, .@end_hour, .@end_minute;
+	for( set .@i,0; .@i < getarraysize(.@group_id); set .@i, .@i + 1 )
+	{
+		if( (!agitcheck() || !agitcheck2()) && (gettime(3) > .@init_hour[.@i] && gettime(3) < .@end_hour[.@i] && gettime(2) < .@end_minute[.@i] || gettime(3) == .@init_hour[.@i] && gettime(2) >= .@init_minute[.@i]) )
+		{
+			// Init War of Emperium
+			deletearray .@castle_id;
+			deletearray .@type;
+			deletearray .@status;
+			query_sql "SELECT `castle_id`, `type`, `status` FROM `m_woe_restrictions` WHERE `group_id`='" + .@group_id[.@i] + "'", .@castle_id, .@type, .@status;
+			
+			if( getarraysize(.@castle_id) )
+			{
+				for( set .@c,0; .@c < getarraysize(.@castle_id); set .@c, .@c + 1 )
+				{
+					if( .@status[.@c] == 0 )
+						disable_warps .@castle_id[.@c];
+					else if( .@status[.@c] == 1 && .@type[.@c] == 1 && !agitcheck() )
+					{
+						agitstart();
+						set .@display, 1;
+					}
+					else if( .@status[.@c] == 1 && .@type[.@c] == 2 && !agitcheck2() )
+					{
+						agitstart2();
+						set .@display, 1;
+					}
+				}
+			}
+		}
+	}
+	
+	if( .@display && (agitcheck() || agitcheck2()) )
+		announce "A Guerra do Emperium começou!", bc_all|bc_woe;
+	end;
+	
+OnEndWoe:
+	if( agitcheck() ) agitend;
+	if( agitcheck2() ) agitend2;
+	announce "A Guerra do Emperium terminou!", bc_all|bc_woe;
+	enable_warps;
+	end;
+	
+// Comando @woemanager
+// -----------------------------
+OnStart:
+	function check_woe_timer;
+	set .@loop_1, 1;
+	while(.@loop_1)
+	{
+		mes "^556B2F[Gerenciador da Guerra]^000000";
+		mes "Bem-vindo, em que posso ajudar?";
+		next;
+		switch( select("^0000FF- Gerenciar Grupos.", "- Gerenciar Horários.^000000", "^FF0000- Cancelar.^000000") )
+		{
+			case 1:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^556B2F[Gerenciador da Guerra]^000000";
+					mes "Em que posso te ajudar nos ^FF0000Grupos^000000?";
+					next;
+					switch( select("- Adicionar um novo Grupo.", "- Remover um Grupo.", "- Alterar restrições de um Grupo.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						// Adicionar um novo Grupo.
+						case 1:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^556B2F[Gerenciador da Guerra]^000000";
+								mes "Por favor, digite um ^0000FFnome para o grupo^000000.";
+								next;
+								input .@GroupName$;
+								if( .@GroupName$ == "" )
+								{
+									mes "^556B2F[Gerenciador da Guerra]^000000";
+									mes "Você deve digitar um ^0000FFnome para o grupo^000000.";
+									mes "Deseja tentar novamente?";
+									next;
+									switch( select("- Sim, por favor.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+									{
+										case 1:
+											break;
+										case 2:
+											set .@loop_3, 0;
+											break;
+										case 3:
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+								else {
+									mes "^556B2F[Gerenciador da Guerra]^000000";
+									mes "Tem certeza que deseja adicionar ^0000FF" + .@GroupName$ + "^000000 nos Grupos?";
+									next;
+									switch( select("- Sim, por favor.", "- Não, digitar outro nome.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+									{
+										case 1:
+											query_sql "INSERT INTO `m_woe_group` (name) VALUES ('" + .@GroupName$ + "')";
+											mes "^556B2F[Gerenciador da Guerra]^000000";
+											mes "O Grupo ^0000FF" + .@GroupName$ + "^000000 foi adicionado.";
+											next;
+											set .@loop_3, 0;
+											break;
+										case 2:
+											break;
+										case 3:
+											set .@loop_3, 0;
+											break;
+										case 4:
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+							}
+							break;
+						// Remover um Grupo.
+						case 2:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^556B2F[Gerenciador da Guerra]^000000";
+								mes "^FF0000Atenção!";
+								mes "Ao remover um Grupo todos horários configurados que estiver vinculado a ele automáticamente será removido.";
+								mes "^0000FFVocê pode alterar o grupo de um horário no menu de Gerenciar Horários.^000000";
+								mes "Escolha o Grupo que deseja remover:";
+								next;
+								set .@build_menu$, "";
+								deletearray .@GroupID[0], getarraysize(.@GroupID);
+								query_sql "SELECT * FROM `m_woe_group` ORDER BY `name`", .@GroupID, .@GroupName$;
+								for( set .@i, 0; .@i < getarraysize(.@GroupID); set .@i, .@i + 1 )
+									set .@build_menu$, .@build_menu$ + "- " + .@GroupName$[.@i] + ".:";
+									
+								set .@choose, select(.@build_menu$+"^FF8C00- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+								
+								if( .@choose == getarraysize(.@GroupID) )
+									set .@loop_3, 0;
+								else if( .@choose > getarraysize(.@GroupID) )
+								{
+									set .@loop_3, 0;
+									set .@loop_2, 0;
+									set .@loop_1, 0;
+								}
+								else {
+									mes "^556B2F[Gerenciador da Guerra]^000000";
+									mes "Tem certeza que deseja remover o Grupo ^FF0000" + .@GroupName$[.@choose] + "^000000?";
+									next;
+									switch( select("- Sim, por favor.", "^FF8C00- Voltar.^000000", "- Cancelar.") )
+									{
+										case 1:
+											query_sql "DELETE FROM `m_woe_group` WHERE `auto_id`='" + .@GroupID[.@choose] + "'";
+											query_sql "DELETE FROM `m_woe_timer` WHERE `group_id`='" + .@GroupID[.@choose] + "'";
+											query_sql "DELETE FROM `m_woe_restrictions` WHERE `group_id`='" + .@GroupID[.@choose] + "'";
+											mes "^556B2F[Gerenciador da Guerra]^000000";
+											mes "O Grupo ^FF0000" + .@GroupName$[.@choose] + "^000000 foi removido";
+											next;
+											break;
+										case 2:
+											break;
+										case 3:
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+							}
+							break;
+						// Alterar Restrições de um Grupo.
+						case 3:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^556B2F[Gerenciador da Guerra]^000000";
+								mes "Por favor, selecione um ^0000FFGrupo^000000 em que deseja gerenciar as restrições.";
+								next;
+								set .@build_menu$, "";
+								deletearray .@GroupID[0], getarraysize(.@GroupID);
+								deletearray .@GroupName$[0], getarraysize(.@GroupName$);
+								query_sql "SELECT * FROM `m_woe_group` ORDER BY `name`", .@GroupID, .@GroupName$;
+								for( set .@i, 0; .@i < getarraysize(.@GroupID); set .@i, .@i + 1 )
+									set .@build_menu$, .@build_menu$ + "- " + .@GroupName$[.@i] + ".:";
+									
+								set .@choose, select(.@build_menu$+"^FF8C00- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+								
+								if( .@choose == getarraysize(.@GroupID) )
+									set .@loop_3, 0;
+								else if( .@choose > getarraysize(.@GroupID) )
+								{
+									set .@loop_3, 0;
+									set .@loop_2, 0;
+									set .@loop_1, 0;
+								}
+								else {
+									set .@loop_4, 1;
+									while(.@loop_4)
+									{
+										mes "^556B2F[Gerenciador da Guerra]^000000";
+										mes "Escolha um ^0000FFcastelo^000000 no qual deseja ^0000FFativar^000000/^FF0000desativar^000000 desse grupo.";
+										mes "Lembrando, que castelos ativados serão os que ocorrerão a Guerra nos horários vinculados a esse grupo, e";
+										mes "os castelos desativados, não acontecerá Guerra em horários vinculados a esse grupo.";
+										mes "^FF0000Os castelos só serão atualizados quando houver a próxima Guerra do Emperium.^000000";
+										next;
+										set .@build_menu2$, "";
+										set .@check, 1;
+										while(.@check)
+										{
+											deletearray .@AutoID[0], getarraysize(.@AutoID);
+											deletearray .@status[0], getarraysize(.@status);
+											query_sql "SELECT `auto_id`, `castle_id`, `type`, `status` FROM `m_woe_restrictions` WHERE `group_id`='" + .@GroupID[.@choose] + "' ORDER BY `type`, `status`, `castle_id`", .@AutoID, .@CastleID, .@Type, .@status;
+											if( getarraysize(.@AutoID) )
+												set .@check, 0;
+											else
+											{
+												for( set .@i, 0; .@i < getarraysize(.castle_map$); set .@i, .@i + 1 )
+													query_sql "INSERT INTO `m_woe_restrictions` (group_id, castle_id, type, status) VALUES (" + .@GroupID[.@choose] + ", " + .@i + ", " + .castle_type[.@i] + ", 0)";
+											}
+										}
+										
+										for( set .@i, 0; .@i < getarraysize(.@AutoID); set .@i, .@i + 1 )
+											set .@build_menu2$, .@build_menu2$ + "- " + (!.@status[.@i]?"^0000FFAtivar":"^FF0000Desativar") + "^000000 " + getcastlename(.castle_map$[.@CastleID[.@i]]) + ".:";
+										
+										set .@choose2, select(.@build_menu2$+"^FF8C00- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+										
+										if( .@choose2 == getarraysize(.@AutoID) )
+											set .@loop_4, 0;
+										else if( .@choose2 > getarraysize(.@AutoID) )
+										{
+											set .@loop_4, 0;
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+										}
+										else {
+											query_sql "UPDATE `m_woe_restrictions` SET `status`='" + (.@status[.@choose2]?0:1) + "' WHERE `auto_id`='" + .@AutoID[.@choose2] + "'";
+										}
+									}
+								}
+							}
+							break;
+						case 4:
+							set .@loop_2, 0;
+							break;
+						case 5:
+							set .@loop_1, 0;
+							set .@loop_2, 0;
+							break;
+					}
+				}
+				break;
+			case 2:
+				set .@loop_2, 1;
+				while(.@loop_2)
+				{
+					mes "^556B2F[Gerenciador da Guerra]^000000";
+					mes "Em que posso te ajudar nos ^FF0000Horários^000000?";
+					next;
+					switch( select("- Adicionar um novo Horário.", "- Remover um Horário.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+					{
+						// Adicionar um novo Horário
+						case 1:
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^556B2F[Gerenciador da Guerra]^000000";
+								mes "Por favor, selecione um ^FF0000Grupo^000000 em que deseja vincular o ^FF0000horário^000000.";
+								next;
+								set .@build_menu$, "";
+								deletearray .@GroupID[0], getarraysize(.@GroupID);
+								query_sql "SELECT * FROM `m_woe_group` ORDER BY `name`", .@GroupID, .@GroupName$;
+								for( set .@i, 0; .@i < getarraysize(.@GroupID); set .@i, .@i + 1 )
+									set .@build_menu$, .@build_menu$ + "- " + .@GroupName$[.@i] + ".:";
+									
+								set .@choose, select(.@build_menu$+"^FF8C00- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+								
+								if( .@choose == getarraysize(.@GroupID) )
+									set .@loop_3, 0;
+								else if( .@choose > getarraysize(.@GroupID) )
+								{
+									set .@loop_3, 0;
+									set .@loop_2, 0;
+									set .@loop_1, 0;
+								}
+								else {
+									mes "^556B2F[Gerenciador da Guerra]^000000";
+									mes "Tem certeza que deseja adicionar o novo Horário no ^FF0000Grupo " + .@GroupName$[.@choose] + "^000000?";
+									next;
+									switch( select("- Sim, por favor.", "- Não, desejo mudar.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+									{
+										case 1:
+											set .@loop_4, 1;
+											while(.@loop_4)
+											{
+												mes "^556B2F[Gerenciador da Guerra]^000000";
+												mes "Selecione o dia da semana que deseja que a ^FF0000Guerra^000000 ocorra.";
+												next;
+												set .@day, select("- Domingo.", "- Segunda-Feira.", "- Terça-Feira.", "- Quarta-Feira.", "- Quinta-Feira.", "- Sexta-Feira.", "- Sabado.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000")-1;
+												switch(.@day)
+												{
+													default:
+														setarray .@tmp_day$[0], "Domingo", "Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sabado";
+														mes "^556B2F[Gerenciador da Guerra]^000000";
+														mes "Tem certeza que deseja que a ^FF0000Guerra^000000 ocorra ^0000FF" + .@tmp_day$[.@day] + "^000000?";
+														next;
+														switch( select("- Sim, por favor.", "- Não, desejo mudar.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+														{
+															case 1:
+																set .@loop_5, 1;
+																while(.@loop_5)
+																{
+																	mes "^556B2F[Gerenciador da Guerra]^000000";
+																	mes "Digite o ^FF0000horário^000000 no formato de ^0000FF0hrs~23hrs^000000 em que a Guerra comece.";
+																	next;
+																	input .@init_hour;
+																	if( .@init_hour < 0 || .@init_hour > 23 )
+																	{
+																		mes "^556B2F[Gerenciador da Guerra]^000000";
+																		mes "Você tem que digitar o ^FF0000horário^000000 no formato de ^0000FF0hrs~23hrs^000000";
+																		mes "Deseja tentar novamente?";
+																		next;
+																		switch( select("- Sim, por favor.", "- Não, obrigado.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+																		{
+																			case 1:
+																				break;
+																			case 2:
+																				set .@loop_5, 0;
+																				set .@loop_4, 0;
+																				break;
+																			case 3:
+																				set .@loop_5, 0;
+																				break;
+																			case 4:
+																				set .@loop_5, 0;
+																				set .@loop_4, 0;
+																				set .@loop_3, 0;
+																				set .@loop_2, 0;
+																				set .@loop_1, 0;
+																				break;
+																		}
+																	}
+																	else {
+																		mes "^556B2F[Gerenciador da Guerra]^000000";
+																		mes "Agora digite ^0000FFminuto^000000 das ^FF0000" + .@init_hour + "hrs^000000 que deseja que a ^FF0000Guerra^000000 comece, no formato de ^0000FF0~59 minutos^000000.";
+																		next;
+																		input .@init_minute;
+																		if( .@init_minute < 0 || .@init_minute > 59 )
+																		{
+																			mes "^556B2F[Gerenciador da Guerra]^000000";
+																			mes "Você deve digitar o ^FF0000minuto^00000 das ^FF0000" + .@init_hour + "hrs^000000 que deseja que a ^FF0000Guerra^0000 comece, no formato de ^0000FF0~59 minutos^000000.";
+																			mes "Deseja tentar novamente?";
+																			next;
+																			switch( select("- Sim, por favor.", "- Não, obrigado.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+																			{
+																				case 1:
+																					break;
+																				case 2:
+																					set .@loop_5, 0;
+																					set .@loop_4, 0;
+																					break;
+																				case 3:
+																					set .@loop_5, 0;
+																					break;
+																				case 4:
+																					set .@loop_5, 0;
+																					set .@loop_4, 0;
+																					set .@loop_3, 0;
+																					set .@loop_2, 0;
+																					set .@loop_1, 0;
+																					break;
+																			}
+																		}
+																		else {
+																			mes "^556B2F[Gerenciador da Guerra]^000000";
+																			mes "Digite o ^FF0000horário^000000 no formato de ^0000FF0hrs~23hrs^000000 em que a Guerra termine.";
+																			next;
+																			input .@end_hour;
+																			if( .@end_hour < 0 || .@end_hour > 23 )
+																			{
+																				mes "^556B2F[Gerenciador da Guerra]^000000";
+																				mes "Você tem que digitar o ^FF0000horário^000000 no formato de ^0000FF0hrs~23hrs^000000";
+																				mes "Deseja tentar novamente?";
+																				next;
+																				switch( select("- Sim, por favor.", "- Não, obrigado.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+																				{
+																					case 1:
+																						break;
+																					case 2:
+																						set .@loop_5, 0;
+																						set .@loop_4, 0;
+																						break;
+																					case 3:
+																						set .@loop_5, 0;
+																						break;
+																					case 4:
+																						set .@loop_5, 0;
+																						set .@loop_4, 0;
+																						set .@loop_3, 0;
+																						set .@loop_2, 0;
+																						set .@loop_1, 0;
+																						break;
+																				}
+																			}
+																			else {
+																				mes "^556B2F[Gerenciador da Guerra]^000000";
+																				mes "Agora digite ^FF0000minuto^000000 das ^FF0000" + .@end_hour + "hrs^000000 que deseja que a ^FF0000Guerra^000000 termine, no formato de ^0000FF0~59 minutos^000000.";
+																				next;
+																				input .@end_minute;
+																				if( .@end_minute < 0 || .@end_minute > 59 )
+																				{
+																					mes "^556B2F[Gerenciador da Guerra]^000000";
+																					mes "Você deve digitar o ^FF0000minuto^00000 das ^FF0000" + .@end_hour + "hrs^000000 que deseja que a ^FF0000Guerra^000000 termine, no formato de ^0000FF0~59 minutos^000000.";
+																					mes "Deseja tentar novamente?";
+																					next;
+																					switch( select("- Sim, por favor.", "- Não, obrigado.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+																					{
+																						case 1:
+																							break;
+																						case 2:
+																							set .@loop_5, 0;
+																							set .@loop_4, 0;
+																							break;
+																						case 3:
+																							set .@loop_5, 0;
+																							break;
+																						case 4:
+																							set .@loop_5, 0;
+																							set .@loop_4, 0;
+																							set .@loop_3, 0;
+																							set .@loop_2, 0;
+																							set .@loop_1, 0;
+																							break;
+																					}
+																				}
+																				else {
+																					mes "^556B2F[Gerenciador da Guerra]^000000";
+																					mes "Por favor, confirme as configurações para cadastrar-mos o ^FF0000novo horário^000000.";
+																					mes " ";
+																					mes "^FF0000Grupo de Castelo:^000000 " + .@GroupName$[.@choose];
+																					mes "^FF0000Dia:^000000 " + .@tmp_day$[.@day];
+																					mes "^FF0000Horário de Ínicio:^000000 " + .@init_hour + ":" + .@init_minute + "hrs";
+																					mes "^FF0000Horário de Término:^000000 " + .@end_hour + ":" + .@end_minute + "hrs";
+																					next;
+																					switch( select("- Sim, está tudo correto.", "- Re-começar apartir de Grupos.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+																					{
+																						case 1:
+																							query_sql "INSERT INTO `m_woe_timer` (group_id, week, init_hour, init_minute, end_hour, end_minute) VALUES (" + .@GroupID[.@choose] + ", " + .@day + ", " + .@init_hour + ", " + .@init_minute + ", " + .@end_hour + ", " + .@end_minute + ")";
+																							// Bind Start/End Woe
+																							bindclock .@end_hour+":"+.@end_minute, "#woe_castle_manager::OnEndWoe";
+																							bindclock .@init_hour+":"+.@init_minute, "#woe_castle_manager::OnStartWoe";
+																							
+																							mes "^556B2F[Gerenciador da Guerra]^000000";
+																							mes "O novo ^FF0000horário^000000 foi adicionado ao Grupo ^FF0000"+ .@GroupName$[.@choose]+"^000000.";
+																							next;
+																							set .@loop_5, 0;
+																							set .@loop_4, 0;
+																							break;
+																						case 2:
+																							set .@loop_5, 0;
+																							break;
+																						case 3:
+																							break;
+																						case 4:
+																							set .@loop_5, 0;
+																							set .@loop_4, 0;
+																							set .@loop_3, 0;
+																							set .@loop_2, 0;
+																							set .@loop_1, 0;
+																							break;
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+																break;
+															case 2:
+																break;
+															case 3:
+																set .@loop_4, 0;
+																break;
+															case 4:
+																set .@loop_4, 0;
+																set .@loop_3, 0;
+																set .@loop_2, 0;
+																set .@loop_1, 0;
+																break;
+														}
+														break;
+													case 7:
+														set .@loop_4, 0;
+														break;
+													case 8:
+														set .@loop_4, 0;
+														set .@loop_3, 0;
+														set .@loop_2, 0;
+														set .@loop_1, 0;
+														break;
+												}
+											}
+											break;
+										case 2:
+											break;
+										case 3:
+											set .@loop_3, 0;
+											break;
+										case 4:
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+											break;
+									}
+								}
+							}
+							break;
+						case 2:
+							// Remover um Horário.
+							set .@loop_3, 1;
+							while(.@loop_3)
+							{
+								mes "^556B2F[Gerenciador da Guerra]^000000";
+								mes "Por favor, selecione um ^FF0000Grupo^000000 aonde se encontra o ^FF0000horário^000000 que deseja remover.";
+								next;
+								set .@build_menu$, "";
+								deletearray .@GroupID[0], getarraysize(.@GroupID);
+								query_sql "SELECT * FROM `m_woe_group` ORDER BY `name`", .@GroupID, .@GroupName$;
+								for( set .@i, 0; .@i < getarraysize(.@GroupID); set .@i, .@i + 1 )
+									set .@build_menu$, .@build_menu$ + "- " + .@GroupName$[.@i] + ".:";
+									
+								set .@choose, select(.@build_menu$+"^FF8C00- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+								
+								if( .@choose == getarraysize(.@GroupID) )
+									set .@loop_3, 0;
+								else if( .@choose > getarraysize(.@GroupID) )
+								{
+									set .@loop_3, 0;
+									set .@loop_2, 0;
+									set .@loop_1, 0;
+								}
+								else {
+									set .@loop_4, 1;
+									while(.@loop_4)
+									{
+										mes "^556B2F[Gerenciador da Guerra]^000000";
+										mes "Escolha o ^FF0000horário^000000 que deseja remover.";
+										next;
+										set .@build_menu2$, "";
+										setarray .@tmp_day$[0], "Domingo", "Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sabado";
+										deletearray .@w_auto_id[0], getarraysize(.@w_auto_id);
+										query_sql "SELECT `auto_id`, `week`, `init_hour`, `init_minute`, `end_hour`, `end_minute` FROM `m_woe_timer` WHERE `group_id`='" + .@GroupID[.@choose] + "' ORDER BY `week`, `init_hour`, `init_minute`", .@w_auto_id, .@w_week, .@w_init_hour, .@w_init_minute, .@w_end_hour, .@w_end_minute;
+										for( set .@i, 0; .@i < getarraysize(.@w_auto_id); set .@i, .@i + 1 )
+											set .@build_menu2$, .@build_menu2$ + "^0000FF- " + .@tmp_day$[.@w_week[.@i]] + " das " + (.@w_init_hour[.@i]<10?"0":"") + .@w_init_hour[.@i] +"h" + (.@w_init_minute[.@i]<10?"0":"") + .@w_init_minute[.@i] +"min ás " + (.@w_end_hour[.@i]<10?"0":"") + .@w_end_hour[.@i] +"h" + (.@w_end_minute[.@i]<10?"0":"") + .@w_end_minute[.@i] +"min.:";
+											
+										set .@choose2, select(.@build_menu2$+"^FF8C00- Voltar.^000000:^FF0000- Cancelar.^000000")-1;
+										
+										if( .@choose2 == getarraysize(.@w_auto_id) )
+											set .@loop_4, 0;
+										else if( .@choose2 > getarraysize(.@w_auto_id) )
+										{
+											set .@loop_4, 0;
+											set .@loop_3, 0;
+											set .@loop_2, 0;
+											set .@loop_1, 0;
+										}
+										else {
+											mes "^556B2F[Gerenciador da Guerra]^000000";
+											mes "Tem certeza que deseja remover o horário ^0000FF" + .@tmp_day$[.@w_week[.@choose2]] + " das " + (.@w_init_hour[.@choose2]<10?"0":"") + .@w_init_hour[.@choose2] +"h" + (.@w_init_minute[.@choose2]<10?"0":"") + .@w_init_minute[.@choose2] +"min ás " + (.@w_end_hour[.@choose2]<10?"0":"") + .@w_end_hour[.@choose2] +"h" + (.@w_end_minute[.@choose2]<10?"0":"") + .@w_end_minute[.@choose2] +"min^000000?";
+											next;
+											switch( select("- Sim, por favor.", "- Não, escolher outro.", "^FF8C00- Voltar.^000000", "^FF0000- Cancelar.^000000") )
+											{
+												case 1:
+													query_sql "DELETE FROM `m_woe_timer` WHERE `auto_id`='" + .@w_auto_id[.@choose2] + "'";
+													if( gettime(3) >= .@w_init_hour[.@choose2] && gettime(3) <= .@w_end_hour[.@choose2] && (agitcheck() || agitcheck2()) )
+														donpcevent "#woe_castle_manager::OnEndWoe";
+													
+													if( !check_woe_timer(.@w_init_hour[.@choose2], .@w_init_minute[.@choose2], .@w_end_hour[.@choose2], .@w_end_minute[.@choose2]) )
+													{
+														unbindclock .@w_init_hour[.@choose2]+":"+.@w_init_minute[.@choose2], "#woe_castle_manager::OnStartWoe";
+														unbindclock .@w_end_hour[.@choose2]+":"+.@w_end_minute[.@choose2], "#woe_castle_manager::OnEndWoe";
+													}	
+													mes "^556B2F[Gerenciador da Guerra]^000000";
+													mes "Tem certeza que deseja remover o horário ^FF0000" + .@tmp_day$[.@w_week[.@choose2]] + " das " + (.@w_init_hour[.@choose2]<10?"0":"") + .@w_init_hour[.@choose2] +"h" + (.@w_init_minute[.@choose2]<10?"0":"") + .@w_init_minute[.@choose2] +"min ás " + (.@w_end_hour[.@choose2]<10?"0":"") + .@w_end_hour[.@choose2] +"h" + (.@w_end_minute[.@choose2]<10?"0":"") + .@w_end_minute[.@choose2] +"min^000000 foi removido.";
+													next;
+													break;
+												case 2:
+													break;
+												case 3:
+													set .@loop_4, 0;
+													break;
+												case 4:
+													set .@loop_4, 0;
+													set .@loop_3, 0;
+													set .@loop_2, 0;
+													set .@loop_1, 0;
+													break;
+											}
+										}
+									}
+								}
+							}
+							break;
+						case 3:
+							set .@loop_2, 0;
+							break;
+						case 4:
+							set .@loop_2, 0;
+							set .@loop_1, 0;
+							break;
+					}
+				}
+				break;
+			case 3:
+				set .@loop_1, 0;
+				break;
+		}
+	}
+	mes "^556B2F[Gerenciador da Guerra]^000000";
+	mes "Muito bem, volte quando desejar gerenciar a Guerra!";
+	close;
+	
+	// Funções Pessoais
+	// --------------------------
+	function	disable_warps	{
+		switch(getarg(0))
+		{
+			// Al De Baran Castles
+			case 0:
+				mapwarp "aldeg_cas01", "prontera", 156, 176;
+				disablenpc "aldeg-1_aldeg-1-1";
+				setmapflag "aldeg_cas01", mf_nowarp;
+				setmapflag "aldeg_cas01", mf_nowarpto;
+				break;
+			case 1:
+				mapwarp "aldeg_cas02", "prontera", 156, 176;
+				disablenpc "aldeg-2_aldeg-2-1";
+				setmapflag "aldeg_cas02", mf_nowarp;
+				setmapflag "aldeg_cas02", mf_nowarpto;
+				break;
+			case 2:
+				mapwarp "aldeg_cas03", "prontera", 156, 176;
+				disablenpc "aldeg-3_aldeg-3-1";
+				setmapflag "aldeg_cas03", mf_nowarp;
+				setmapflag "aldeg_cas03", mf_nowarpto;
+				break;
+			case 3:
+				mapwarp "aldeg_cas04", "prontera", 156, 176;
+				disablenpc "aldeg-4_aldeg-4-1";
+				setmapflag "aldeg_cas04", mf_nowarp;
+				setmapflag "aldeg_cas04", mf_nowarpto;
+				break;
+			case 4:
+				mapwarp "aldeg_cas05", "prontera", 156, 176;
+				disablenpc "aldeg-5_aldeg-5-1";
+				setmapflag "aldeg_cas05", mf_nowarp;
+				setmapflag "aldeg_cas05", mf_nowarpto;
+				break;
+			// Geffen Castles
+			case 5:
+				mapwarp "gefg_cas01", "prontera", 156, 176;
+				disablenpc "gef-g1-0_gefg-1-07";
+				disablenpc "gef-g1-1_gefg-1-04";
+				setmapflag "gefg_cas01", mf_nowarp;
+				setmapflag "gefg_cas01", mf_nowarpto;
+				break;
+			case 6:
+				mapwarp "gefg_cas02", "prontera", 156, 176;
+				disablenpc "gef-g2_gefg-2-07";
+				setmapflag "gefg_cas02", mf_nowarp;
+				setmapflag "gefg_cas02", mf_nowarpto;
+				break;
+			case 7:
+				mapwarp "gefg_cas03", "prontera", 156, 176;
+				disablenpc "gef-g3-0_g-cas3-12";
+				disablenpc "gef-g3-1_g-cas3-13";
+				disablenpc "gef-g3-2_g-cas3-14";
+				disablenpc "gef-g3-3_g-cas3-15";
+				setmapflag "gefg_cas03", mf_nowarp;
+				setmapflag "gefg_cas03", mf_nowarpto;
+				break;
+			case 8:
+				mapwarp "gefg_cas04", "prontera", 156, 176;
+				disablenpc "gef-g4_gefg-4-05";
+				setmapflag "gefg_cas04", mf_nowarp;
+				setmapflag "gefg_cas04", mf_nowarpto;
+				break;
+			case 9:
+				mapwarp "gefg_cas05", "prontera", 156, 176;
+				disablenpc "gef-5-0_gefg-5-04";
+				disablenpc "gef-5-1_gefg-5-01";
+				setmapflag "gefg_cas05", mf_nowarp;
+				setmapflag "gefg_cas05", mf_nowarpto;
+				break;
+			// Payon Castles
+			case 10:
+				mapwarp "payg_cas01", "prontera", 156, 176;
+				disablenpc "payg-1_payg-1-06";
+				setmapflag "payg_cas01", mf_nowarp;
+				setmapflag "payg_cas01", mf_nowarpto;
+				break;
+			case 11:
+				mapwarp "payg_cas02", "prontera", 156, 176;
+				disablenpc "payg-2_payg-2-02";
+				setmapflag "payg_cas02", mf_nowarp;
+				setmapflag "payg_cas02", mf_nowarpto;
+				break;
+			case 12:
+				mapwarp "payg_cas03", "prontera", 156, 176;
+				disablenpc "payg-3_payg-3-07";
+				setmapflag "payg_cas03", mf_nowarp;
+				setmapflag "payg_cas03", mf_nowarpto;
+				break;
+			case 13:
+				mapwarp "payg_cas04", "prontera", 156, 176;
+				disablenpc "payg-4_payg-4-01";
+				setmapflag "payg_cas04", mf_nowarp;
+				setmapflag "payg_cas04", mf_nowarpto;
+				break;
+			case 14:
+				mapwarp "payg_cas05", "prontera", 156, 176;
+				disablenpc "payg-5_payg-5-03";
+				setmapflag "payg_cas05", mf_nowarp;
+				setmapflag "payg_cas05", mf_nowarpto;
+				break;
+			// Prontera Castles
+			case 15:
+				mapwarp "prtg_cas01", "prontera", 156, 176;
+				disablenpc "prtg-1_prtg-1-01";
+				setmapflag "prtg_cas01", mf_nowarp;
+				setmapflag "prtg_cas01", mf_nowarpto;
+				break;
+			case 16:
+				mapwarp "prtg_cas02", "prontera", 156, 176;
+				disablenpc "prtg-2_prtg-2";
+				setmapflag "prtg_cas02", mf_nowarp;
+				setmapflag "prtg_cas02", mf_nowarpto;
+				break;
+			case 17:
+				mapwarp "prtg_cas03", "prontera", 156, 176;
+				disablenpc "prtg-3_prtg-3";
+				setmapflag "prtg_cas03", mf_nowarp;
+				setmapflag "prtg_cas03", mf_nowarpto;
+				break;
+			case 18:
+				mapwarp "prtg_cas04", "prontera", 156, 176;
+				disablenpc "prtg-4_prtg-4";
+				setmapflag "prtg_cas04", mf_nowarp;
+				setmapflag "prtg_cas04", mf_nowarpto;
+				break;
+			case 19:
+				mapwarp "prtg_cas05", "prontera", 156, 176;
+				disablenpc "prtg-5_prtg-5";
+				setmapflag "prtg_cas05", mf_nowarp;
+				setmapflag "prtg_cas05", mf_nowarpto;
+				break;
+			// Novice Guilds Castles
+			case 20:
+				mapwarp "nguild_alde", "prontera", 156, 176;
+				disablenpc "naldg01";
+				setmapflag "nguild_alde", mf_nowarp;
+				setmapflag "nguild_alde", mf_nowarpto;
+				break;
+			case 21:
+				mapwarp "nguild_gef", "prontera", 156, 176;
+				disablenpc "ngefg01";
+				setmapflag "nguild_gef", mf_nowarp;
+				setmapflag "nguild_gef", mf_nowarpto;
+				break;
+			case 22:
+				mapwarp "nguild_pay", "prontera", 156, 176;
+				disablenpc "npayg01";
+				setmapflag "nguild_pay", mf_nowarp;
+				setmapflag "nguild_pay", mf_nowarpto;
+				break;
+			case 23:
+				mapwarp "nguild_prt", "prontera", 156, 176;
+				disablenpc "nprtg01";
+				setmapflag "nguild_prt", mf_nowarp;
+				setmapflag "nguild_prt", mf_nowarpto;
+				break;
+			// Yuno Castles
+			case 24:
+				mapwarp "schg_cas01", "prontera", 156, 176;
+				disablenpc "schg102";
+				setmapflag "schg_cas01", mf_nowarp;
+				setmapflag "schg_cas01", mf_nowarpto;
+				break;
+			case 25:
+				mapwarp "schg_cas02", "prontera", 156, 176;
+				disablenpc "schg202";
+				setmapflag "schg_cas02", mf_nowarp;
+				setmapflag "schg_cas02", mf_nowarpto;
+				break;
+			case 26:
+				mapwarp "schg_cas03", "prontera", 156, 176;
+				disablenpc "schg302";
+				setmapflag "schg_cas03", mf_nowarp;
+				setmapflag "schg_cas03", mf_nowarpto;
+				break;
+			case 27:
+				mapwarp "schg_cas04", "prontera", 156, 176;
+				disablenpc "schg402";
+				setmapflag "schg_cas04", mf_nowarp;
+				setmapflag "schg_cas04", mf_nowarpto;
+				break;
+			case 28:
+				mapwarp "schg_cas05", "prontera", 156, 176;
+				disablenpc "schg502";
+				setmapflag "schg_cas05", mf_nowarp;
+				setmapflag "schg_cas05", mf_nowarpto;
+				break;
+			// Rachel Castle
+			case 29:
+				mapwarp "arug_cas01", "prontera", 156, 176;
+				disablenpc "arug102";
+				setmapflag "arug_cas01", mf_nowarp;
+				setmapflag "arug_cas01", mf_nowarpto;
+				break;
+			case 30:
+				mapwarp "arug_cas02", "prontera", 156, 176;
+				disablenpc "arug202";
+				setmapflag "arug_cas02", mf_nowarp;
+				setmapflag "arug_cas02", mf_nowarpto;
+				break;
+			case 31:
+				mapwarp "arug_cas03", "prontera", 156, 176;
+				disablenpc "arug302";
+				setmapflag "arug_cas03", mf_nowarp;
+				setmapflag "arug_cas03", mf_nowarpto;
+				break;
+			case 32:
+				mapwarp "arug_cas04", "prontera", 156, 176;
+				disablenpc "arug402";
+				setmapflag "arug_cas04", mf_nowarp;
+				setmapflag "arug_cas04", mf_nowarpto;
+				break;
+			case 33:
+				mapwarp "arug_cas05", "prontera", 156, 176;
+				disablenpc "arug502";
+				setmapflag "arug_cas05", mf_nowarp;
+				setmapflag "arug_cas05", mf_nowarpto;
+				break;
+			default:
+				break;
+		}
+		
+		return;
+	}
+	
+	function	enable_warps	{
+		// Al De Baran Castles
+		enablenpc "aldeg-1_aldeg-1-1";
+		enablenpc "aldeg-2_aldeg-2-1";
+		enablenpc "aldeg-3_aldeg-3-1";
+		enablenpc "aldeg-4_aldeg-4-1";
+		enablenpc "aldeg-5_aldeg-5-1";
+		removemapflag "aldeg_cas01", mf_nowarp;
+		removemapflag "aldeg_cas01", mf_nowarpto;
+		removemapflag "aldeg_cas02", mf_nowarp;
+		removemapflag "aldeg_cas02", mf_nowarpto;
+		removemapflag "aldeg_cas03", mf_nowarp;
+		removemapflag "aldeg_cas03", mf_nowarpto;
+		removemapflag "aldeg_cas04", mf_nowarp;
+		removemapflag "aldeg_cas04", mf_nowarpto;
+		removemapflag "aldeg_cas05", mf_nowarp;
+		removemapflag "aldeg_cas05", mf_nowarpto;
+		
+		// Geffen Castles
+		enablenpc "gef-g1-0_gefg-1-07";
+		enablenpc "gef-g1-1_gefg-1-04";
+		enablenpc "gef-g2_gefg-2-07";
+		enablenpc "gef-g3-0_g-cas3-12";
+		enablenpc "gef-g3-1_g-cas3-13";
+		enablenpc "gef-g3-2_g-cas3-14";
+		enablenpc "gef-g3-3_g-cas3-15";
+		enablenpc "gef-g4_gefg-4-05";
+		enablenpc "gef-5-0_gefg-5-04";
+		enablenpc "gef-5-1_gefg-5-01";
+		removemapflag "gefg_cas01", mf_nowarp;
+		removemapflag "gefg_cas01", mf_nowarpto;
+		removemapflag "gefg_cas02", mf_nowarp;
+		removemapflag "gefg_cas02", mf_nowarpto;
+		removemapflag "gefg_cas03", mf_nowarp;
+		removemapflag "gefg_cas03", mf_nowarpto;
+		removemapflag "gefg_cas04", mf_nowarp;
+		removemapflag "gefg_cas04", mf_nowarpto;
+		removemapflag "gefg_cas05", mf_nowarp;
+		removemapflag "gefg_cas05", mf_nowarpto;
+		
+		// Payon Castles
+		enablenpc "payg-1_payg-1-06";
+		enablenpc "payg-2_payg-2-02";
+		enablenpc "payg-3_payg-3-07";
+		enablenpc "payg-4_payg-4-01";
+		enablenpc "payg-5_payg-5-03";
+		removemapflag "payg_cas01", mf_nowarp;
+		removemapflag "payg_cas01", mf_nowarpto;
+		removemapflag "payg_cas02", mf_nowarp;
+		removemapflag "payg_cas02", mf_nowarpto;
+		removemapflag "payg_cas03", mf_nowarp;
+		removemapflag "payg_cas03", mf_nowarpto;
+		removemapflag "payg_cas04", mf_nowarp;
+		removemapflag "payg_cas04", mf_nowarpto;
+		removemapflag "payg_cas05", mf_nowarp;
+		removemapflag "payg_cas05", mf_nowarpto;
+		
+		// Prontera Castles
+		enablenpc "prtg-1_prtg-1-01";
+		enablenpc "prtg-2_prtg-2";
+		enablenpc "prtg-3_prtg-3";
+		enablenpc "prtg-4_prtg-4";
+		enablenpc "prtg-5_prtg-5";
+		removemapflag "prtg_cas01", mf_nowarp;
+		removemapflag "prtg_cas01", mf_nowarpto;
+		removemapflag "prtg_cas02", mf_nowarp;
+		removemapflag "prtg_cas02", mf_nowarpto;
+		removemapflag "prtg_cas03", mf_nowarp;
+		removemapflag "prtg_cas03", mf_nowarpto;
+		removemapflag "prtg_cas04", mf_nowarp;
+		removemapflag "prtg_cas04", mf_nowarpto;
+		removemapflag "prtg_cas05", mf_nowarp;
+		removemapflag "prtg_cas05", mf_nowarpto;
+		
+		// Novice Guilds Castles
+		enablenpc "naldg01";
+		enablenpc "ngefg01";
+		enablenpc "npayg01";
+		enablenpc "nprtg01";
+		removemapflag "nguild_alde", mf_nowarp;
+		removemapflag "nguild_alde", mf_nowarpto;
+		removemapflag "nguild_gef", mf_nowarp;
+		removemapflag "nguild_gef", mf_nowarpto;
+		removemapflag "nguild_pay", mf_nowarp;
+		removemapflag "nguild_pay", mf_nowarpto;
+		removemapflag "nguild_prt", mf_nowarp;
+		removemapflag "nguild_prt", mf_nowarpto;
+		
+		// Yuno Castles
+		enablenpc "schg102";
+		enablenpc "schg202";
+		enablenpc "schg302";
+		enablenpc "schg402";
+		enablenpc "schg502";
+		removemapflag "schg_cas01", mf_nowarp;
+		removemapflag "schg_cas01", mf_nowarpto;
+		removemapflag "schg_cas02", mf_nowarp;
+		removemapflag "schg_cas02", mf_nowarpto;
+		removemapflag "schg_cas03", mf_nowarp;
+		removemapflag "schg_cas03", mf_nowarpto;
+		removemapflag "schg_cas04", mf_nowarp;
+		removemapflag "schg_cas04", mf_nowarpto;
+		removemapflag "schg_cas05", mf_nowarp;
+		removemapflag "schg_cas05", mf_nowarpto;
+		
+		// Rachel Castle
+		enablenpc "arug102";
+		enablenpc "arug202";
+		enablenpc "arug302";
+		enablenpc "arug402";
+		enablenpc "arug502";
+		removemapflag "arug_cas01", mf_nowarp;
+		removemapflag "arug_cas01", mf_nowarpto;
+		removemapflag "arug_cas02", mf_nowarp;
+		removemapflag "arug_cas02", mf_nowarpto;
+		removemapflag "arug_cas03", mf_nowarp;
+		removemapflag "arug_cas03", mf_nowarpto;
+		removemapflag "arug_cas04", mf_nowarp;
+		removemapflag "arug_cas04", mf_nowarpto;
+		removemapflag "arug_cas05", mf_nowarp;
+		removemapflag "arug_cas05", mf_nowarpto;
+		return;
+	}
+	
+	function	check_woe_timer	{
+		query_sql "SELECT `auto_id` FROM `m_woe_timer` WHERE `init_hour`='" + getarg(0) + "' AND `init_minute`='" + getarg(1) + "' AND `end_hour`='" + getarg(2) + "' AND `end_minute`='" + getarg(3) + "'", .@chkid;
+		return getarraysize(.@chkid)?1:0;
+	}
+}
+
+// Quadro da Guerra
+// -----------------------------------------------------------------
+prontera,162,185,3	script	Guerra do Emperium#b_01	4_BOARD3,{
+	set .@loop_1, 1;
+	while(.@loop_1)
+	{
+		deletearray .@auto_id[0], getarraysize(.@auto_id);
+		setarray .@tmp_day$[0], "Domingo", "Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sabado";
+		set .@build_menu$, "";
+		query_sql "SELECT `auto_id`, `group_id`, `week`, `init_hour`, `init_minute`, `end_hour`, `end_minute` FROM `m_woe_timer` ORDER BY `week`, `init_hour`, `init_minute`", .@auto_id, .@group_id, .@week, .@init_hour, .@init_minute, .@end_hour, .@end_minute;
+		mes "^556B2F[Guerra do Emperium]^000000";
+		if( !getarraysize(.@auto_id) )
+		{
+			mes "Não há horários da Guerra do Emperium configurados.";
+			close;
+		}
+		mes "^FF0000Horários da Guerra do Emperium.^000000";
+		mes "Selecione um Horário para saber quais Castelos estão habilitados.";
+		next;
+		
+		for( set .@i, 0; .@i < getarraysize(.@auto_id); set .@i, .@i + 1 )
+			set .@build_menu$, .@build_menu$ + "^0000FF- " + .@tmp_day$[.@week[.@i]] + " das " + (.@init_hour[.@i]<10?"0":"") + .@init_hour[.@i] +"h" + (.@init_minute[.@i]<10?"0":"") + .@init_minute[.@i] +"min ás " + (.@end_hour[.@i]<10?"0":"") + .@end_hour[.@i] +"h" + (.@end_minute[.@i]<10?"0":"") + .@end_minute[.@i] +"min.:";
+		
+		set .@choose, select(.@build_menu$+"^FF0000- Cancelar.^000000")-1;
+		
+		if( .@choose >= getarraysize(.@auto_id) )
+			set .@loop_1, 0;
+		else {
+			mes "^556B2F[Guerra do Emperium]^000000";
+			mes "^0000FFGuerra do Emperium de " + .@tmp_day$[.@week[.@choose]] + " das " + (.@init_hour[.@choose]<10?"0":"") + .@init_hour[.@choose] +"h" + (.@init_minute[.@choose]<10?"0":"") + .@init_minute[.@choose] +"min ás " + (.@end_hour[.@choose]<10?"0":"") + .@end_hour[.@choose] +"h" + (.@end_minute[.@choose]<10?"0":"") + .@end_minute[.@choose] +"min, castelos ativos:^000000";
+			query_sql "SELECT `castle_id`, `type` FROM `m_woe_restrictions` WHERE `group_id`='" + .@group_id[.@choose] + "' AND `status`='1' ORDER BY `castle_id`, `type`", .@castle_id, .@castle_type;
+			for( set .@c, 0; .@c < getarraysize(.@castle_id); set .@c, .@c + 1 )
+			{
+				set .@castle_map$, getvariableofnpc(.castle_map$[.@castle_id[.@c]],"#woe_castle_manager");
+				mes getcastlename(.@castle_map$) + " - ^0000FFGDE"+(.@castle_type[.@c]==2?" SE":"")+" - ^FF0000(" + .@castle_map$ + ")^000000";
+			}
+			next;
+		}
+	}
+	mes "^556B2F[Guerra do Emperium]^000000";
+	mes "^0000FFQuando deseja saber dos horários da Guerra o quadroa estará aqui.^000000";
+	close;
+}

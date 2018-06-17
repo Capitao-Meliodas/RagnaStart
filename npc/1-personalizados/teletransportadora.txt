@@ -1,0 +1,221 @@
+-	script	Teletransportadora#01::cWarp	-1,{
+
+//===== Configurações: ======================================= 
+set @lwarp,	1;	// Habilitar último warp gravado? (Nota 1)
+set @sdung,	1;	// Exibir calabouços no menu? (Nota 1)
+//============================================================ 
+
+	mes "[Teletransportadora]";
+	mes "Olá "+strcharinfo(0)+", seja bem-vindo ao Serviço de Teletransporte!";
+	mes "Para onde você gostaria de ir?";
+	next;
+	switch (select (((@lwarp)?"Cidades":"")+"","Outros Lugares",""+((@sdung)?"Último Destino":"")))
+	{	
+		case 1:	
+			mes "[Teletransportadora]";
+			mes "Selecione o seu destino:";
+			next;
+			switch (select ("Prontera","Alberta","Aldebaran","Amatsu","Ayothaya","Brasilis","Comodo","Einbech","Einbroch","Esplendor","Geffen","Gonryun",
+							"Hugel","Izlude_b","Jawaii","Juno","Lighthalzen","Louyang","Lutie","Manuka","Morroc","Moscovia","Ilha Esquecida","Niflheim",
+							"Payon","Rachel","Umbala","Veins"))
+			{
+			
+				case 1: callsub F_DoWarp, "prontera", 156, 191;	
+				case 2: callsub F_DoWarp, "alberta", 192, 147;
+				case 3: callsub F_DoWarp, "aldebaran", 140, 131;
+				case 4: callsub F_DoWarp, "amatsu", 112,148;
+				case 5: callsub F_DoWarp, "ayothaya", 151, 117;
+				case 6: callsub F_DoWarp, "brasilis", 195, 218;
+				case 7: callsub F_DoWarp, "comodo", 194,146;
+				case 8: callsub F_DoWarp, "einbech", 80,108;
+				case 9: callsub F_DoWarp, "einbroch", 64, 200;
+				case 10: callsub F_DoWarp, "splendide", 208,179;
+				case 11: callsub F_DoWarp, "geffen", 119, 59;;
+				case 12: callsub F_DoWarp, "gonryun", 160, 120;
+				case 13: callsub F_DoWarp, "hugel", 96, 145;
+				case 14: callsub F_DoWarp, "izlude", 128, 143;
+				case 15: callsub F_DoWarp, "jawaii", 249, 127;
+				case 16: callsub F_DoWarp, "yuno", 157, 51;
+				case 17: callsub F_DoWarp, "lighthalzen", 158, 92;
+				case 18: callsub F_DoWarp, "louyang", 217,96;
+				case 19: callsub F_DoWarp, "xmas", 147, 134;
+				case 20: callsub F_DoWarp, "manuk", 295, 190;
+				case 21: callsub F_DoWarp, "morocc", 156, 93;
+				case 22: callsub F_DoWarp, "moscovia", 223, 184;
+				case 23: callsub F_DoWarp, "nameless_i", 175, 256;
+				case 24: callsub F_DoWarp, "niflheim", 21, 153;
+				case 25: callsub F_DoWarp, "payon", 174,104;
+				case 26: callsub F_DoWarp, "rachel", 130, 110;
+				case 27: callsub F_DoWarp, "umbala", 89, 157;
+				case 28: callsub F_DoWarp, "veins", 216, 123;
+			}
+		
+		case 2:
+			mes "[Teletransportadora]";
+			mes "Selecione o seu destino:";
+			next;
+			switch (select ("A Tumba Real","Biolaboratório de Somatologia","Calabouço da Mina","Calabouço de Geffen","Calabouço de Magma","Campos de Niflheim","Caverna de Comodo","Caverna de Gelo",
+							"Caverna de Payon","Caverna dos Orcs","Esfinge","Esgoto de Prontera","Floresta Encantada","Formigueiro Infernal","Fábrica de Brinquedos","Fábrica de Robôs","Gefenia","Glast Heim",
+							"Ilha da Tartaruga","Ilha de Byalan","Labirinto da Floresta","Labirinto de Tatames","Labirinto do Santuário Ancestral","Lago do Abismo","Loja de Carpintaria","Mina de Carvão",
+							"Monastério","Navio Fantasma","Pirâmide","Poringlândia","Praia das Focas","Ruínas de Juperos","Santuário de Odin","Santuário de Xi Wang Mu","Torre de Thanatos","Torre do Relógio",
+							"Vulcão de Thor"))
+			{
+			
+				case 1: callsub F_DoWarp, "lou_dun01", 218, 195; // Tumba Real
+				case 2: callsub F_DoWarp, "lhz_dun01", 149, 286; // Laboratório
+				case 3: callsub F_DoWarp, "mjolnir_02", 79, 360; // Minas
+				case 4: callsub F_DoWarp, "gef_tower", 153, 34; // Calabouço de Geffen
+				case 5: callsub F_DoWarp, "yuno_fild03", 38, 138; // Calabouço de Magma
+				case 6: callsub F_DoWarp, "nif_fild01", 315, 66; // Niflheim
+				case 7: 
+					mes "[Teletransportadora]";
+					mes "Por favor, seja mais específico:";
+					next;
+					switch (select ("Caverna do Oeste:Caverna do Norte:Caverna do Leste"))           //
+					{                                                                                // Comodo
+						case 1: callsub F_DoWarp, "comodo", 30, 215;                                 //
+						case 2: callsub F_DoWarp, "comodo", 176, 352;
+						case 3: callsub F_DoWarp, "comodo", 327, 175;
+					}
+				case 8: callsub F_DoWarp, "ra_fild01", 233, 327; // Caverna de Gelo
+				case 9: callsub F_DoWarp, "pay_arche", 41, 135; // Caverna de Payon
+				case 10: callsub F_DoWarp, "gef_fild10", 70,330; // Caverna dos Orcs
+				case 11: callsub F_DoWarp, "moc_fild19", 106, 99; // Esfinge
+				case 12: callsub F_DoWarp, "prt_sewb1", 131, 247; // Esgoto de Prontera
+				case 13: callsub F_DoWarp, "mosk_dun01", 189, 45; // Floresta Encantada
+				case 14: callsub F_DoWarp, "moc_fild20", 163, 145; // Formigueiro Infernal
+				case 15: callsub F_DoWarp, "xmas_dun01", 205, 16; // Fábrica de Brinquedos
+				case 16: callsub F_DoWarp, "kh_dun01", 3, 230; // Fábrica de Robôs
+				case 17: callsub F_DoWarp, "gefenia01", 60, 169; // Gefenia
+				case 18: callsub F_DoWarp, "glast_01", 370, 304; // Glast Heim
+				case 19: callsub F_DoWarp, "tur_dun01", 157,51; // Ilha da Tartaruga
+				case 20: callsub F_DoWarp, "izlu2dun", 107, 89; // Ilha de Byalan
+				case 21: callsub F_DoWarp, "prt_maze01", 99, 31; // Labirinto da Floresta
+				case 22: callsub F_DoWarp, "ama_dun01", 230,15; // Labirinto de Tatames
+				case 23: callsub F_DoWarp, "ayo_fild02", 277, 150; // Labirinto do Santuário Ancestral
+				case 24: callsub F_DoWarp, "abyss_01", 264, 271; // Lago do Abismo
+				case 25: callsub F_DoWarp, "umbala", 110, 281; // Loja de Carpintaria
+				case 26: callsub F_DoWarp, "mjolnir_02", 79, 360; // Mina de Carvão
+				case 27: callsub F_DoWarp, "nameless_n", 164, 184; // Monastério
+				case 28: callsub F_DoWarp, "alb2trea", 75, 98; // Navio Fantasma
+				case 29: callsub F_DoWarp, "moc_ruins", 64, 155; // Pirâmide
+				case 30: callsub F_DoWarp, "pay_fild04", 20, 165; // Poringlândia
+				case 31: callsub F_DoWarp, "cmd_fild02", 222, 372; // Praia das Focas
+				case 32: callsub F_DoWarp, "yuno_fild07", 213, 175; // Ruínas de Juperos
+				case 33: callsub F_DoWarp, "odin_tem01", 100, 146; // Santuário de Odin
+				case 34: callsub F_DoWarp, "gon_dun01", 153, 48; // Santuário de Xi Wang Mu
+				case 35: callsub F_DoWarp, "tha_t01", 149, 38; // Torre de Thanatos
+				case 36: callsub F_DoWarp, "c_tower1", 199, 159; // Torre do Relógio
+				case 37: callsub F_DoWarp, "ve_fild03", 168, 234; // Vulcão de Thor
+				
+				// Desativados
+				//		case 38: callsub F_DoWarp, "bra_dun01", 88, 47; // Cataratas
+				//		case 29: callsub F_DoWarp, "ra_san01", 140, 135; // Santuário de Rachel
+			}
+					case 3:
+			if (lwarpx)
+			{
+				warp lwarp$, lwarpx, lwarpy;
+				end;
+			}
+			else
+			{
+				next;
+				mes "[Teletransportadora]";
+				mes "Você ainda não utilizou nosso serviço!";
+				close;
+			}
+	}
+	
+	F_DoWarp:
+		if (@lwarp)
+		{
+			set lwarp$, getarg(0);
+			set lwarpx, getarg(1);
+			set lwarpy, getarg(2);
+		}
+		warp getarg(0), getarg(1), getarg(2);
+		end;
+	return;
+}
+
+//===== Duplicações: =========================================
+//Cidades 
+alberta,187,147,4	duplicate(cWarp)	Teletransportadora#02	94
+aldebaran,145,119,4	duplicate(cWarp)	Teletransportadora#03	94
+amatsu,102,146,4	duplicate(cWarp)	Teletransportadora#04	94
+ayothaya,144,117,6	duplicate(cWarp)	Teletransportadora#05	94
+comodo,200,149,4	duplicate(cWarp)	Teletransportadora#06	94
+einbech,81,101,4	duplicate(cWarp)	Teletransportadora#7	94
+einbroch,70,202,4	duplicate(cWarp)	Teletransportadora#08	94
+einbech,135,249,4	duplicate(cWarp)	Teletransportadora#09	94
+geffen,113,64,6	duplicate(cWarp)	Teletransportadora#10	94
+gonryun,162,122,4	duplicate(cWarp)	Teletransportadora#11	94
+
+izlude,130,148,4	duplicate(cWarp)	Teletransportadora#79	94
+//izlude_a,130,148,4	duplicate(Teletransportadora)	cWarp#78	94
+izlude_b,130,148,4	duplicate(cWarp)	Teletransportadora#72	94
+izlude_c,130,148,4	duplicate(cWarp)	Teletransportadora#74	94
+izlude_d,130,148,4	duplicate(cWarp)	Teletransportadora#76	94
+
+hugel,91,150,5	duplicate(cWarp)	Teletransportadora#13	94
+lighthalzen,154,100,6	duplicate(cWarp)	Teletransportadora#14	94
+louyang,210,106,4	duplicate(cWarp)	Teletransportadora#15	94
+morocc,154,97,4	duplicate(cWarp)	Teletransportadora#16	94
+niflheim,28,162,5	duplicate(cWarp)	Teletransportadora#65	94
+niflheim,206,179,4	duplicate(cWarp)	 Teletransportadora#100	94
+prontera,158,193,4	duplicate(cWarp)	Teletransportadora#17	94
+payon,182,110,4	duplicate(cWarp)	Teletransportadora#18	94
+payon,173,226,4	duplicate(cWarp)	Teletransportadora#101	94
+umbala,132,130,4	duplicate(cWarp)	Teletransportadora#19	94
+xmas,150,136,4	duplicate(cWarp)	Teletransportadora#20	94
+yuno,152,45,4	duplicate(cWarp)	Teletransportadora#21	94
+yuno,154,187,4	duplicate(cWarp)	Teletransportadora#70	94
+rachel,134,117,5	duplicate(cWarp)	Teletransportadora#22	94
+veins,211,122,5	duplicate(cWarp)	Teletransportadora#23	94
+nameless_i,178,256,5	duplicate(cWarp)	Teletransportadora#24	94
+moscovia,226,192,4	duplicate(cWarp)	Teletransportadora#25	94
+brasilis,191,223,4	duplicate(cWarp)	Teletransportadora#26	94
+manuk,293,192,5	duplicate(cWarp)	Teletransportadora#27	94
+splendide,205,184,5	duplicate(cWarp)	Teletransportadora#28	94
+jawaii,254,128,4	duplicate(cWarp)	Teletransportadora#66	94
+umbala,94,160,4	duplicate(cWarp)	Teletransportadora#67	94
+//Outros Lugares
+nameless_n,163,187,5	duplicate(cWarp)	Teletransportadora#29	94
+abyss_01,263,274,4	duplicate(cWarp)	Teletransportadora#30	94
+ama_dun01,231,12,4	duplicate(cWarp)	Teletransportadora#31	94
+moc_fild20,162,148,6	duplicate(cWarp)	Teletransportadora#32	94
+ayo_fild02,278,153,4	duplicate(cWarp)	Teletransportadora#33	94
+izlu2dun,103,86,7	duplicate(cWarp)	Teletransportadora#34	94
+comodo,32,218,6	duplicate(cWarp)	Teletransportadora#35	94
+comodo,173,353,5	duplicate(cWarp)	Teletransportadora#36	94
+comodo,326,178,4	duplicate(cWarp)	Teletransportadora#37	94
+mjolnir_02,85,362,4	duplicate(cWarp)	Teletransportadora#38	94
+gefenia01,61,172,4	duplicate(cWarp)	Teletransportadora#39	94
+gef_tower,156,34,5	duplicate(cWarp)	Teletransportadora#40	94
+glast_01,371,307,4	duplicate(cWarp)	Teletransportadora#41	94
+ra_fild01,229,328,5	duplicate(cWarp)	Teletransportadora#42	94
+yuno_fild07,212,178,4	duplicate(cWarp)	Teletransportadora#43	94
+kh_dun01,5,231,5	duplicate(cWarp)	Teletransportadora#44	94
+lhz_dun01,152,288,4	duplicate(cWarp)	Teletransportadora#45	94
+lou_dun01,218,189,2	duplicate(cWarp)	Teletransportadora#46	94
+yuno_fild03,36,142,5	duplicate(cWarp)	Teletransportadora#47	94
+mosk_dun01,185,47,6	duplicate(cWarp)	Teletransportadora#48	94
+odin_tem01,96,143,8	duplicate(cWarp)	Teletransportadora#49	94
+gef_fild10,71,340,5	duplicate(cWarp)	Teletransportadora#50	94
+pay_arche,37,135,4	duplicate(cWarp)	Teletransportadora#51	94
+prt_sewb1,127,253,5	duplicate(cWarp)	Teletransportadora#52	94
+moc_ruins,57,152,6	duplicate(cWarp)	Teletransportadora#53	94
+ra_san01,136,135,5	duplicate(cWarp)	Teletransportadora#54	94
+moc_fild19,106,101,5	duplicate(cWarp)	Teletransportadora#55	94
+alb2trea,74,100,5	duplicate(cWarp)	Teletransportadora#56	94
+tha_t01,152,37,2	duplicate(cWarp)	Teletransportadora#57	94
+ve_fild03,164,236,5	duplicate(cWarp)	Teletransportadora#58	94
+xmas_dun01,209,17,9	duplicate(cWarp)	Teletransportadora#59	94
+tur_dun01,162,33,3	duplicate(cWarp)	Teletransportadora#60	94
+umbala,110,281,6	duplicate(cWarp)	Teletransportadora#61	94
+bra_dun01,83,47,6	duplicate(cWarp)	Teletransportadora#62	94
+pay_fild04,21,169,6	duplicate(cWarp)	Teletransportadora#63	94
+cmd_fild02,217,373,5	duplicate(cWarp)	Teletransportadora#64	94
+gon_dun01,160,50,5	duplicate(cWarp)	Teletransportadora#100	94
+//============================================================ 
