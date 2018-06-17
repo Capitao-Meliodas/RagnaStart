@@ -1,0 +1,259 @@
+bat_room,160,153,3	script	Erundek	109,{
+	if (checkweight(1201,1) == 0) {
+		mes "- Espere um minuto! -";
+		mes "- No momento, você está carregando -";
+		mes "- muitos itens. -";
+		mes "- Por favor, alivie a sua carga -";
+		mes "- e tente outra vez. -";
+		close;
+	}
+	mes "[Erundek]";
+	mes "Você tem emblemas do campo de batalha?";
+	mes "Posso trocar Emblemas da Bravura e de Valor por itens de recompensa.";
+	next;
+	switch(select("Armas Emblema da Bravura:Armas Emblemas de Valor:Armaduras:Acessórios:Consumível:Ver o Catálogo")) {
+	case 1:
+		mes "[Erundek]";
+		mes "Você quer trocar  ^3131FFEmblemas de Bravura^000000. por quais tipos de itens?";
+		mes "Para obter mais informações sobre os itens de recompensa, use nosso ^3131FFCatálogo^000000.";
+		next;
+			mes "[Erundek]";
+			mes "Você escolheu ^3131FFArma^000000.";
+			mes "As seguintes armas estão disponíveis em troca de emblemas.";
+			mes "Note que itens que custam ^3131FFEmblemas da Bravura são indicados por (EB)^000000, e os que valem ^3131FFEmblemas de Valor como (EV)^000000.";
+			next;
+			switch(select("Adaga / Espada de uma mão / Espadas de duas mãos / Lança de Duas Mãos:Cajado / Maça / Machado de Duas Mãos / Shuriken:Arco / Katar / Instrumento Musical / Chicote:Livros / Garras:Revólver / Rifle / Gatling / Espingarda / Lança-Granadas")) {
+			case 1:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFAdaga, Espada de Uma Mão, Espada de Duas Mãos e Lança de Duas Mãos.^000000";
+				next;
+				setarray .@Weapons[0],13036,7828,13411,7828,1183,7828,1379,7828,1425,7828;
+				break;
+			case 2:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFCajado / Maça / Machado de Duas Mãos / Shuriken Huuma^000000.";
+				next;
+				setarray .@Weapons[0],1632,7828,1634,7828,1543,7828,13305,7828;
+				break;
+			case 3:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFArco / Katar / Instrumento Musical / Chicote^000000.";
+				next;
+				setarray .@Weapons[0],1739,7828,1279,7828,1924,7828,1978,7828;
+				break;
+			case 4:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFLivros / Garras^000000.";
+				next;
+				setarray .@Weapons[0],1574,7828,1824,7828;
+				break;
+			case 5:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFRevólver / Rifle / Gatling Gun / Espingarda / Lança-Granadas^000000.";
+				next;
+				setarray .@Weapons[0],13108,7828,13172,7828;
+				break;
+			}
+			set .@menu$,"";
+			for(set .@i,0; .@i<getarraysize(.@Weapons); set .@i,.@i+2)
+				set .@menu$, .@menu$+getitemname(.@Weapons[.@i])+((.@Weapons[.@i+1]==7828)?"(BB)":"(VB)")+":";
+			set .@i, (select(.@menu$)-1)*2;
+			set .@type$, ((.@Weapons[.@i+1]==7828)?"(BB)":"(VB)");
+			mes "[Erundek]";
+			mes "Você escolheu:  ^3131FF"+getitemname(.@Weapons[.@i])+.@type$+"^000000.";
+			mes "Você pode trocar ^FF0000100 "+getitemname(.@Weapons[.@i+1])+"^000000 por este item.";
+			mes "Quer trocar?";
+			next;
+			switch(select("Não trocar:Trocar")) {
+			case 1:
+				break;
+			case 2:
+				mes "[Erundek]";
+				mes "Quer trocar  ^FF0000100 "+getitemname(.@Weapons[.@i+1])+"^000000 por uma ^3131FF"+getitemname(.@Weapons[.@i])+.@type$+"^000000?";
+				next;
+				mes "[Erundek]";
+				mes "Lembre-se, as recompensas do Campo de Batalha são ^FF0000Presas ao Personagem^000000. Você tem certeza que deseja obter esse item?";
+				next;
+				switch(select("Sim:Não")) {
+				case 1:
+					mes "[Erundek]";
+					if (countitem(.@Weapons[.@i+1]) >= 100) {
+						mes "Obrigado por trocar.";
+						delitem .@Weapons[.@i+1],100;
+						getitem .@Weapons[.@i],1;
+					}
+					else mes "Desculpe, mas você não tem emblemas suficientes para trocar.";
+					close;
+				case 2:
+					break;
+				}
+				break;
+			}
+			mes "[Erundek]";
+			mes "Precisa de mais tempo para verificar os itens?";
+			close;	
+	case 2:
+		mes "[Erundek]";
+		mes "Você quer trocar  ^3131FFEmblemas de Bravura^000000. por Armas da Bravura?";
+		mes "Você escolheu ^3131FFArmas Emblema da Bravura^000000.";
+		mes "As seguintes armas estão disponíveis em troca de emblemas.";
+		mes "Para obter mais informações sobre os itens de recompensa, use nosso ^3131FFCatálogo^000000.";
+			next;
+			switch(select("Adaga / Espada de uma mão / Espadas de duas mãos / Lança de Duas Mãos:Cajado / Maça / Machado de Duas Mãos / Shuriken:Arco / Katar / Instrumento Musical / Chicote:Livros / Garras:Revólver / Rifle / Gatling / Espingarda / Lança-Granadas")) {
+			case 1:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFAdaga, Espada de Uma Mão, Espada de Duas Mãos e Lança de Duas Mãos.^000000";
+				next;
+				setarray .@Weapons[0],13037,7829,13410,7829,1184,7829,1482,7829;
+				break;
+			case 2:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFCajado / Maça / Machado de Duas Mãos / Shuriken Huuma^000000.";
+				next;
+				setarray .@Weapons[0],1633,7829,1635,7829,1542,7829,1380,7829,13306,7829;
+				break;
+			case 3:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFArco / Katar / Instrumento Musical / Chicote^000000.";
+				next;
+				setarray .@Weapons[0],1738,7829,1280,7829,1923,7829,1977,7829;
+				break;
+			case 4:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFLivros / Garras^000000.";
+				next;
+				setarray .@Weapons[0],1575,7829,1823,7829;
+				break;
+			case 5:
+				mes "[Erundek]";
+				mes "As seguintes armas estão disponíveis na categoria ^3131FFRevólver / Rifle / Gatling Gun / Espingarda / Lança-Granadas^000000.";
+				next;
+				setarray .@Weapons[0],13171,7829,13173,7829,13174,7829;
+				break;
+			}
+			set .@menu$,"";
+			for(set .@i,0; .@i<getarraysize(.@Weapons); set .@i,.@i+2)
+				set .@menu$, .@menu$+getitemname(.@Weapons[.@i])+((.@Weapons[.@i+1]==7828)?"(BB)":"(VB)")+":";
+			set .@i, (select(.@menu$)-1)*2;
+			set .@type$, ((.@Weapons[.@i+1]==7828)?"(BB)":"(VB)");
+			mes "[Erundek]";
+			mes "Você escolheu:  ^3131FF"+getitemname(.@Weapons[.@i])+.@type$+"^000000.";
+			mes "Você pode trocar ^FF0000100 "+getitemname(.@Weapons[.@i+1])+"^000000 por este item.";
+			mes "Quer trocar?";
+			next;
+			switch(select("Não trocar:Trocar")) {
+			case 1:
+				break;
+			case 2:
+				mes "[Erundek]";
+				mes "Quer trocar  ^FF0000100 "+getitemname(.@Weapons[.@i+1])+"^000000 por uma ^3131FF"+getitemname(.@Weapons[.@i])+.@type$+"^000000?";
+				next;
+				mes "[Erundek]";
+				mes "Lembre-se, as recompensas do Campo de Batalha são ^FF0000Presas ao Personagem^000000. Você tem certeza que deseja obter esse item?";
+				next;
+				switch(select("Sim:Não")) {
+				case 1:
+					mes "[Erundek]";
+					if (countitem(.@Weapons[.@i+1]) >= 100) {
+						mes "Obrigado por trocar.";
+						delitem .@Weapons[.@i+1],100;
+						getitem .@Weapons[.@i],1;
+					}
+					else mes "Desculpe, mas você não tem emblemas suficientes para trocar.";
+					close;
+				case 2:
+					break;
+				}
+				break;
+			}
+			mes "[Erundek]";
+			mes "Precisa de mais tempo para verificar os itens?";
+			close;				
+	case 3:
+			mes "[Erundek]";
+			mes "Você escolheu ^3131FFArmadura.^000000";
+			mes "As seguintes armaduras estão disponíveis em troca de emblemas.";
+			next;
+			switch(select("Capas / Sapatos:Armaduras")) {
+			case 1:
+				setarray .@Items[0],2538,50,2539,50,2540,50,2435,50,2436,50,2437,50;
+				break;
+			case 2:
+				setarray .@Items[0],2376,80,2377,80,2378,80,2379,80,2380,80,2381,80,2382,80;
+				break;
+			}
+			break;
+	case 4:
+			mes "[Erundek]";
+			mes "Você escolheu ^3131FFAcessório.^000000";
+			mes "Você pode trocar Emblemas pela Medalha de Honra apropriada à sua classe:";
+			next;
+			setarray .@Items[0],2733,500,2720,500,2721,500,2722,500,2723,500,2724,500,2725,500;
+			set .@menu1$, "Justiceiro:Espadachim/Mestre Taekwon:Gatuno:Noviço:Mago:Arqueiro:Mercador";
+			break;
+	case 5:
+			mes "[Erundek]";
+			mes "Você escolheu ^3131FFConsumível^000000.";
+			mes "Os seguintes itens comsumíveis estão disponíveis em troca de emblemas:";
+			next;
+			setarray .@Items[0],12269,10,12270,10,12271,5,12272,10,12273,10;
+			break;
+	case 6:
+		mes "[Erundek]";
+		mes "Temos muitos itens; fique à vontade para olhar antes de comprar.";
+		close2;
+		readbook 11010,1;
+		end;
+	}
+	set .@menu$,"";
+	if (.@menu1$ != "") set .@menu$, .@menu1$;
+	else for(set .@i,0; .@i<getarraysize(.@Items); set .@i,.@i+2)
+		set .@menu$, .@menu$+getitemname(.@Items[.@i])+":";
+	set .@i, (select(.@menu$)-1)*2;
+	mes "[Erundek]";
+	mes "You chose ^3131FF"+getitemname(.@Items[.@i])+"^000000.";
+	switch(.@Items[.@i]) {
+		case 2720: mes "Este item serve somente para Espadachim e Mestre Taekwon."; break;
+		case 2721: mes "Este item serve somente para Gatunos."; break;
+		case 2722: mes "Este item serve somente para Noviços."; 	break;
+		case 2723: mes "Este item serve somente para Magos."; break;
+		case 2724: mes "Este item serve somente para Arqueiros."; break;
+		case 2725: mes "Este item serve somente para Mercadores.";	break;
+		case 2733: mes "Este item serve somente para Justiceiros."; break;
+		default: break;
+	}
+	mes "Você pode trocar por esse item com ^FF0000"+.@Items[.@i+1]+" "+getitemname(7828)+" ou "+.@Items[.@i+1]+" "+getitemname(7829)+"^000000.";
+	mes "Quer trocar?";
+	next;
+	switch(select("Não trocar:Trocar")) {
+	case 1:
+		mes "[Erundek]";
+		mes "Precisa de mais tempo para verificar os itens?";
+		break;
+	case 2:
+		mes "[Erundek]";
+		mes "Qual Emblema você quer usar para trocar?";
+		mes "Você precisa de ^3131FF"+.@items[.@i+1]+" Emblemas^000000 para trocar.";
+		next;
+		if (.@item[0] < 12269 || .@item[0] > 12273 ) {
+			mes "[Erundek]";
+			mes "Lembre-se, as recompensas do Campo de Batalha são ^FF0000Presas ao Personagem^000000. Você tem certeza que deseja obter esse item?";
+			next;
+		}
+		set .@j, select("Emblema de Bravura:Emblema de Valor:Cancelar");
+		mes "[Erundek]";
+		if (.@j == 3) {
+			mes "Você cancelou a troca.";
+			break;
+		}
+		set .@cost, ((.@j==1)?7828:7829);
+		if (countitem(.@cost) >= .@Items[.@i+1]) {
+			mes "Obrigado por trocar.";
+			delitem .@cost, .@Items[.@i+1];
+			getitem .@Items[.@i],1;
+		}
+		else mes "Você não tem o suficiente "+getitemname(.@cost)+"s.";
+		break;
+	}
+	close;
+}

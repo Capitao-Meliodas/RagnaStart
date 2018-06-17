@@ -560,9 +560,20 @@ lhz_in02,282,20,7	script	Fulerr	869,{
 //= .@safe to the max safe refine in refine_db.txt as well.
 //============================================================
 function	script	refinemain	{
-	disable_items;
 	.@npc_name$ = getarg(0);
 	.@features = getarg(1);
+
+	if( getbattleflag( "feature.refineui" ) == 3 ){
+		mes "["+ .@npc_name$ +"]";
+		mes "Eu sou um refinador.";
+		mes "Eu posso refinar todos os tipos de armas e armadura,"; 
+		mes "só preciso que você me diga o que quer refinar.";
+		close2;
+		refineui();
+		end;
+	}
+
+	disable_items;
 	mes "["+ .@npc_name$ +"]";
 	mes "Eu sou um refinador.";
 	mes "Eu posso refinar todos os tipos de armas e armadura,"; 

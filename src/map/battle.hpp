@@ -643,6 +643,7 @@ struct Battle_Config
 	int skill_drop_items_full;
 	int feature_homunculus_autofeed;
 	int summoner_trait;
+	int feature_refineui;
 
 #ifdef QUEUE_SYSTEM_ENABLE
 	// [CreativeSD]: Queue System
